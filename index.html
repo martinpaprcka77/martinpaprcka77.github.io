@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PowerShell Dotfiles Ecosystem</title>
+<style>
+:root {
+  --bg: #0d1117; --fg: #c9d1d9; --muted: #8b949e;
+  --accent: #58a6ff; --accent2: #3fb950; --accent3: #d2991d; --accent4: #f778ba;
+  --border: #30363d; --card: #161b22; --hover: #1c2129;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.6; min-height: 100vh;
+}
+a { color: var(--accent); text-decoration: none; transition: color .15s; }
+a:hover { color: #79c0ff; text-decoration: underline; }
+code { background: #ffffff15; padding: .15em .5em; border-radius: 4px; font-size: .9em; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; }
+pre { background: #0d1117; border: 1px solid var(--border); padding: 1rem 1.2rem; border-radius: var(--radius); overflow-x: auto; }
+pre code { background: none; padding: 0; }
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 4rem 2rem 3rem; text-align: center;
+}
+.hero h1 { font-size: 2.6rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: .5rem; }
+.hero h1 span { color: var(--accent); }
+.hero p { font-size: 1.2rem; color: var(--muted); max-width: 640px; margin: .5rem auto 1.5rem; }
+.hero .install {
+  display: inline-block; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: .8rem 1.5rem; text-align: left;
+  font-size: .85em; max-width: 640px;
+}
+
+/* Container */
+.container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
+@media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+/* Cards */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem; transition: border-color .2s;
+}
+.card:hover { border-color: var(--accent); }
+.card h3 { display: flex; align-items: center; gap: .5rem; font-size: 1.15rem; margin-bottom: .8rem; }
+.card h3 .icon { font-size: 1.4rem; }
+.card .desc { color: var(--muted); font-size: .9em; margin-bottom: .8rem; }
+.card .links { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+.card .links a {
+  display: inline-block; padding: .25em .7em; border-radius: 6px; font-size: .82em; font-weight: 500;
+  border: 1px solid var(--border); transition: all .15s;
+}
+.card .links a:hover { border-color: var(--accent); text-decoration: none; background: #58a6ff10; }
+
+/* Badge pills */
+.badge { display: inline-flex; align-items: center; gap: .3em; padding: .2em .7em; border-radius: 20px; font-size: .75em; font-weight: 600; margin: .15em; }
+.badge-b { border: 1px solid #1f6feb44; color: #58a6ff; background: #1f6feb15; }
+.badge-g { border: 1px solid #23863644; color: #3fb950; background: #23863615; }
+.badge-o { border: 1px solid #9e6a0344; color: #d2991d; background: #9e6a0315; }
+.badge-p { border: 1px solid #db61a244; color: #f778ba; background: #db61a215; }
+
+/* Section header */
+.section-title {
+  font-size: 1.5rem; font-weight: 700; margin: 2.5rem 0 1rem;
+  padding-bottom: .5rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: .5rem;
+}
+
+/* Table */
+table { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; font-size: .9em; }
+th, td { border: 1px solid var(--border); padding: .6rem .8rem; text-align: left; }
+th { background: #ffffff08; font-weight: 600; }
+
+/* Status dots */
+.done { color: var(--accent2); }
+.soon { color: var(--accent3); }
+.later { color: var(--muted); }
+
+/* Footer */
+.footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--muted); font-size: .85em; margin-top: 3rem; }
+.footer a { color: var(--muted); }
+.footer a:hover { color: var(--fg); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HERO ═══════════ -->
+<div class="hero">
+  <h1><span>⚡</span> PowerShell Dotfiles</h1>
+  <p>Modular, version-controlled, portable — profiles &amp; tools that bypass OneDrive and work across every machine.</p>
+  <div class="install">
+    <code style="color:var(--accent2)"># One-liner bootstrap</code><br>
+    <code>git clone https://github.com/martinpaprcka77/dotfiles-powershell.git $HOME/.config/powershell</code><br>
+    <code>git clone https://github.com/martinpaprcka77/dotfiles-tools.git $HOME/Projects/tools</code><br>
+    <code>&amp; $HOME/.config/powershell/install.ps1</code>
+  </div>
+  <p style="margin-top:1rem">
+    <a class="badge badge-b" href="https://github.com/martinpaprcka77/dotfiles-powershell">📦 powershell</a>
+    <a class="badge badge-o" href="https://github.com/martinpaprcka77/dotfiles-tools">📦 tools</a>
+    <a class="badge badge-g" href="https://martinpaprcka77.github.io/dotfiles-powershell/">🌐 pages</a>
+    <a class="badge badge-p" href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">📋 gist: install</a>
+    <a class="badge badge-p" href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">📋 gist: cheatsheet</a>
+  </p>
+</div>
+
+<div class="container">
+
+<!-- ═══════════ REPO BOUNDARY ═══════════ -->
+<h2 class="section-title">🗺️ Two Repos, One Ecosystem</h2>
+<div class="grid">
+  <div class="card">
+    <h3><span class="icon">📄</span> dotfiles-powershell</h3>
+    <p class="desc">Profile orchestration — modular loading, PS5/7 detection, host-specific config, secret management, bootstrap installer.</p>
+    <p><code>~/.config/powershell/</code> · 17 files · 3 docs</p>
+    <div class="links">
+      <a href="https://github.com/martinpaprcka77/dotfiles-powershell">📦 GitHub</a>
+      <a href="https://martinpaprcka77.github.io/dotfiles-powershell/">🌐 Pages</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-powershell#readme">📄 README</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/ARCHITECTURE.md">🧩 UML</a>
+    </div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">🔧</span> dotfiles-tools</h3>
+    <p class="desc">Interactive toolbox — menus, diagnostics, Docker &amp; Git helpers, Toolkit module (18 functions), WT integration, Pester tests.</p>
+    <p><code>~/Projects/tools/</code> · 24 files · 4 docs</p>
+    <div class="links">
+      <a href="https://github.com/martinpaprcka77/dotfiles-tools">📦 GitHub</a>
+      <a href="https://martinpaprcka77.github.io/dotfiles-tools/">🌐 Pages</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-tools#readme">📄 README</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ARCHITECTURE.md">🧩 UML</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ QUICK COMMANDS ═══════════ -->
+<h2 class="section-title">⌨️ Quick Commands</h2>
+<table>
+<tr><th>Command</th><th>What it does</th><th>Alias</th></tr>
+<tr><td><code>menu</code></td><td>Interactive main menu (Docker · Git · System · Tools)</td><td>—</td></tr>
+<tr><td><code>check</code></td><td>Full system diagnostics (disks, services, network, processes)</td><td>—</td></tr>
+<tr><td><code>update</code></td><td>Git pull latest + reload profile</td><td>—</td></tr>
+<tr><td><code>configure</code></td><td>Interactive setup wizard</td><td>—</td></tr>
+<tr><td><code>ep</code></td><td>Edit profile in editor</td><td>Edit-Profile</td></tr>
+<tr><td><code>rp</code></td><td>Reload profile without restart</td><td>Reload-Profile</td></tr>
+<tr><td><code>g</code> <code>gst</code> <code>gco</code> <code>glo</code></td><td>Git shortcuts (status, checkout, log)</td><td>—</td></tr>
+<tr><td><code>dps</code> <code>dcu</code> <code>dcd</code></td><td>Docker shortcuts (ps, compose up/down)</td><td>—</td></tr>
+</table>
+
+<!-- ═══════════ DOCS ═══════════ -->
+<h2 class="section-title">📚 Documentation</h2>
+<div class="grid">
+  <div class="card">
+    <h3><span class="icon">📄</span> dotfiles-powershell</h3>
+    <div class="links" style="flex-direction:column;align-items:flex-start">
+      <a href="https://github.com/martinpaprcka77/dotfiles-powershell#readme">📄 README — overview, install, functions</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/ARCHITECTURE.md">🧩 ARCHITECTURE — 4 Mermaid UML diagrams</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/PURPOSE.md">🎯 PURPOSE — design rationale &amp; decisions</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/PROMPT.md">📝 PROMPT — original AI prompt (107 lines)</a>
+    </div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">🔧</span> dotfiles-tools</h3>
+    <div class="links" style="flex-direction:column;align-items:flex-start">
+      <a href="https://github.com/martinpaprcka77/dotfiles-tools#readme">📄 README — 18 functions, UML diagrams</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ARCHITECTURE.md">🧩 ARCHITECTURE — 6 Mermaid UML diagrams</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/MANUAL.md">📖 MANUAL — 11-section user guide</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ROADMAP.md">🗺️ ROADMAP — 5 phases, known issues</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/PROMPT.md">📝 PROMPT — original AI prompt</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ROADMAP ═══════════ -->
+<h2 class="section-title">🗺️ Roadmap</h2>
+<table>
+<tr><th>Phase</th><th>Status</th><th>What's included</th></tr>
+<tr><td><strong>1. Foundation</strong></td><td><span class="done">✅ Done</span></td><td>Modular profile, install, Toolkit (18 functions), menus, diagnostics, WT, tests</td></tr>
+<tr><td><strong>2. Tools</strong></td><td><span class="soon">🟡 Planned</span></td><td>Custom user tools, menu extensions</td></tr>
+<tr><td><strong>3. Extensions</strong></td><td><span class="soon">🟡 Planned</span></td><td>Linux/macOS support, health check, live dashboard</td></tr>
+<tr><td><strong>4. Integration</strong></td><td><span class="later">🟢 Future</span></td><td>VS Code, WSL, oh-my-posh theme, git hooks</td></tr>
+<tr><td><strong>5. Ecosystem</strong></td><td><span class="later">🟢 Future</span></td><td>Windows installer, CI/CD, PowerShell Gallery</td></tr>
+</table>
+<p style="margin-top:.3rem"><a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ROADMAP.md">→ Full roadmap with known issues &amp; contribution guide</a></p>
+
+<!-- ═══════════ LINKS ═══════════ -->
+<h2 class="section-title">🔗 All Links</h2>
+<table>
+<tr><th>Resource</th><th>URL</th></tr>
+<tr><td><strong>Portal (this page)</strong></td><td><a href="https://martinpaprcka77.github.io">martinpaprcka77.github.io</a></td></tr>
+<tr><td><strong>dotfiles-powershell</strong></td><td><a href="https://github.com/martinpaprcka77/dotfiles-powershell">github.com/martinpaprcka77/dotfiles-powershell</a></td></tr>
+<tr><td><strong>dotfiles-tools</strong></td><td><a href="https://github.com/martinpaprcka77/dotfiles-tools">github.com/martinpaprcka77/dotfiles-tools</a></td></tr>
+<tr><td><strong>Pages — powershell</strong></td><td><a href="https://martinpaprcka77.github.io/dotfiles-powershell/">martinpaprcka77.github.io/dotfiles-powershell</a></td></tr>
+<tr><td><strong>Pages — tools</strong></td><td><a href="https://martinpaprcka77.github.io/dotfiles-tools/">martinpaprcka77.github.io/dotfiles-tools</a></td></tr>
+<tr><td><strong>Gist — Install</strong></td><td><a href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">gist.github.com/…/bafc2457</a></td></tr>
+<tr><td><strong>Gist — Cheatsheet</strong></td><td><a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">gist.github.com/…/b30ae16</a></td></tr>
+</table>
+
+</div>
+
+<div class="footer">
+  Built with PowerShell · Git · GitHub Pages · Mermaid UML<br>
+  <a href="https://github.com/martinpaprcka77/dotfiles-powershell">powershell</a> ·
+  <a href="https://github.com/martinpaprcka77/dotfiles-tools">tools</a> ·
+  <a href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">install</a> ·
+  <a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">cheatsheet</a>
+</div>
+
+</body>
+</html>
