@@ -123,7 +123,7 @@ Full spec at: https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/d
    - AGENTS.md at root has full codebase guide
 
 2. dotfiles-tools (~/Projects/tools/) — interactive toolbox
-   - Toolkit module: 22 functions (menus, diagnostics, config)
+   - Toolkit module: 29 functions (menus, diagnostics, config, modulepath)
    - bin/menu.ps1 + bin/check.ps1 are in PATH
    - New 2026: deps.ps1 (winget installer), windows.ps1 (system defaults)
    - New 2026: Add-WTProfiles.ps1 generates JSON fragment extensions
@@ -304,7 +304,7 @@ Conventions:
 
 Constraints:
 - PowerShell 5.1+ | Platform guards ($IsWindows) | Comment-based help
-- Module: Toolkit (22 functions in Toolkit.psd1/.psm1)
+- Module: Toolkit (29 functions in Toolkit.psd1/.psm1)
 - Menu engine: Show-Menu in lib/menu.ps1 — hashtable of labels to scriptblocks
 - Config: Get-ToolkitConfig merges defaults > settings.json > $env:TOOLKIT_*
 - Tests: Pester in tests/Toolkit.Tests.ps1
@@ -336,7 +336,7 @@ SECURITY:
 
 CORRECTNESS:
 - Do Toolkit.psm1 export lists match Toolkit.psd1 FunctionsToExport?
-- Are all 22 functions tested in Toolkit.Tests.ps1?
+- Are all 29 functions tested in Toolkit.Tests.ps1?
 - Do cross-platform guards cover all Windows-only code paths?
 
 MAINTAINABILITY:
