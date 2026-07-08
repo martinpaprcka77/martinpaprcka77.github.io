@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Prompts — PowerShell Dotfiles Ecosystem</title>
+<style>
+:root{--bg:#0d1117;--fg:#c9d1d9;--accent:#58a6ff;--border:#30363d;--card:#161b22;--muted:#8b949e;--green:#3fb950;--orange:#d2991d;--pink:#f778ba;--purple:#a371f7}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;min-height:100vh}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+code,pre{font-family:'SF Mono','Fira Code','Consolas',monospace}
+pre{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem 1.2rem;overflow-x:auto;font-size:.85em;margin:.5rem 0;white-space:pre-wrap;word-break:break-word}
+code{background:#ffffff12;padding:.1em .4em;border-radius:3px;font-size:.88em}
+
+/* Layout */
+header{background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);border-bottom:1px solid var(--border);padding:2rem 1.5rem 1.5rem;text-align:center}
+header h1{font-size:2rem;font-weight:800;margin-bottom:.3rem}header h1 span{color:var(--accent)}
+header p{color:var(--muted);max-width:700px;margin:.3rem auto 1rem}
+.back{display:inline-block;padding:.3em .8em;border:1px solid var(--border);border-radius:6px;font-size:.85em}.back:hover{border-color:var(--accent)}
+.container{max-width:1100px;margin:0 auto;padding:1.5rem}
+
+/* Tabs */
+.tab-nav{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:.5rem}
+.tab-btn{background:none;border:1px solid transparent;color:var(--muted);padding:.5rem 1rem;border-radius:6px 6px 0 0;cursor:pointer;font-size:.9em;font-weight:500;transition:all .15s}
+.tab-btn:hover{color:var(--fg);background:var(--card)}
+.tab-btn.active{color:var(--accent);border-color:var(--border);border-bottom-color:var(--bg);background:var(--card);margin-bottom:-1px}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* Task sections */
+.task-section{margin-bottom:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.task-header{padding:.8rem 1.2rem;font-weight:700;font-size:1rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--border)}
+.task-body{padding:.8rem 1.2rem 1.2rem}
+.task-body h4{font-size:.85em;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:.8rem 0 .3rem}
+.task-label{padding:.2em .6em;border-radius:4px;font-size:.75em;font-weight:600}
+
+.label-work{background:#1f6feb22;color:#58a6ff}
+.label-enhance{background:#23863622;color:#3fb950}
+.label-suggest{background:#9e6a0322;color:#d2991d}
+.label-review{background:#db61a222;color:#f778ba}
+.label-research{background:#a371f722;color:#a371f7}
+.label-meta{background:#ffffff15;color:#e6edf3}
+
+/* Copy button */
+.copy-btn{float:right;background:var(--card);border:1px solid var(--border);color:var(--muted);padding:.2em .6em;border-radius:4px;cursor:pointer;font-size:.75em;margin-left:.5rem}
+.copy-btn:hover{color:var(--fg);border-color:var(--accent)}
+
+/* AI badges in tabs */
+.ai-deepseek{color:#4dabf7}.ai-claude{color:#d4a574}.ai-gemini{color:#8ab4f8}.ai-codex{color:#10a37f}
+.ai-grok{color:#e5e5e5}.ai-openai{color:#74aa9c}.ai-reasonix{color:#a371f7}.ai-copilot{color:#58a6ff}.ai-meta{color:#f778ba}
+
+/* Responsive */
+@media(max-width:700px){.tab-nav{gap:.2rem}.tab-btn{padding:.4rem .6rem;font-size:.8em}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🤖 <span>AI Prompts</span> — Dotfiles Ecosystem</h1>
+  <p>Ready-to-use prompts for every AI model. Click a tab, pick a task, copy the prompt.</p>
+  <a class="back" href="https://martinpaprcka77.github.io">← Back to Portal</a>
+</header>
+
+<div class="container">
+
+<!-- ═══════════ TAB NAV ═══════════ -->
+<div class="tab-nav">
+  <button class="tab-btn active ai-meta" onclick="switchTab('meta')">🧠 Meta / Master</button>
+  <button class="tab-btn ai-deepseek" onclick="switchTab('deepseek')">🔹 DeepSeek</button>
+  <button class="tab-btn ai-claude" onclick="switchTab('claude')">🧡 Claude</button>
+  <button class="tab-btn ai-openai" onclick="switchTab('openai')">🟢 OpenAI / GPT-4</button>
+  <button class="tab-btn ai-gemini" onclick="switchTab('gemini')">🔵 Gemini</button>
+  <button class="tab-btn ai-codex" onclick="switchTab('codex')">⬛ Codex / Grok</button>
+  <button class="tab-btn ai-reasonix" onclick="switchTab('reasonix')">🟣 Reasonix</button>
+  <button class="tab-btn ai-copilot" onclick="switchTab('copilot')">💙 Copilot</button>
+</div>
+
+<!-- ═══════════ META / MASTER ═══════════ -->
+<div id="tab-meta" class="tab-panel active">
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-meta">REGENERATE</span> Master Prompt — rebuild entire ecosystem</div>
+<div class="task-body">
+<p style="color:var(--muted);margin-bottom:.5rem">Give this to any capable AI to regenerate both repos from scratch. Works with Claude, DeepSeek, GPT-4, Gemini.</p>
+<h4>Prompt</h4>
+<pre>You are a PowerShell and dotfiles expert. Create a complete, runnable PowerShell dotfiles ecosystem with two Git repos:
+
+REPO A: dotfiles-powershell → ~/.config/powershell/
+- profile.ps1 (PS5/7 + host detection, PSModulePath fix for OneDrive, benchmark)
+- install.ps1 (idempotent: WhatIf, Force, backups, try/catch, summary)
+- update.ps1 (git fetch, rev-list check, ff-only pull, reload)
+- core/aliases.ps1, core/functions.ps1 (Get-SecretKey, Edit-Profile, …), core/env.ps1
+- ps5/profile.ps1, ps7/profile.ps1 (PSReadLine, oh-my-posh, Terminal-Icons)
+- hosts/ConsoleHost.ps1, hosts/VSCode.ps1
+- AGENTS.md, CLAUDE.md, docs/, .gitignore
+
+REPO B: dotfiles-tools → ~/Projects/tools/
+- bin/menu.ps1, bin/check.ps1 (Import-Module Toolkit wrappers)
+- lib/common.ps1, lib/menu.ps1 (Show-Menu engine), lib/checkers.ps1, lib/config.ps1
+- Toolkit/Toolkit.psd1 (18 FunctionsToExport), Toolkit/Toolkit.psm1
+- menu/menu-main.ps1, menu-docker.ps1, menu-git.ps1
+- scripts/Add-WTProfiles.ps1 (WhatIf, platform guard, BOM-free)
+- scripts/Generate-Icons.ps1, scripts/configure.ps1, scripts/setup-repos.ps1
+- tests/Toolkit.Tests.ps1 (25+ Pester cases, Mock coverage)
+- AGENTS.md, CLAUDE.md, docs/, .gitignore
+
+All scripts: comment-based help, try/catch, cross-platform guards, idempotent.
+Full spec at: https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/PROMPT.md</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-meta">CONTEXT</span> Quick Context Injection for any AI</div>
+<div class="task-body">
+<p style="color:var(--muted);margin-bottom:.5rem">Paste this at the start of any conversation to give an AI instant understanding.</p>
+<pre>You are working on the PowerShell Dotfiles Ecosystem — two GitHub repos:
+
+1. dotfiles-powershell (~/.config/powershell/) — profile orchestration
+   - profile.ps1 dotsources core/ → ps5|ps7/ → hosts/
+   - install.ps1 is idempotent (WhatIf, Force, backups)
+   - Location chosen to bypass OneDrive (XDG ~/.config/)
+   - AGENTS.md at root has full codebase guide
+
+2. dotfiles-tools (~/Projects/tools/) — interactive toolbox
+   - Toolkit module: 18 functions (menus, diagnostics, config)
+   - bin/menu.ps1 + bin/check.ps1 are in PATH
+   - lib/menu.ps1: generic Show-Menu numbered menu engine
+   - 25+ Pester tests in tests/Toolkit.Tests.ps1
+
+Portal: https://martinpaprcka77.github.io
+Master prompt: https://gist.github.com/martinpaprcka77/1c74223f4e57b46977abd6df06d4e8fd</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ DEEPSEEK ═══════════ -->
+<div id="tab-deepseek" class="tab-panel">
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-work">WORK ON</span> Build a new feature</div>
+<div class="task-body">
+<h4>Prompt</h4>
+<pre>You are working on the PowerShell Dotfiles Ecosystem at ~/.config/powershell/ and ~/Projects/tools/.
+Read AGENTS.md in both repos first to understand the architecture.
+
+Task: [DESCRIBE THE FEATURE YOU WANT]
+
+Rules:
+- PowerShell 5.1+ compatible, use $IsWindows/$IsLinux guards for platform-specific code
+- Comment-based help on all functions (.SYNOPSIS, .DESCRIPTION, .PARAMETER, .EXAMPLE)
+- try/catch on network/external calls
+- If adding to Toolkit module: update Toolkit.psm1 Export-ModuleMember AND Toolkit.psd1 FunctionsToExport
+- Add Pester test in tests/Toolkit.Tests.ps1
+- Update MANUAL.md with usage examples</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-review">REVIEW</span> Code review</div>
+<div class="task-body">
+<h4>Prompt</h4>
+<pre>Review the current state of the PowerShell Dotfiles Ecosystem. Check:
+
+1. install.ps1 — is it truly idempotent? Are all git operations in try/catch?
+2. Toolkit.psm1 + Toolkit.psd1 — do export lists match?
+3. Cross-platform guards — are $IsWindows checks on Add-WTProfiles.ps1 and Generate-Icons.ps1?
+4. Comment-based help — do all public functions have .SYNOPSIS?
+5. Pester tests — do they cover all 18 Toolkit functions?
+6. .gitignore — is it accidentally excluding *.ps1 source files?
+7. Path hardening — are paths using Join-Path, not string concat?
+
+Flag any issues with file:line references.</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ CLAUDE ═══════════ -->
+<div id="tab-claude" class="tab-panel">
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-enhance">ENHANCE</span> Improve existing code</div>
+<div class="task-body">
+<h4>Prompt</h4>
+<pre>Read CLAUDE.md and AGENTS.md in the dotfiles-powershell and dotfiles-tools repos.
+Then enhance [SPECIFIC FILE OR FEATURE] following these principles:
+
+- Keep it idempotent (safe to re-run)
+- Add WhatIf/Force parameters where destructive
+- Use try/catch with clear error messages
+- Respect profile performance (no network calls at startup)
+- Update tests and MANUAL.md
+- Use the existing patterns: Show-Menu for menus, Get-ToolkitConfig for config</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-suggest">SUGGEST</span> Architecture improvements</div>
+<div class="task-body">
+<h4>Prompt</h4>
+<pre>Read the full codebase (AGENTS.md + ARCHITECTURE.md in both repos).
+Suggest 5 architectural improvements. For each:
+
+1. What's the current problem?
+2. What's your proposed solution?
+3. What files would change?
+4. What's the migration path (backward compatible?)
+5. Priority (high/medium/low)
+
+Focus on: error handling coverage, test gaps, config flexibility, cross-platform readiness, startup performance.</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ OPENAI / GPT-4 ═══════════ -->
+<div id="tab-openai" class="tab-panel">
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-work">WORK ON</span> Implement from spec</div>
+<div class="task-body">
+<h4>Prompt</h4>
+<pre>System: You are a senior PowerShell developer. You have access to the dotfiles-powershell and dotfiles-tools repos at ~/.config/powershell/ and ~/Projects/tools/. Read AGENTS.md first.
+
+User: I need you to implement [FEATURE]. The codebase follows these conventions:
+- Modular: drop .ps1 file in core/ or lib/ and it auto-loads
+- Module: Toolkit.psm1 dot-sources lib/*.ps1, exports via FunctionsToExport in .psd1
+- Menus: use the Show-Menu function from lib/menu.ps1 (hashtable of label → scriptblock)
+- Config: use Get-ToolkitConfig (defaults → settings.json → $env:TOOLKIT_* merge)
+- Tests: Pester, add to tests/Toolkit.Tests.ps1, use Mock for external commands
+- Docs: update MANUAL.md, README.md function table, export lists
+
+Generate the code with file paths as comments. Include tests.</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-research">RESEARCH</span> Feasibility analysis</div>
+<div class="task-body">
+<h4>Prompt</h4>
+<pre>Research whether [IDEA] is feasible for the PowerShell Dotfiles Ecosystem.
+The ecosystem runs on Windows (primary) and Linux (secondary), PowerShell 5.1 and 7+.
+
+Questions to answer:
+1. Is this technically possible in PowerShell?
+2. What modules/dependencies would it need?
+3. Which repo would it live in? (powershell vs tools)
+4. What's the performance impact on profile load time?
+5. Are there cross-platform concerns?
+6. What would a minimal prototype look like?
+
+Current architecture: https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/ARCHITECTURE.md</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ GEMINI ═══════════ -->
+<div id="tab-gemini" class="tab-panel">
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-work">WORK ON</span> Generate code with context</div>
+<div class="task-body">
+<h4>Prompt</h4>
+<pre>Context: PowerShell Dotfiles Ecosystem — two repos at ~/.config/powershell/ and ~/Projects/tools/.
+Portal: https://martinpaprcka77.github.io
+Read AGENTS.md before starting.
+
+Task: [DESCRIBE WHAT TO BUILD]
+
+Conventions:
+- Functions: Verb-Noun naming, comment-based help
+- Error handling: try/catch for external calls
+- Idempotency: Test-Path before creating, -WhatIf support
+- Platform: $IsWindows/$IsLinux guards
+- Paths: Join-Path, not string concatenation
+- Config: Get-ToolkitConfig (defaults → JSON → env merge)
+- Menus: Show-Menu engine (hashtable of label → scriptblock)
+- Module: add to Toolkit.psm1 Export + Toolkit.psd1 FunctionsToExport</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ CODEX / GROK ═══════════ -->
+<div id="tab-codex" class="tab-panel">
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-work">WORK ON</span> Codex / Grok task prompt</div>
+<div class="task-body">
+<h4>Prompt</h4>
+<pre># Task for PowerShell Dotfiles Ecosystem
+# Repos: dotfiles-powershell (~/.config/powershell/) + dotfiles-tools (~/Projects/tools/)
+# Reference: https://martinpaprcka77.github.io
+
+[DESCRIBE THE TASK IN DETAIL]
+
+Constraints:
+- PowerShell 5.1+ | Platform guards ($IsWindows) | Comment-based help
+- Module: Toolkit (18 functions in Toolkit.psd1/.psm1)
+- Menu engine: Show-Menu in lib/menu.ps1 — hashtable of labels to scriptblocks
+- Config: Get-ToolkitConfig merges defaults > settings.json > $env:TOOLKIT_*
+- Tests: Pester in tests/Toolkit.Tests.ps1
+- Docs: AGENTS.md has full architecture reference</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ REASONIX ═══════════ -->
+<div id="tab-reasonix" class="tab-panel">
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-review">REVIEW</span> Full ecosystem audit</div>
+<div class="task-body">
+<h4>Prompt</h4>
+<pre>Conduct a thorough review of the PowerShell Dotfiles Ecosystem. Read AGENTS.md + CLAUDE.md in both repos, then audit:
+
+SAFETY:
+- Does install.ps1 back up existing profiles before modifying?
+- Are all network operations (git clone, pull) in try/catch?
+- Does Add-WTProfiles.ps1 back up settings.json before writing?
+- Are there any destructive operations without WhatIf?
+
+SECURITY:
+- Is Get-SecretKey properly using SecretManagement with env fallback?
+- Are any secrets/keys hardcoded?
+- Does .gitignore cover *.secret, .env, configs/secrets.*?
+
+CORRECTNESS:
+- Do Toolkit.psm1 export lists match Toolkit.psd1 FunctionsToExport?
+- Are all 18 functions tested in Toolkit.Tests.ps1?
+- Do cross-platform guards cover all Windows-only code paths?
+
+MAINTAINABILITY:
+- Is every public function documented with comment-based help?
+- Are the AGENTS.md files up to date with actual file structure?
+- Is MANUAL.md consistent with actual script behavior?
+
+Output: Severity-tagged findings with file:line references.</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-research">RESEARCH</span> Deep architecture analysis</div>
+<div class="task-body">
+<h4>Prompt</h4>
+<pre>Analyze the architecture of the PowerShell Dotfiles Ecosystem:
+
+1. Profile loading sequence — trace from $PROFILE bootstrap through every dot-source. Are there any unnecessary loads?
+2. Module dependency graph — map every Import-Module and dot-source relationship between bin/ → Toolkit → lib/
+3. Config flow — trace Get-ToolkitConfig from defaults → settings.json → $env:TOOLKIT_*
+4. Menu rendering — trace Start-MainMenu → Show-Menu → scriptblock execution
+5. Error propagation — for each layer (bin/, Toolkit, lib/), what happens when an error occurs?
+
+For each: identify potential failure points, performance bottlenecks, and simplification opportunities.
+Reference: ARCHITECTURE.md in both repos has Mermaid UML diagrams.</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ COPILOT ═══════════ -->
+<div id="tab-copilot" class="tab-panel">
+
+<div class="task-section">
+<div class="task-header"><span class="task-label label-work">WORK ON</span> Copilot workspace prompt</div>
+<div class="task-body">
+<h4>Prompt</h4>
+<pre># PowerShell Dotfiles Ecosystem
+# Workspace: two repos — dotfiles-powershell + dotfiles-tools
+# Portal: https://martinpaprcka77.github.io
+
+# Task:
+[DESCRIBE WHAT TO DO — Copilot will use AGENTS.md for context]
+
+# Key patterns in this codebase:
+# - profile.ps1 dot-sources core/*.ps1 → ps5|ps7/ → hosts/
+# - Toolkit module: Toolkit.psd1 (manifest) → Toolkit.psm1 (dot-sources lib/*.ps1)
+# - Menu: Show-Menu @{label = {scriptblock}}
+# - Config: Get-ToolkitConfig (defaults → JSON → env)
+# - Tests: Pester, Mock, tests/Toolkit.Tests.ps1</pre>
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
+</div>
+</div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelector('.tab-btn.ai-' + name)?.classList.add('active');
+  // Find the right button (handle compound classes like 'ai-meta')
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.textContent.toLowerCase().includes(name)) b.classList.add('active');
+  });
+}
+
+function copyPrompt(btn) {
+  const pre = btn.parentElement.querySelector('pre');
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✅ Copied!';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+  });
+}
+</script>
+
+</body>
+</html>
