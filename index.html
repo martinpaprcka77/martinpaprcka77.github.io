@@ -85,6 +85,14 @@ th { background: #ffffff08; font-weight: 600; }
 .soon { color: var(--accent3); }
 .later { color: var(--muted); }
 
+/* Flow diagram */
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin: 1rem 0 1.5rem; }
+.flow .step {
+  background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+  padding: .55rem .9rem; font-size: .85em; white-space: nowrap;
+}
+.flow .arrow { color: var(--muted); font-size: 1.1em; }
+
 /* Footer */
 .footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--muted); font-size: .85em; margin-top: 3rem; }
 .footer a { color: var(--muted); }
@@ -98,11 +106,13 @@ th { background: #ffffff08; font-weight: 600; }
   <h1><span>⚡</span> PowerShell Dotfiles</h1>
   <p>Modular, version-controlled, portable — profiles &amp; tools that bypass OneDrive and work across every machine.</p>
   <div class="install">
-    <code style="color:var(--accent2)"># One-liner bootstrap</code><br>
-    <code>git clone https://github.com/martinpaprcka77/dotfiles-powershell.git $HOME/.config/powershell</code><br>
-    <code>git clone https://github.com/martinpaprcka77/dotfiles-tools.git $HOME/Projects/tools</code><br>
-    <code>&amp; $HOME/.config/powershell/install.ps1</code>
+    <code style="color:var(--accent2)"># One command — any shell, auto-detects everything</code><br>
+    <code>irm https://raw.githubusercontent.com/martinpaprcka77/dotfiles-powershell/main/remote-install.ps1 | iex</code>
   </div>
+  <p style="margin-top:.6rem;color:var(--muted);font-size:.85em;max-width:640px;margin-left:auto;margin-right:auto">
+    From cmd.exe/bash: <code>powershell -c "irm .../remote-install.ps1 | iex"</code> ·
+    <a href="https://github.com/martinpaprcka77/dotfiles-powershell#-quick-install" style="color:inherit;text-decoration:underline">manual install &amp; parameters ↓</a>
+  </p>
   <p style="margin-top:1rem">
     <a class="badge badge-b" href="https://github.com/martinpaprcka77/dotfiles-powershell">📦 powershell</a>
     <a class="badge badge-o" href="https://github.com/martinpaprcka77/dotfiles-tools">📦 tools</a>
@@ -120,8 +130,8 @@ th { background: #ffffff08; font-weight: 600; }
 <div class="grid">
   <div class="card">
     <h3><span class="icon">📄</span> dotfiles-powershell</h3>
-    <p class="desc">Profile orchestration — modular loading, PS5/7 detection, host-specific config, secret management, bootstrap installer.</p>
-    <p><code>~/.config/powershell/</code> · 27 files · 3 docs</p>
+    <p class="desc">Profile orchestration — modular loading, PS5/7 detection, host-specific config, secret management, one-command remote bootstrapper, Known-Folder-correct (OneDrive-safe) paths.</p>
+    <p><code>~/.config/powershell/</code> · 19 scripts · 3 docs</p>
     <div class="links">
       <a href="https://github.com/martinpaprcka77/dotfiles-powershell">📦 GitHub</a>
       <a href="https://martinpaprcka77.github.io/dotfiles-powershell/">🌐 Pages</a>
@@ -131,8 +141,8 @@ th { background: #ffffff08; font-weight: 600; }
   </div>
   <div class="card">
     <h3><span class="icon">🔧</span> dotfiles-tools</h3>
-    <p class="desc">Interactive toolbox — menus, diagnostics, Docker &amp; Git helpers, Toolkit (30 funcs). PSModulePathManager, PSResourceGet modernization, WSL auto-detection, ETW diagnostics.</p>
-    <p><code>~/Projects/tools/</code> · 44 files · 4 docs</p>
+    <p class="desc">Interactive toolbox — TUI menus with live status detection, diagnostics, Docker &amp; Git helpers, Toolkit (36 funcs). PSModulePathManager, PSResourceGet modernization, WSL auto-detection, ETW diagnostics.</p>
+    <p><code>~/Projects/tools/</code> · 24 scripts · 4 docs</p>
     <div class="links">
       <a href="https://github.com/martinpaprcka77/dotfiles-tools">📦 GitHub</a>
       <a href="https://martinpaprcka77.github.io/dotfiles-tools/">🌐 Pages</a>
@@ -141,6 +151,36 @@ th { background: #ffffff08; font-weight: 600; }
     </div>
   </div>
 </div>
+
+<!-- ═══════════ HOW IT WORKS ═══════════ -->
+<h2 class="section-title">🧩 How It Works</h2>
+<div class="flow">
+  <span class="step">⚡ irm | iex</span>
+  <span class="arrow">→</span>
+  <span class="step">📥 remote-install.ps1</span>
+  <span class="arrow">→</span>
+  <span class="step">📦 clone / update</span>
+  <span class="arrow">→</span>
+  <span class="step">🛠️ install.ps1</span>
+  <span class="arrow">→</span>
+  <span class="step">📝 inject $PROFILE bootstrap<br><small style="color:var(--muted)">(Known-Folder-correct, OneDrive-safe)</small></span>
+</div>
+<div class="flow">
+  <span class="step">🐚 shell starts</span>
+  <span class="arrow">→</span>
+  <span class="step">🔍 detect PS5/PS7, host, OS</span>
+  <span class="arrow">→</span>
+  <span class="step">📁 dot-source core/*.ps1</span>
+  <span class="arrow">→</span>
+  <span class="step">🎯 version + host profile</span>
+  <span class="arrow">→</span>
+  <span class="step">✅ ready</span>
+</div>
+<p style="color:var(--muted);font-size:.85em;margin-top:-.6rem;margin-bottom:1.5rem">
+  Full sequence &amp; component diagrams (Mermaid UML):
+  <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/ARCHITECTURE.md">dotfiles-powershell</a> ·
+  <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ARCHITECTURE.md">dotfiles-tools</a>
+</p>
 
 <!-- ═══════════ QUICK COMMANDS ═══════════ -->
 <h2 class="section-title">⌨️ Quick Commands</h2>
@@ -165,7 +205,7 @@ th { background: #ffffff08; font-weight: 600; }
     <h3><span class="icon">📄</span> dotfiles-powershell</h3>
     <div class="links" style="flex-direction:column;align-items:flex-start">
       <a href="https://github.com/martinpaprcka77/dotfiles-powershell#readme">📄 README — overview, install, functions</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/ARCHITECTURE.md">🧩 ARCHITECTURE — 4 Mermaid UML diagrams</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/ARCHITECTURE.md">🧩 ARCHITECTURE — Mermaid UML diagrams</a>
       <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/PURPOSE.md">🎯 PURPOSE — design rationale &amp; decisions</a>
       <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/PROMPT.md">📝 PROMPT — original AI prompt (107 lines)</a>
     </div>
@@ -173,9 +213,9 @@ th { background: #ffffff08; font-weight: 600; }
   <div class="card">
     <h3><span class="icon">🔧</span> dotfiles-tools</h3>
     <div class="links" style="flex-direction:column;align-items:flex-start">
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools#readme">📄 README — 30 functions, UML diagrams</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ARCHITECTURE.md">🧩 ARCHITECTURE — 4 Mermaid UML diagrams</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/MANUAL.md">📖 MANUAL — 15-section user guide</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-tools#readme">📄 README — 36 functions, UML diagrams</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ARCHITECTURE.md">🧩 ARCHITECTURE — Mermaid UML diagrams</a>
+      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/MANUAL.md">📖 MANUAL — 11-section user guide</a>
       <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ROADMAP.md">🗺️ ROADMAP — 5 phases, known issues</a>
       <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/PROMPT.md">📝 PROMPT — original AI prompt</a>
     </div>
@@ -186,13 +226,35 @@ th { background: #ffffff08; font-weight: 600; }
 <h2 class="section-title">🗺️ Roadmap</h2>
 <table>
 <tr><th>Phase</th><th>Status</th><th>What's included</th></tr>
-<tr><td><strong>1. Foundation</strong></td><td><span class="done">✅ Done</span></td><td>Modular profile, install, Toolkit (30 functions), 7 submenus, diagnostics, WT, tests</td></tr>
-<tr><td><strong>2. Tools</strong></td><td><span class="soon">🟡 Planned</span></td><td>Custom user tools, menu extensions</td></tr>
-<tr><td><strong>3. Extensions</strong></td><td><span class="soon">🟡 Planned</span></td><td>Linux/macOS support, health check, live dashboard</td></tr>
-<tr><td><strong>4. Integration</strong></td><td><span class="later">🟢 Future</span></td><td>VS Code, WSL, oh-my-posh theme, git hooks</td></tr>
-<tr><td><strong>5. Ecosystem</strong></td><td><span class="later">🟢 Future</span></td><td>Windows installer, CI/CD, PowerShell Gallery</td></tr>
+<tr><td><strong>1. Foundation</strong></td><td><span class="done">✅ Done</span></td><td>Modular profile, idempotent install, Toolkit (36 functions), TUI menu with live status detection, one-command remote bootstrapper, Known-Folder-correct paths, 63 Pester tests</td></tr>
+<tr><td><strong>2. 2026 upgrades</strong></td><td><span class="done">✅ Done</span></td><td>winget deps installer, Windows defaults tuning, WT JSON fragment profiles, shell integration, VS Code integration, config wizard</td></tr>
+<tr><td><strong>3. Extensions</strong></td><td><span class="soon">🟡 Planned</span></td><td>Linux/macOS path support, live CPU/RAM/disk dashboard, network diagnostics, PSResourceGet full migration</td></tr>
+<tr><td><strong>4. Integration</strong></td><td><span class="later">🟢 Future</span></td><td>WSL profile auto-detection in WT fragment, git hooks, CI/CD (Pester + JSON validation), PowerShell Gallery publish</td></tr>
+<tr><td><strong>5. Ecosystem</strong></td><td><span class="later">🟢 Future</span></td><td>Windows clean-install setup script, docs site, gitless (ZIP) install path, <strong>possible monorepo merge</strong> — see below</td></tr>
 </table>
 <p style="margin-top:.3rem"><a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ROADMAP.md">→ Full roadmap with known issues &amp; contribution guide</a></p>
+
+<div class="card" style="margin-top:1.2rem">
+  <h3><span class="icon">🧭</span> Considered: merging into one repo</h3>
+  <p class="desc">
+    Two repos exist today for independent release cycles (profile vs. tools) and so this portal
+    can live at the root <code>martinpaprcka77.github.io</code> URL. A single-repo monorepo
+    (<code>profile/</code> + <code>toolkit/</code> + <code>site/</code> subfolders) was evaluated —
+    it would remove the cross-repo coupling that TUI detectors currently guard against
+    (<code>Invoke-IfAvailable</code>) and simplify the bootstrapper to one clone. Deliberately
+    <strong>deferred, not rejected</strong> — revisit once both repos are simple, polished, and
+    stable; the tradeoff is the portal moving to a subpath instead of the repo root.
+  </p>
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;font-size:.85em;margin-top:.6rem">
+    <span class="badge badge-b">📄 dotfiles-powershell</span>
+    <span style="color:var(--muted)">+</span>
+    <span class="badge badge-o">🔧 dotfiles-tools</span>
+    <span style="color:var(--muted)">+</span>
+    <span class="badge badge-p">🌐 landing page</span>
+    <span style="color:var(--muted)">→</span>
+    <span class="badge badge-g" style="opacity:.6">📦 dotfiles (later)</span>
+  </div>
+</div>
 
 <!-- ═══════════ AI AGENTS ═══════════ -->
 <h2 class="section-title">🤖 For AI Agents</h2>
