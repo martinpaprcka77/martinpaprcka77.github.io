@@ -1,0 +1,226 @@
+# Starship prompt config — https://starship.rs
+# PowerShell Dotfiles Ecosystem default
+# Override: set $env:STARSHIP_CONFIG to your own file
+
+# ── Format ────────────────────────────────────────────────────
+format = """
+$username\
+$hostname\
+$shlvl\
+$singularity\
+$kubernetes\
+$directory\
+$vcsh\
+$fossil_branch\
+$fossil_metrics\
+$git_branch\
+$git_commit\
+$git_state\
+$git_metrics\
+$git_status\
+$hg_branch\
+$pijul_channel\
+$docker_context\
+$package\
+$c\
+$cmake\
+$cobol\
+$daml\
+$dart\
+$deno\
+$dotnet\
+$elixir\
+$elm\
+$erlang\
+$fennel\
+$golang\
+$guix_shell\
+$haskell\
+$haxe\
+$helm\
+$java\
+$julia\
+$kotlin\
+$gradle\
+$lua\
+$nim\
+$nodejs\
+$ocaml\
+$opa\
+$perl\
+$php\
+$pulumi\
+$purescript\
+$python\
+$raku\
+$rlang\
+$red\
+$ruby\
+$rust\
+$scala\
+$swift\
+$terraform\
+$vlang\
+$vagrant\
+$zig\
+$buf\
+$nix_shell\
+$conda\
+$meson\
+$spack\
+$memory_usage\
+$aws\
+$gcloud\
+$openstack\
+$azure\
+$crystal\
+$custom\
+$sudo\
+$cmd_duration\
+$line_break\
+$jobs\
+$battery\
+$time\
+$status\
+$os\
+$container\
+$shell\
+$character"""
+
+# ── Modules ───────────────────────────────────────────────────
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "cyan bold"
+format = "in [$path]($style)[$read_only]($read_only_style) "
+
+[directory.substitutions]
+"Documents" = "📄 "
+"Projects" = "📁 "
+".config" = "⚙️ "
+
+[git_branch]
+format = "on [$symbol$branch(:$remote_branch)]($style) "
+symbol = "🌿 "
+style = "purple"
+
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style))'
+style = "yellow"
+conflicted = "⚡"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+up_to_date = ""
+untracked = "?"
+stashed = "📦"
+modified = "!"
+staged = "+"
+renamed = "»"
+deleted = "✘"
+
+[git_commit]
+commit_hash_length = 7
+tag_symbol = "🏷️ "
+
+[cmd_duration]
+format = "took [$duration]($style) "
+style = "yellow"
+min_time = 2000
+
+[time]
+disabled = false
+format = "🕐 [$time]($style) "
+style = "dimmed white"
+time_format = "%H:%M"
+
+[battery]
+full_symbol = "🔋"
+charging_symbol = "⚡"
+discharging_symbol = "🔋"
+disabled = false
+
+[status]
+style = "red"
+symbol = "✘"
+format = '[$symbol$status]($style) '
+map_symbol = true
+disabled = false
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vicmd_symbol = "[❮](bold green)"
+
+# ponytail: transient_prompt not supported by stock Starship, triggers [WARN] unknown key
+# [transient_prompt]
+# enabled = true
+# newline = false
+# format = "[❯](bold green) "
+
+[nodejs]
+format = "via [🐍 $version](bold green) "
+
+[python]
+format = "via [🐍 $version](bold blue) "
+
+[rust]
+format = "via [🦀 $version](bold red) "
+
+[golang]
+format = "via [🐹 $version](bold cyan) "
+
+[docker_context]
+format = "via [🐳 $context](blue) "
+only_with_files = true
+
+[kubernetes]
+format = 'on [☸️ $context\($namespace\)](dimmed green) '
+disabled = false
+
+[terraform]
+format = "via [🏗️ $version]($style) "
+
+[aws]
+format = 'on [$symbol$profile]($style) '
+symbol = "☁️ "
+
+[azure]
+format = 'on [$symbol$subscription]($style) '
+symbol = "🅰️ "
+
+[gcloud]
+format = 'on [$symbol$active]($style) '
+symbol = "🅖️ "
+
+[memory_usage]
+disabled = false
+format = "🧠 [$ram]($style) "
+threshold = 75
+
+[shell]
+disabled = false
+format = '[$indicator]($style) '
+powershell_indicator = ""
+ion_indicator = ""
+elvish_indicator = ""
+tcsh_indicator = ""
+nu_indicator = ""
+xonsh_indicator = ""
+cmd_indicator = ""
+bash_indicator = ""
+fish_indicator = ""
+zsh_indicator = ""
+
+[hostname]
+ssh_only = false
+format = "on [$hostname]($style) "
+style = "dimmed green"
+disabled = true
+
+[username]
+show_always = false
+style_user = "white bold"
+format = "[$user]($style) "
+disabled = true

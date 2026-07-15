@@ -1,0 +1,11 @@
+#!/bin/sh
+# Git post-merge hook — notifies about pulled changes
+# Copy to: .git/hooks/post-merge (in this repo)
+# chmod +x .git/hooks/post-merge
+
+echo "📥 Changes pulled. Reload your PowerShell session or run: . ~/.config/powershell/profile/profile.ps1"
+
+# Auto-reload if running inside PowerShell
+if [ -n "$WT_SESSION" ]; then
+    pwsh -NoProfile -Command "Write-Host '✅ Dotfiles updated! Run: . ~/.config/powershell/profile/profile.ps1' -ForegroundColor Green"
+fi

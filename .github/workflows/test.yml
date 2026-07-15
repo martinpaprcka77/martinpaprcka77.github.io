@@ -1,0 +1,61 @@
+# GitHub Actions — Pester tests + JSON validation
+# Runs on push to main and pull requests
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['toolkit/**', '.github/workflows/test.yml']
+  pull_request:
+    branches: [main]
+    paths: ['toolkit/**', '.github/workflows/test.yml']
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Pester Tests
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Invoke-Pester toolkit/tests/Toolkit.Tests.ps1 -Output Detailed -CI
+
+      - name: Validate JSON (settings.json)
+        shell: pwsh
+        run: |
+          $files = @('toolkit/configs/settings.json', 'toolkit/configs/wt-schemes.json')
+          foreach ($f in $files) {
+            try {
+              Get-Content $f -Raw | ConvertFrom-Json | Out-Null
+              Write-Host "✅ $f — valid JSON"
+            } catch {
+              Write-Error "❌ $f — INVALID JSON: $_"
+              exit 1
+            }
+          }
+
+      - name: Validate JSON (profiles-fragment.json)
+        shell: pwsh
+        run: |
+          # profiles-fragment.json is generated at runtime by Add-WTProfiles.ps1,
+          # so it isn't committed — only validate it when it's actually present.
+          if (-not (Test-Path toolkit/scripts/profiles-fragment.json)) {
+            Write-Host "⏭️  profiles-fragment.json not present (generated artifact) — skipping"
+            return
+          }
+          try {
+            Get-Content toolkit/scripts/profiles-fragment.json -Raw | ConvertFrom-Json | Out-Null
+            Write-Host "✅ profiles-fragment.json — valid JSON"
+          } catch {
+            Write-Error "❌ profiles-fragment.json — INVALID JSON: $_"
+            exit 1
+          }

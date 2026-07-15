@@ -1,0 +1,18 @@
+# User overrides (not versioned)
+core/extra.ps1
+
+# Secrets
+*.secret
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Generated/cache
+*.log

@@ -1,0 +1,28 @@
+# User overrides (not versioned)
+profile/core/extra.ps1
+
+# Secrets and environment
+toolkit/configs/secrets.*
+*.secret
+.env
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/agent-instructions.md
+.idea/
+*.sublime-*
+
+# Generated
+toolkit/scripts/profiles-fragment.json
+toolkit/icons/*.png
+*.log
