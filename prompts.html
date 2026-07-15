@@ -81,33 +81,35 @@ header p{color:var(--muted);max-width:700px;margin:.3rem auto 1rem}
 <div class="task-section">
 <div class="task-header"><span class="task-label label-meta">REGENERATE</span> Master Prompt — rebuild entire ecosystem</div>
 <div class="task-body">
-<p style="color:var(--muted);margin-bottom:.5rem">Give this to any capable AI to regenerate both repos from scratch. Works with Claude, DeepSeek, GPT-4, Gemini.</p>
+<p style="color:var(--muted);margin-bottom:.5rem">Give this to any capable AI to regenerate the ecosystem from scratch. Works with Claude, DeepSeek, GPT-4, Gemini.</p>
 <h4>Prompt</h4>
-<pre>You are a PowerShell and dotfiles expert. Create a complete, runnable PowerShell dotfiles ecosystem with two Git repos:
+<pre>You are a PowerShell and dotfiles expert. Create a complete, runnable PowerShell dotfiles ecosystem in ONE Git repo, cloned to ~/.config/powershell/:
 
-REPO A: dotfiles-powershell → ~/.config/powershell/
+profile/ — profile orchestration
 - profile.ps1 (PS5/7 + host detection, PSModulePath fix for OneDrive, benchmark)
-- install.ps1 (idempotent: WhatIf, Force, backups, try/catch, summary)
-- remote-install.ps1 (one-command `irm | iex` bootstrapper, self-contained)
-- update.ps1 (git fetch, rev-list check, ff-only pull, reload)
-- lib/paths.ps1 (Known-Folder-correct, OneDrive-safe $PROFILE paths)
+- lib/paths.ps1 (Known-Folder-correct, OneDrive-safe $PROFILE paths, validated against corrupted registry values)
+- lib/bootstrap.ps1 (Invoke-BootstrapInjection — shared by install.ps1/update.ps1, self-heals a stale bootstrap target)
 - core/aliases.ps1, core/functions.ps1 (Get-SecretKey, Edit-Profile, …), core/env.ps1
 - ps5/profile.ps1, ps7/profile.ps1 (PSReadLine, oh-my-posh, Terminal-Icons)
 - hosts/ConsoleHost.ps1, hosts/VSCode.ps1
-- AGENTS.md, CLAUDE.md, docs/, .gitignore
 
-REPO B: dotfiles-tools → ~/Projects/tools/
+toolkit/ — interactive toolbox
 - bin/menu.ps1, bin/check.ps1 (Import-Module Toolkit wrappers)
-- lib/common.ps1, lib/menu.ps1 (Show-Menu engine w/ live Detector column), lib/checkers.ps1, lib/config.ps1, lib/detectors.ps1
+- lib/common.ps1, lib/menu.ps1 (Show-Menu engine w/ live Detector column, console-width clamped), lib/checkers.ps1, lib/config.ps1, lib/detectors.ps1
 - Toolkit/Toolkit.psd1 (36 FunctionsToExport), Toolkit/Toolkit.psm1
 - menu/menu-main.ps1, menu-docker.ps1, menu-git.ps1
 - scripts/Add-WTProfiles.ps1 (WhatIf, platform guard, BOM-free, JSON fragment extensions)
-- scripts/Generate-Icons.ps1, scripts/configure.ps1, scripts/setup-repos.ps1
+- scripts/Generate-Icons.ps1, scripts/configure.ps1
 - tests/Toolkit.Tests.ps1 (63 Pester cases, Mock coverage)
+
+Repo root
+- install.ps1 (idempotent: WhatIf, Force, backups, try/catch, summary — single self git-pull, no dual-repo clone)
+- remote-install.ps1 (one-command `irm | iex` bootstrapper, self-contained)
+- update.ps1 (git fetch, rev-list check, ff-only pull, bootstrap self-heal, reload)
 - AGENTS.md, CLAUDE.md, docs/, .gitignore
 
 All scripts: comment-based help, try/catch, cross-platform guards, idempotent.
-Full spec at: https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/PROMPT.md</pre>
+Full spec at: https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/PROMPT.md</pre>
 <button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
 </div>
 </div>
@@ -116,22 +118,25 @@ Full spec at: https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/d
 <div class="task-header"><span class="task-label label-meta">CONTEXT</span> Quick Context Injection for any AI</div>
 <div class="task-body">
 <p style="color:var(--muted);margin-bottom:.5rem">Paste this at the start of any conversation to give an AI instant understanding.</p>
-<pre>You are working on the PowerShell Dotfiles Ecosystem — two GitHub repos:
+<pre>You are working on the PowerShell Dotfiles Ecosystem — one GitHub repo, cloned to ~/.config/powershell/:
 
-1. dotfiles-powershell (~/.config/powershell/) — profile orchestration
+1. profile/ — profile orchestration
    - profile.ps1 dotsources core/ → ps5|ps7/ → hosts/
-   - install.ps1 is idempotent (WhatIf, Force, backups)
+   - install.ps1 (repo root) is idempotent (WhatIf, Force, backups)
    - Location chosen to bypass OneDrive (XDG ~/.config/)
-   - AGENTS.md at root has full codebase guide
+   - AGENTS.md at repo root has the full codebase guide
 
-2. dotfiles-tools (~/Projects/tools/) — interactive toolbox
+2. toolkit/ — interactive toolbox
    - Toolkit module: 36 functions (menus, diagnostics, config, modulepath, detectors)
    - bin/menu.ps1 + bin/check.ps1 are in PATH
-   - TUI menu: live status Detector per item (module stack, PSModulePath, companion profile)
-   - New 2026: deps.ps1 (winget installer), windows.ps1 (system defaults)
-   - New 2026: Add-WTProfiles.ps1 generates JSON fragment extensions
-   - .vscode/ with settings + 5 tasks committed
+   - TUI menu: live status Detector per item (module stack, PSModulePath, sibling profile/ dir), box width clamped to console width
+   - deps.ps1 (winget installer), windows.ps1 (system defaults)
+   - Add-WTProfiles.ps1 generates JSON fragment extensions
+   - .vscode/ (repo root) with settings + 5 tasks committed
    - 63 Pester tests in tests/Toolkit.Tests.ps1
+
+$env:DOTFILES_PWSH points at profile/; $env:DOTFILES_TOOLS is derived from it as the sibling
+toolkit/ dir — always in sync (previously two independent repos/env-vars that could drift).
 
 Portal: https://martinpaprcka77.github.io
 Master prompt: https://gist.github.com/martinpaprcka77/1c74223f4e57b46977abd6df06d4e8fd</pre>
@@ -147,8 +152,8 @@ Master prompt: https://gist.github.com/martinpaprcka77/1c74223f4e57b46977abd6df0
 <div class="task-header"><span class="task-label label-work">WORK ON</span> Build a new feature</div>
 <div class="task-body">
 <h4>Prompt</h4>
-<pre>You are working on the PowerShell Dotfiles Ecosystem at ~/.config/powershell/ and ~/Projects/tools/.
-Read AGENTS.md in both repos first to understand the architecture.
+<pre>You are working on the PowerShell Dotfiles Ecosystem at ~/.config/powershell/ (profile/ + toolkit/ subfolders, one repo).
+Read AGENTS.md at the repo root first to understand the architecture.
 
 Task: [DESCRIBE THE FEATURE YOU WANT]
 
@@ -156,9 +161,9 @@ Rules:
 - PowerShell 5.1+ compatible, use $IsWindows/$IsLinux guards for platform-specific code
 - Comment-based help on all functions (.SYNOPSIS, .DESCRIPTION, .PARAMETER, .EXAMPLE)
 - try/catch on network/external calls
-- If adding to Toolkit module: update Toolkit.psm1 Export-ModuleMember AND Toolkit.psd1 FunctionsToExport
-- Add Pester test in tests/Toolkit.Tests.ps1
-- Update MANUAL.md with usage examples</pre>
+- If adding to Toolkit module: update toolkit/Toolkit/Toolkit.psm1 Export-ModuleMember AND Toolkit.psd1 FunctionsToExport
+- Add Pester test in toolkit/tests/Toolkit.Tests.ps1
+- Update docs/MANUAL.md with usage examples</pre>
 <button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
 </div>
 </div>
@@ -170,12 +175,12 @@ Rules:
 <pre>Review the current state of the PowerShell Dotfiles Ecosystem. Check:
 
 1. install.ps1 — is it truly idempotent? Are all git operations in try/catch?
-2. Toolkit.psm1 + Toolkit.psd1 — do export lists match?
+2. toolkit/Toolkit/Toolkit.psm1 + Toolkit.psd1 — do export lists match?
 3. Cross-platform guards — are $IsWindows checks on Add-WTProfiles.ps1 and Generate-Icons.ps1?
 4. Comment-based help — do all public functions have .SYNOPSIS?
-5. Pester tests — do they cover all 30 Toolkit functions?
+5. Pester tests — do they cover all 36 Toolkit functions?
 6. .gitignore — is it accidentally excluding *.ps1 source files?
-7. Path hardening — are paths using Join-Path, not string concat?
+7. Path hardening — are paths using Join-Path, not string concat? Do self-referential lookups inside toolkit/ fall back to $PSScriptRoot instead of assuming $env:DOTFILES_TOOLS is set?
 
 Flag any issues with file:line references.</pre>
 <button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
@@ -190,7 +195,7 @@ Flag any issues with file:line references.</pre>
 <div class="task-header"><span class="task-label label-enhance">ENHANCE</span> Improve existing code</div>
 <div class="task-body">
 <h4>Prompt</h4>
-<pre>Read CLAUDE.md and AGENTS.md in the dotfiles-powershell and dotfiles-tools repos.
+<pre>Read CLAUDE.md and AGENTS.md at the repo root.
 Then enhance [SPECIFIC FILE OR FEATURE] following these principles:
 
 - Keep it idempotent (safe to re-run)
@@ -207,7 +212,7 @@ Then enhance [SPECIFIC FILE OR FEATURE] following these principles:
 <div class="task-header"><span class="task-label label-suggest">SUGGEST</span> Architecture improvements</div>
 <div class="task-body">
 <h4>Prompt</h4>
-<pre>Read the full codebase (AGENTS.md + ARCHITECTURE.md in both repos).
+<pre>Read the full codebase (AGENTS.md + docs/ARCHITECTURE.md at the repo root).
 Suggest 5 architectural improvements. For each:
 
 1. What's the current problem?
@@ -229,15 +234,15 @@ Focus on: error handling coverage, test gaps, config flexibility, cross-platform
 <div class="task-header"><span class="task-label label-work">WORK ON</span> Implement from spec</div>
 <div class="task-body">
 <h4>Prompt</h4>
-<pre>System: You are a senior PowerShell developer. You have access to the dotfiles-powershell and dotfiles-tools repos at ~/.config/powershell/ and ~/Projects/tools/. Read AGENTS.md first.
+<pre>System: You are a senior PowerShell developer. You have access to the PowerShell Dotfiles Ecosystem repo at ~/.config/powershell/ (profile/ + toolkit/ subfolders). Read AGENTS.md first.
 
 User: I need you to implement [FEATURE]. The codebase follows these conventions:
-- Modular: drop .ps1 file in core/ or lib/ and it auto-loads
-- Module: Toolkit.psm1 dot-sources lib/*.ps1, exports via FunctionsToExport in .psd1
-- Menus: use the Show-Menu function from lib/menu.ps1 (hashtable of label → scriptblock)
+- Modular: drop .ps1 file in profile/core/ or toolkit/lib/ and it auto-loads
+- Module: toolkit/Toolkit/Toolkit.psm1 dot-sources lib/*.ps1, exports via FunctionsToExport in .psd1
+- Menus: use the Show-Menu function from toolkit/lib/menu.ps1 (hashtable of label → scriptblock)
 - Config: use Get-ToolkitConfig (defaults → settings.json → $env:TOOLKIT_* merge)
-- Tests: Pester, add to tests/Toolkit.Tests.ps1, use Mock for external commands
-- Docs: update MANUAL.md, README.md function table, export lists
+- Tests: Pester, add to toolkit/tests/Toolkit.Tests.ps1, use Mock for external commands
+- Docs: update docs/MANUAL.md, README.md function table, export lists
 
 Generate the code with file paths as comments. Include tests.</pre>
 <button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
@@ -254,12 +259,12 @@ The ecosystem runs on Windows (primary) and Linux (secondary), PowerShell 5.1 an
 Questions to answer:
 1. Is this technically possible in PowerShell?
 2. What modules/dependencies would it need?
-3. Which repo would it live in? (powershell vs tools)
+3. Which half would it live in? (profile/ vs toolkit/)
 4. What's the performance impact on profile load time?
 5. Are there cross-platform concerns?
 6. What would a minimal prototype look like?
 
-Current architecture: https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/ARCHITECTURE.md</pre>
+Current architecture: https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ARCHITECTURE.md</pre>
 <button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
 </div>
 </div>
@@ -272,7 +277,7 @@ Current architecture: https://github.com/martinpaprcka77/dotfiles-powershell/blo
 <div class="task-header"><span class="task-label label-work">WORK ON</span> Generate code with context</div>
 <div class="task-body">
 <h4>Prompt</h4>
-<pre>Context: PowerShell Dotfiles Ecosystem — two repos at ~/.config/powershell/ and ~/Projects/tools/.
+<pre>Context: PowerShell Dotfiles Ecosystem — one repo at ~/.config/powershell/ (profile/ + toolkit/ subfolders).
 Portal: https://martinpaprcka77.github.io
 Read AGENTS.md before starting.
 
@@ -286,7 +291,7 @@ Conventions:
 - Paths: Join-Path, not string concatenation
 - Config: Get-ToolkitConfig (defaults → JSON → env merge)
 - Menus: Show-Menu engine (hashtable of label → scriptblock)
-- Module: add to Toolkit.psm1 Export + Toolkit.psd1 FunctionsToExport</pre>
+- Module: add to toolkit/Toolkit/Toolkit.psm1 Export + Toolkit.psd1 FunctionsToExport</pre>
 <button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
 </div>
 </div>
@@ -300,18 +305,18 @@ Conventions:
 <div class="task-body">
 <h4>Prompt</h4>
 <pre># Task for PowerShell Dotfiles Ecosystem
-# Repos: dotfiles-powershell (~/.config/powershell/) + dotfiles-tools (~/Projects/tools/)
+# Repo: martinpaprcka77.github.io (~/.config/powershell/ — profile/ + toolkit/ subfolders)
 # Reference: https://martinpaprcka77.github.io
 
 [DESCRIBE THE TASK IN DETAIL]
 
 Constraints:
 - PowerShell 5.1+ | Platform guards ($IsWindows) | Comment-based help
-- Module: Toolkit (36 functions in Toolkit.psd1/.psm1)
-- Menu engine: Show-Menu in lib/menu.ps1 — hashtable of labels to scriptblocks
+- Module: Toolkit (36 functions in toolkit/Toolkit/Toolkit.psd1/.psm1)
+- Menu engine: Show-Menu in toolkit/lib/menu.ps1 — hashtable of labels to scriptblocks
 - Config: Get-ToolkitConfig merges defaults > settings.json > $env:TOOLKIT_*
-- Tests: Pester in tests/Toolkit.Tests.ps1
-- Docs: AGENTS.md has full architecture reference</pre>
+- Tests: Pester in toolkit/tests/Toolkit.Tests.ps1
+- Docs: AGENTS.md at repo root has full architecture reference</pre>
 <button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
 </div>
 </div>
@@ -324,7 +329,7 @@ Constraints:
 <div class="task-header"><span class="task-label label-review">REVIEW</span> Full ecosystem audit</div>
 <div class="task-body">
 <h4>Prompt</h4>
-<pre>Conduct a thorough review of the PowerShell Dotfiles Ecosystem. Read AGENTS.md + CLAUDE.md in both repos, then audit:
+<pre>Conduct a thorough review of the PowerShell Dotfiles Ecosystem. Read AGENTS.md + CLAUDE.md at the repo root, then audit:
 
 SAFETY:
 - Does install.ps1 back up existing profiles before modifying?
@@ -341,11 +346,12 @@ CORRECTNESS:
 - Do Toolkit.psm1 export lists match Toolkit.psd1 FunctionsToExport?
 - Are all 36 functions tested in Toolkit.Tests.ps1?
 - Do cross-platform guards cover all Windows-only code paths?
+- Do self-referential lookups inside toolkit/ fall back to $PSScriptRoot instead of assuming $env:DOTFILES_TOOLS is set?
 
 MAINTAINABILITY:
 - Is every public function documented with comment-based help?
-- Are the AGENTS.md files up to date with actual file structure?
-- Is MANUAL.md consistent with actual script behavior?
+- Is AGENTS.md up to date with the actual file structure?
+- Is docs/MANUAL.md consistent with actual script behavior?
 
 Output: Severity-tagged findings with file:line references.</pre>
 <button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
@@ -365,7 +371,7 @@ Output: Severity-tagged findings with file:line references.</pre>
 5. Error propagation — for each layer (bin/, Toolkit, lib/), what happens when an error occurs?
 
 For each: identify potential failure points, performance bottlenecks, and simplification opportunities.
-Reference: ARCHITECTURE.md in both repos has Mermaid UML diagrams.</pre>
+Reference: docs/ARCHITECTURE.md at the repo root has Mermaid UML diagrams.</pre>
 <button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
 </div>
 </div>
@@ -379,18 +385,18 @@ Reference: ARCHITECTURE.md in both repos has Mermaid UML diagrams.</pre>
 <div class="task-body">
 <h4>Prompt</h4>
 <pre># PowerShell Dotfiles Ecosystem
-# Workspace: two repos — dotfiles-powershell + dotfiles-tools
+# Workspace: one repo — profile/ + toolkit/ subfolders
 # Portal: https://martinpaprcka77.github.io
 
 # Task:
 [DESCRIBE WHAT TO DO — Copilot will use AGENTS.md for context]
 
 # Key patterns in this codebase:
-# - profile.ps1 dot-sources core/*.ps1 → ps5|ps7/ → hosts/
-# - Toolkit module: Toolkit.psd1 (manifest) → Toolkit.psm1 (dot-sources lib/*.ps1)
+# - profile/profile.ps1 dot-sources core/*.ps1 → ps5|ps7/ → hosts/
+# - Toolkit module: toolkit/Toolkit/Toolkit.psd1 (manifest) → Toolkit.psm1 (dot-sources lib/*.ps1)
 # - Menu: Show-Menu @{label = {scriptblock}}
 # - Config: Get-ToolkitConfig (defaults → JSON → env)
-# - Tests: Pester, Mock, tests/Toolkit.Tests.ps1</pre>
+# - Tests: Pester, Mock, toolkit/tests/Toolkit.Tests.ps1</pre>
 <button class="copy-btn" onclick="copyPrompt(this)">📋 Copy</button>
 </div>
 </div>

@@ -107,16 +107,15 @@ th { background: #ffffff08; font-weight: 600; }
   <p>Modular, version-controlled, portable — profiles &amp; tools that bypass OneDrive and work across every machine.</p>
   <div class="install">
     <code style="color:var(--accent2)"># One command — any shell, auto-detects everything</code><br>
-    <code>irm https://raw.githubusercontent.com/martinpaprcka77/dotfiles-powershell/main/remote-install.ps1 | iex</code>
+    <code>irm https://raw.githubusercontent.com/martinpaprcka77/martinpaprcka77.github.io/main/remote-install.ps1 | iex</code>
   </div>
   <p style="margin-top:.6rem;color:var(--muted);font-size:.85em;max-width:640px;margin-left:auto;margin-right:auto">
     From cmd.exe/bash: <code>powershell -c "irm .../remote-install.ps1 | iex"</code> ·
-    <a href="https://github.com/martinpaprcka77/dotfiles-powershell#-quick-install" style="color:inherit;text-decoration:underline">manual install &amp; parameters ↓</a>
+    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io#-quick-install" style="color:inherit;text-decoration:underline">manual install &amp; parameters ↓</a>
   </p>
   <p style="margin-top:1rem">
-    <a class="badge badge-b" href="https://github.com/martinpaprcka77/dotfiles-powershell">📦 powershell</a>
-    <a class="badge badge-o" href="https://github.com/martinpaprcka77/dotfiles-tools">📦 tools</a>
-    <a class="badge badge-g" href="https://martinpaprcka77.github.io/dotfiles-powershell/">🌐 pages</a>
+    <a class="badge badge-b" href="https://github.com/martinpaprcka77/martinpaprcka77.github.io">📦 repo</a>
+    <a class="badge badge-g" href="https://martinpaprcka77.github.io">🌐 this page</a>
     <a class="badge badge-p" href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">📋 gist: install</a>
     <a class="badge badge-p" href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">📋 gist: cheatsheet</a>
     <a class="badge badge-p" href="prompts.html">🤖 AI prompts</a>
@@ -125,32 +124,34 @@ th { background: #ffffff08; font-weight: 600; }
 
 <div class="container">
 
-<!-- ═══════════ REPO BOUNDARY ═══════════ -->
-<h2 class="section-title">🗺️ Two Repos, One Ecosystem</h2>
+<!-- ═══════════ REPO LAYOUT ═══════════ -->
+<h2 class="section-title">🗺️ One Repo, Two Halves</h2>
 <div class="grid">
   <div class="card">
-    <h3><span class="icon">📄</span> dotfiles-powershell</h3>
-    <p class="desc">Profile orchestration — modular loading, PS5/7 detection, host-specific config, secret management, one-command remote bootstrapper, Known-Folder-correct (OneDrive-safe) paths.</p>
-    <p><code>~/.config/powershell/</code> · 19 scripts · 3 docs</p>
+    <h3><span class="icon">📄</span> profile/</h3>
+    <p class="desc">Profile orchestration — modular loading, PS5/7 detection, host-specific config, secret management, Known-Folder-correct (OneDrive-safe) paths, validated against corrupted registry values.</p>
+    <p><code>~/.config/powershell/profile/</code></p>
     <div class="links">
-      <a href="https://github.com/martinpaprcka77/dotfiles-powershell">📦 GitHub</a>
-      <a href="https://martinpaprcka77.github.io/dotfiles-powershell/">🌐 Pages</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-powershell#readme">📄 README</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/ARCHITECTURE.md">🧩 UML</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/tree/main/profile">📦 GitHub</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io#readme">📄 README</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ARCHITECTURE.md">🧩 UML</a>
     </div>
   </div>
   <div class="card">
-    <h3><span class="icon">🔧</span> dotfiles-tools</h3>
+    <h3><span class="icon">🔧</span> toolkit/</h3>
     <p class="desc">Interactive toolbox — TUI menus with live status detection, diagnostics, Docker &amp; Git helpers, Toolkit (36 funcs). PSModulePathManager, PSResourceGet modernization, WSL auto-detection, ETW diagnostics.</p>
-    <p><code>~/Projects/tools/</code> · 24 scripts · 4 docs</p>
+    <p><code>~/.config/powershell/toolkit/</code></p>
     <div class="links">
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools">📦 GitHub</a>
-      <a href="https://martinpaprcka77.github.io/dotfiles-tools/">🌐 Pages</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools#readme">📄 README</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ARCHITECTURE.md">🧩 UML</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/tree/main/toolkit">📦 GitHub</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io#readme">📄 README</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ARCHITECTURE.md">🧩 UML</a>
     </div>
   </div>
 </div>
+<p style="color:var(--muted);font-size:.85em;margin-top:-.6rem">
+  One clone, one <code>$env:DOTFILES_PWSH</code>, <code>$env:DOTFILES_TOOLS</code> always derived
+  from it — previously two repos with two independent env vars that could drift apart.
+</p>
 
 <!-- ═══════════ HOW IT WORKS ═══════════ -->
 <h2 class="section-title">🧩 How It Works</h2>
@@ -178,8 +179,7 @@ th { background: #ffffff08; font-weight: 600; }
 </div>
 <p style="color:var(--muted);font-size:.85em;margin-top:-.6rem;margin-bottom:1.5rem">
   Full sequence &amp; component diagrams (Mermaid UML):
-  <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/ARCHITECTURE.md">dotfiles-powershell</a> ·
-  <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ARCHITECTURE.md">dotfiles-tools</a>
+  <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a>
 </p>
 
 <!-- ═══════════ QUICK COMMANDS ═══════════ -->
@@ -202,22 +202,21 @@ th { background: #ffffff08; font-weight: 600; }
 <h2 class="section-title">📚 Documentation</h2>
 <div class="grid">
   <div class="card">
-    <h3><span class="icon">📄</span> dotfiles-powershell</h3>
+    <h3><span class="icon">📄</span> Repo &amp; agents</h3>
     <div class="links" style="flex-direction:column;align-items:flex-start">
-      <a href="https://github.com/martinpaprcka77/dotfiles-powershell#readme">📄 README — overview, install, functions</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/ARCHITECTURE.md">🧩 ARCHITECTURE — Mermaid UML diagrams</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/PURPOSE.md">🎯 PURPOSE — design rationale &amp; decisions</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/PROMPT.md">📝 PROMPT — original AI prompt (107 lines)</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io#readme">📄 README — overview, install, layout</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/AGENTS.md">🤖 AGENTS.md — full AI guide</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/CLAUDE.md">🧠 CLAUDE.md — memory file</a>
     </div>
   </div>
   <div class="card">
-    <h3><span class="icon">🔧</span> dotfiles-tools</h3>
+    <h3><span class="icon">🧩</span> docs/</h3>
     <div class="links" style="flex-direction:column;align-items:flex-start">
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools#readme">📄 README — 36 functions, UML diagrams</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ARCHITECTURE.md">🧩 ARCHITECTURE — Mermaid UML diagrams</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/MANUAL.md">📖 MANUAL — 11-section user guide</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ROADMAP.md">🗺️ ROADMAP — 5 phases, known issues</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/PROMPT.md">📝 PROMPT — original AI prompt</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ARCHITECTURE.md">🧩 ARCHITECTURE — Mermaid UML diagrams</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/PURPOSE.md">🎯 PURPOSE — design rationale &amp; decisions</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/MANUAL.md">📖 MANUAL — full user guide</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ROADMAP.md">🗺️ ROADMAP — phases, known issues</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/PROMPT.md">📝 PROMPT — original AI prompts</a>
     </div>
   </div>
 </div>
@@ -230,51 +229,40 @@ th { background: #ffffff08; font-weight: 600; }
 <tr><td><strong>2. 2026 upgrades</strong></td><td><span class="done">✅ Done</span></td><td>winget deps installer, Windows defaults tuning, WT JSON fragment profiles, shell integration, VS Code integration, config wizard</td></tr>
 <tr><td><strong>3. Extensions</strong></td><td><span class="soon">🟡 Planned</span></td><td>Linux/macOS path support, live CPU/RAM/disk dashboard, network diagnostics, PSResourceGet full migration</td></tr>
 <tr><td><strong>4. Integration</strong></td><td><span class="later">🟢 Future</span></td><td>WSL profile auto-detection in WT fragment, git hooks, CI/CD (Pester + JSON validation), PowerShell Gallery publish</td></tr>
-<tr><td><strong>5. Ecosystem</strong></td><td><span class="later">🟢 Future</span></td><td>Windows clean-install setup script, docs site, gitless (ZIP) install path, <strong>possible monorepo merge</strong> — see below</td></tr>
+<tr><td><strong>5. Ecosystem</strong></td><td><span class="done">✅ Merged into one repo</span></td><td>Windows clean-install setup script, docs site, gitless (ZIP) install path — planned; <strong>monorepo merge</strong> — done, see below</td></tr>
 </table>
-<p style="margin-top:.3rem"><a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/ROADMAP.md">→ Full roadmap with known issues &amp; contribution guide</a></p>
+<p style="margin-top:.3rem"><a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ROADMAP.md">→ Full roadmap with known issues &amp; contribution guide</a></p>
 
 <div class="card" style="margin-top:1.2rem">
-  <h3><span class="icon">🧭</span> Considered: merging into one repo</h3>
+  <h3><span class="icon">🧭</span> Done: merged into one repo</h3>
   <p class="desc">
-    Two repos exist today for independent release cycles (profile vs. tools) and so this portal
-    can live at the root <code>martinpaprcka77.github.io</code> URL. A single-repo monorepo
-    (<code>profile/</code> + <code>toolkit/</code> + <code>site/</code> subfolders) was evaluated —
-    it would remove the cross-repo coupling that TUI detectors currently guard against
-    (<code>Invoke-IfAvailable</code>) and simplify the bootstrapper to one clone. Deliberately
-    <strong>deferred, not rejected</strong> — revisit once both repos are simple, polished, and
-    stable; the tradeoff is the portal moving to a subpath instead of the repo root.
+    Two repos (<code>dotfiles-powershell</code>, <code>dotfiles-tools</code>) used to exist for
+    independent release cycles, but that created real cross-repo coupling — menu items calling
+    functions that only existed in the other repo, guarded by <code>Invoke-IfAvailable</code>, and
+    two independent <code>$env:DOTFILES_TOOLS</code>/<code>$env:DOTFILES_PWSH</code> sources of
+    truth that could drift apart. Merged into this repo (<code>profile/</code> +
+    <code>toolkit/</code> subfolders) instead of a new repo, so the portal keeps the root
+    <code>martinpaprcka77.github.io</code> URL — no subpath tradeoff. The old repos remain on
+    GitHub with a README pointer here (no repo-archive tooling was available to do more than that).
+    A future split back into 2 repos remains a documented option in the roadmap, not a plan.
   </p>
   <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;font-size:.85em;margin-top:.6rem">
-    <span class="badge badge-b">📄 dotfiles-powershell</span>
+    <span class="badge badge-b" style="opacity:.6">📄 dotfiles-powershell</span>
     <span style="color:var(--muted)">+</span>
-    <span class="badge badge-o">🔧 dotfiles-tools</span>
-    <span style="color:var(--muted)">+</span>
-    <span class="badge badge-p">🌐 landing page</span>
+    <span class="badge badge-o" style="opacity:.6">🔧 dotfiles-tools</span>
     <span style="color:var(--muted)">→</span>
-    <span class="badge badge-g" style="opacity:.6">📦 dotfiles (later)</span>
+    <span class="badge badge-g">📦 this repo</span>
   </div>
 </div>
 
 <!-- ═══════════ AI AGENTS ═══════════ -->
 <h2 class="section-title">🤖 For AI Agents</h2>
-<p style="color:var(--muted);margin-bottom:1rem">Both repos include <code>AGENTS.md</code> and <code>CLAUDE.md</code> — full guides for AI coding agents (Claude, DeepSeek, GPT-4, Reasonix, Copilot).</p>
-<div class="grid">
-  <div class="card">
-    <h3><span class="icon">📄</span> dotfiles-powershell</h3>
-    <div class="links" style="flex-direction:column;align-items:flex-start">
-      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/AGENTS.md">🤖 AGENTS.md — full AI guide</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/CLAUDE.md">🧠 CLAUDE.md — memory file</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/docs/PROMPT.md">📝 PROMPT.md — original prompt</a>
-    </div>
-  </div>
-  <div class="card">
-    <h3><span class="icon">🔧</span> dotfiles-tools</h3>
-    <div class="links" style="flex-direction:column;align-items:flex-start">
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/AGENTS.md">🤖 AGENTS.md — full AI guide</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/CLAUDE.md">🧠 CLAUDE.md — memory file</a>
-      <a href="https://github.com/martinpaprcka77/dotfiles-tools/blob/main/docs/PROMPT.md">📝 PROMPT.md — original prompt</a>
-    </div>
+<p style="color:var(--muted);margin-bottom:1rem">This repo includes <code>AGENTS.md</code> and <code>CLAUDE.md</code> at the root — full guides for AI coding agents (Claude, DeepSeek, GPT-4, Reasonix, Copilot).</p>
+<div class="card">
+  <div class="links" style="flex-direction:column;align-items:flex-start">
+    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/AGENTS.md">🤖 AGENTS.md — full AI guide (directory map, conventions, both halves)</a>
+    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/CLAUDE.md">🧠 CLAUDE.md — memory file</a>
+    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/PROMPT.md">📝 docs/PROMPT.md — original prompts</a>
   </div>
 </div>
 <p style="margin-top:.5rem"><strong>🔁 Master regeneration prompt:</strong> <a href="https://gist.github.com/martinpaprcka77/1c74223f4e57b46977abd6df06d4e8fd">gist.github.com/…/master-prompt</a> — send this to any AI to rebuild the entire ecosystem.</p>
@@ -284,22 +272,20 @@ th { background: #ffffff08; font-weight: 600; }
 <table>
 <tr><th>Resource</th><th>URL</th></tr>
 <tr><td><strong>Portal (this page)</strong></td><td><a href="https://martinpaprcka77.github.io">martinpaprcka77.github.io</a></td></tr>
-<tr><td><strong>dotfiles-powershell</strong></td><td><a href="https://github.com/martinpaprcka77/dotfiles-powershell">github.com/martinpaprcka77/dotfiles-powershell</a></td></tr>
-<tr><td><strong>dotfiles-tools</strong></td><td><a href="https://github.com/martinpaprcka77/dotfiles-tools">github.com/martinpaprcka77/dotfiles-tools</a></td></tr>
-<tr><td><strong>Pages — powershell</strong></td><td><a href="https://martinpaprcka77.github.io/dotfiles-powershell/">martinpaprcka77.github.io/dotfiles-powershell</a></td></tr>
-<tr><td><strong>Pages — tools</strong></td><td><a href="https://martinpaprcka77.github.io/dotfiles-tools/">martinpaprcka77.github.io/dotfiles-tools</a></td></tr>
+<tr><td><strong>Repo</strong></td><td><a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io">github.com/martinpaprcka77/martinpaprcka77.github.io</a></td></tr>
 <tr><td><strong>🤖 AI Prompts</strong></td><td><a href="prompts.html">martinpaprcka77.github.io/prompts.html</a></td></tr>
 <tr><td><strong>Gist — Install</strong></td><td><a href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">gist.github.com/…/bafc2457</a></td></tr>
 <tr><td><strong>Gist — Cheatsheet</strong></td><td><a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">gist.github.com/…/b30ae16</a></td></tr>
 <tr><td><strong>Gist — Master Prompt</strong></td><td><a href="https://gist.github.com/martinpaprcka77/1c74223f4e57b46977abd6df06d4e8fd">gist.github.com/…/master-prompt</a></td></tr>
+<tr><td><strong>Old repo (archived) — dotfiles-powershell</strong></td><td><a href="https://github.com/martinpaprcka77/dotfiles-powershell">github.com/martinpaprcka77/dotfiles-powershell</a></td></tr>
+<tr><td><strong>Old repo (archived) — dotfiles-tools</strong></td><td><a href="https://github.com/martinpaprcka77/dotfiles-tools">github.com/martinpaprcka77/dotfiles-tools</a></td></tr>
 </table>
 
 </div>
 
 <div class="footer">
   Built with PowerShell · Git · GitHub Pages · Mermaid UML<br>
-  <a href="https://github.com/martinpaprcka77/dotfiles-powershell">powershell</a> ·
-  <a href="https://github.com/martinpaprcka77/dotfiles-tools">tools</a> ·
+  <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io">repo</a> ·
   <a href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">install</a> ·
   <a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">cheatsheet</a> ·
   <a href="prompts.html">AI prompts</a>
