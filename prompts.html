@@ -88,7 +88,9 @@ header p{color:var(--muted);max-width:700px;margin:.3rem auto 1rem}
 REPO A: dotfiles-powershell → ~/.config/powershell/
 - profile.ps1 (PS5/7 + host detection, PSModulePath fix for OneDrive, benchmark)
 - install.ps1 (idempotent: WhatIf, Force, backups, try/catch, summary)
+- remote-install.ps1 (one-command `irm | iex` bootstrapper, self-contained)
 - update.ps1 (git fetch, rev-list check, ff-only pull, reload)
+- lib/paths.ps1 (Known-Folder-correct, OneDrive-safe $PROFILE paths)
 - core/aliases.ps1, core/functions.ps1 (Get-SecretKey, Edit-Profile, …), core/env.ps1
 - ps5/profile.ps1, ps7/profile.ps1 (PSReadLine, oh-my-posh, Terminal-Icons)
 - hosts/ConsoleHost.ps1, hosts/VSCode.ps1
@@ -96,12 +98,12 @@ REPO A: dotfiles-powershell → ~/.config/powershell/
 
 REPO B: dotfiles-tools → ~/Projects/tools/
 - bin/menu.ps1, bin/check.ps1 (Import-Module Toolkit wrappers)
-- lib/common.ps1, lib/menu.ps1 (Show-Menu engine), lib/checkers.ps1, lib/config.ps1
-- Toolkit/Toolkit.psd1 (30 FunctionsToExport), Toolkit/Toolkit.psm1
+- lib/common.ps1, lib/menu.ps1 (Show-Menu engine w/ live Detector column), lib/checkers.ps1, lib/config.ps1, lib/detectors.ps1
+- Toolkit/Toolkit.psd1 (36 FunctionsToExport), Toolkit/Toolkit.psm1
 - menu/menu-main.ps1, menu-docker.ps1, menu-git.ps1
-- scripts/Add-WTProfiles.ps1 (WhatIf, platform guard, BOM-free)
+- scripts/Add-WTProfiles.ps1 (WhatIf, platform guard, BOM-free, JSON fragment extensions)
 - scripts/Generate-Icons.ps1, scripts/configure.ps1, scripts/setup-repos.ps1
-- tests/Toolkit.Tests.ps1 (34 Pester cases, Mock coverage)
+- tests/Toolkit.Tests.ps1 (63 Pester cases, Mock coverage)
 - AGENTS.md, CLAUDE.md, docs/, .gitignore
 
 All scripts: comment-based help, try/catch, cross-platform guards, idempotent.
@@ -123,12 +125,13 @@ Full spec at: https://github.com/martinpaprcka77/dotfiles-powershell/blob/main/d
    - AGENTS.md at root has full codebase guide
 
 2. dotfiles-tools (~/Projects/tools/) — interactive toolbox
-   - Toolkit module: 30 functions (menus, diagnostics, config, modulepath)
+   - Toolkit module: 36 functions (menus, diagnostics, config, modulepath, detectors)
    - bin/menu.ps1 + bin/check.ps1 are in PATH
+   - TUI menu: live status Detector per item (module stack, PSModulePath, companion profile)
    - New 2026: deps.ps1 (winget installer), windows.ps1 (system defaults)
    - New 2026: Add-WTProfiles.ps1 generates JSON fragment extensions
    - .vscode/ with settings + 5 tasks committed
-   - 34 Pester tests in tests/Toolkit.Tests.ps1
+   - 63 Pester tests in tests/Toolkit.Tests.ps1
 
 Portal: https://martinpaprcka77.github.io
 Master prompt: https://gist.github.com/martinpaprcka77/1c74223f4e57b46977abd6df06d4e8fd</pre>
@@ -304,7 +307,7 @@ Conventions:
 
 Constraints:
 - PowerShell 5.1+ | Platform guards ($IsWindows) | Comment-based help
-- Module: Toolkit (30 functions in Toolkit.psd1/.psm1)
+- Module: Toolkit (36 functions in Toolkit.psd1/.psm1)
 - Menu engine: Show-Menu in lib/menu.ps1 — hashtable of labels to scriptblocks
 - Config: Get-ToolkitConfig merges defaults > settings.json > $env:TOOLKIT_*
 - Tests: Pester in tests/Toolkit.Tests.ps1
@@ -326,7 +329,7 @@ Constraints:
 SAFETY:
 - Does install.ps1 back up existing profiles before modifying?
 - Are all network operations (git clone, pull) in try/catch?
-- Does Add-WTProfiles.ps1 back up settings.json before writing?
+- Does Add-WTProfiles.ps1 back up the existing WT JSON fragment before writing?
 - Are there any destructive operations without WhatIf?
 
 SECURITY:
@@ -336,7 +339,7 @@ SECURITY:
 
 CORRECTNESS:
 - Do Toolkit.psm1 export lists match Toolkit.psd1 FunctionsToExport?
-- Are all 30 functions tested in Toolkit.Tests.ps1?
+- Are all 36 functions tested in Toolkit.Tests.ps1?
 - Do cross-platform guards cover all Windows-only code paths?
 
 MAINTAINABILITY:
