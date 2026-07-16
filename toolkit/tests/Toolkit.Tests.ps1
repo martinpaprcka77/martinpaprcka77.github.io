@@ -6,7 +6,7 @@
     Připraveno pro CI (GitHub Actions).
 .NOTES
     Cesta: ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
-    Spuštění: Invoke-Pester ~/Projects/tools/tests/Toolkit.Tests.ps1
+    Spuštění: Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
 #>
 
 Describe 'Toolkit Module' {
@@ -36,7 +36,7 @@ Describe 'Toolkit Module' {
         }
     }
 
-    # ── All 30 exported functions ─────────────────────────────
+    # ── All 36 exported functions ─────────────────────────────
     Context 'Public functions' {
         $expectedFunctions = @(
             'Test-Admin', 'Get-ScriptDirectory',
@@ -48,7 +48,10 @@ Describe 'Toolkit Module' {
             'Get-ToolkitConfig', 'Save-ToolkitConfig', 'Merge-Hashtable',
             'Get-PSModulePath', 'Add-PSModulePath', 'Remove-PSModulePath',
             'Reset-PSModulePath', 'Export-PSModulePath', 'Import-PSModulePath',
-            'Test-PSModulePath'
+            'Test-PSModulePath',
+            'Test-LegacyPowerShellGetPresent', 'Test-PSResourceGetReady',
+            'Get-ModuleStackStatus', 'Get-DotfilesCompanionStatus',
+            'Get-ModulePathStatus', 'Invoke-IfAvailable'
         )
 
         It "Function '<_>' is exported" -ForEach $expectedFunctions {

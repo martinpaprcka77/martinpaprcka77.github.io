@@ -76,8 +76,11 @@ function Get-SecretKey {
 .SYNOPSIS
     Zjistí, zda je aktuální session spuštěna jako administrátor.
 .NOTES
-    Windows-only. $IsWindows doesn't exist on PS5.1 (it's a PS6+ automatic
-    variable) — PS5.1 only ever runs on Windows, so the version check covers it.
+    Windows-only. $IsWindows doesn't exist on PS5.1 (PS6+ automatic variable);
+    PS5.1 only ever runs on Windows, so the version check covers it.
+
+    ⚠️ KEEP IN SYNC with toolkit/lib/common.ps1 — that is the canonical source.
+    This is a convenience duplicate for profile startup before the module loads.
 #>
 function Test-Admin {
     [CmdletBinding()]

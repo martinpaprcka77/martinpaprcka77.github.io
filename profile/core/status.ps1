@@ -27,6 +27,12 @@ function Test-PathHealth {
 
     $result = @{ Duplicates = @($duplicates); MachineUserOverlap = $null }
 
+    # Local guard: $isWindowsHost is set by profile.ps1 before dot-sourcing core/*,
+    # but Show-Status/Test-PathHealth could be called standalone (e.g. from a module
+    # import session). Defensive fallback so the User/Machine PATH overlap check
+    # doesn't silently skip on an undefined variable.
+    $isWindowsHost = if ($PSVersionTable.PSVersion.Major -lt 6) { $true } else { $IsWindows }
+
     if ($isWindowsHost) {
         $userPath = [Environment]::GetEnvironmentVariable('PATH', 'User') -split [IO.Path]::PathSeparator | Where-Object { $_ }
         $machinePath = [Environment]::GetEnvironmentVariable('PATH', 'Machine') -split [IO.Path]::PathSeparator | Where-Object { $_ }

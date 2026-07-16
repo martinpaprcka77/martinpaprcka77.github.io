@@ -144,7 +144,8 @@ $baseProfiles = @(
 $schemesFile = Join-Path $toolsRoot 'configs\wt-schemes.json'
 $schemes = if (Test-Path $schemesFile) {
     try {
-        (Get-Content $schemesFile -Raw | ConvertFrom-Json -AsHashtable).schemes
+        # PS5.1 compat: ConvertFrom-Json -AsHashtable is PS6.2+, use PSCustomObject directly
+        (Get-Content $schemesFile -Raw | ConvertFrom-Json).schemes
     } catch {
         Write-Warning "Could not parse $schemesFile ($_) — using a minimal built-in fallback."
         $null

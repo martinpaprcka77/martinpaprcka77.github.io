@@ -46,7 +46,8 @@ function Add-PSModulePath {
         [string]$Path,
         [switch]$Prepend
     )
-    $Path = (Resolve-Path $Path -ErrorAction SilentlyContinue).Path ?? $Path
+    $resolved = Resolve-Path $Path -ErrorAction SilentlyContinue
+    $Path = if ($resolved) { $resolved.Path } else { $Path }
     $entries = $env:PSModulePath -split [IO.Path]::PathSeparator | Where-Object { $_ }
 
     if ($Path -in $entries) {
@@ -129,7 +130,10 @@ function Reset-PSModulePath {
     }
     $env:PSModulePath = $modern -join [IO.Path]::PathSeparator
     Write-Host "  [+] PSModulePath reset:" -ForegroundColor Green
-    Get-PSModulePath | Out-Null
+    # Call Get-PSModulePath to display the new state — was | Out-Null, which
+    # suppressed the returned entries display. The Write-Host lines inside
+    # the function still showed, but the raw entry list is also informative.
+    Get-PSModulePath | Out-Host
 }
 
 # ── Export-PSModulePath — save config to file ──────────────────

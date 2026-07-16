@@ -47,7 +47,14 @@ function Get-ToolkitConfig {
     $configFile = Join-Path $toolsRoot 'configs\settings.json'
     if (Test-Path $configFile) {
         try {
-            $fileConfig = Get-Content $configFile -Raw | ConvertFrom-Json -AsHashtable
+            $fileConfig = Get-Content $configFile -Raw | ConvertFrom-Json
+            # PS5.1 compat: ConvertFrom-Json -AsHashtable is PS6.2+, so recurse PSCustomObject → hashtable
+            function ConvertTo-HashtableDeep($o) {
+                if ($o -is [PSCustomObject]) { $ht = @{}; $o.PSObject.Properties | ForEach-Object { $ht[$_.Name] = ConvertTo-HashtableDeep $_.Value }; $ht }
+                elseif ($o -is [System.Collections.IList]) { ,@($o | ForEach-Object { ConvertTo-HashtableDeep $_ }) }
+                else { $o }
+            }
+            $fileConfig = ConvertTo-HashtableDeep $fileConfig
             $defaults = Merge-Hashtable -Base $defaults -Override $fileConfig
         } catch {
             Write-Debug "Config file parse failed: $_"
@@ -105,5 +112,3 @@ function Save-ToolkitConfig {
     $script:Config = $Config
     Write-Host "[+] Config saved to $configFile" -ForegroundColor Green
 }
-
-# Auto-export via MyTools.psm1
