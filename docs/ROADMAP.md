@@ -27,7 +27,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 - ✅ Starship prompt (Rust) s `starship.toml` konfigurací (30+ modulů)
 - ✅ oh-my-posh jako fallback
 - ✅ Generování ikon (`Generate-Icons.ps1`)
-- ✅ 63 Pester testů (Mock pokrytí, config, PSModulePath, menu chybové cesty)
+- ✅ 73 Pester testů (Mock pokrytí, config, PSModulePath, menu chybové cesty, smoke testy)
 - ✅ Bezpečné ukládání klíčů (`Get-SecretKey` — SecretManagement + env fallback)
 - ✅ `extra.ps1` pattern — uživatelské přizpůsobení mimo Git
 - ✅ AGENTS.md + CLAUDE.md v kořeni repozitáře
@@ -57,7 +57,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 
 ---
 
-## Fáze 3: Rozšíření (🟡 plánováno)
+## Fáze 3: Rozšíření (🟡 rozšiřováno)
 
 - [ ] **Linux podpora** — otestovat cesty pro Linux (`~/.config/`, `/home/`)
 - [ ] **macOS podpora** — otestovat s PowerShell 7 na macOS
@@ -65,19 +65,19 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 - [ ] **Síťová diagnostika** — `Test-NetConnection` na klíčové endpointy
 - [ ] **Více Docker příkazů** — `docker compose`, network management
 - [ ] **Transient prompt** — kolaps promptu po provedení příkazu (Starship)
-- [ ] **PSResourceGet migration** — plný přechod z PowerShellGet
-- [ ] **AddToHistoryHandler** — vlastní PSReadLine history filter
+- ✅ **PSResourceGet migration** — `modernize.ps1` zvládá kompletní migraci
+- ✅ **AddToHistoryHandler** — vlastní PSReadLine history filter (v `wtprofile.ps1`, blokuje API klíče, tokeny, hesla)
 
 ---
 
 ## Fáze 4: Integrace (🟢)
 
-- [ ] **WSL profily** — automatická detekce ve WT fragmentu
-- [ ] **Git hooks** — `post-checkout`, `post-merge` notifikace
+- ✅ **WSL profily** — automatická detekce ve WT fragmentu (`Add-WTProfiles.ps1`)
+- ✅ **Git hooks** — post-checkout, post-merge skripty (`toolkit/githooks/`)
 - [x] **CI/CD** — GitHub Actions pro Pester testy, validaci JSON (`.github/workflows/test.yml`,
-  scoped na `toolkit/**` aby se nespouštělo na landing-page-only commitech)
+  scoped na `toolkit/**` + `profile/**`)
 - [ ] **PowerShell Gallery** — publikovat Toolkit modul
-- [ ] **Komunitní příspěvky** — šablona pro issues a pull requests
+- ✅ **Komunitní příspěvky** — šablona pro issues a pull requests (`.github/`)
 
 ---
 
