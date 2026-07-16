@@ -39,9 +39,8 @@ $fragmentPath = Join-Path $fragmentDir 'dotfiles.json'
 $toolsRoot = if ($env:DOTFILES_TOOLS) { $env:DOTFILES_TOOLS } else { Split-Path $PSScriptRoot -Parent }
 $iconsDir = Join-Path $toolsRoot 'icons'
 
-function Write-Step { param([string]$M) Write-Host "==> $M" -ForegroundColor Cyan }
-function Write-Ok   { param([string]$M) Write-Host "  [+] $M" -ForegroundColor Green }
-function Write-Skip { param([string]$M) Write-Host "  [=] $M" -ForegroundColor Gray }
+# Dot-source shared output helpers from profile/lib/output.ps1
+. (Join-Path $PSScriptRoot '..\..\profile\lib\output.ps1')
 
 # ── Check if already installed ─────────────────────────────────
 if ((Test-Path $fragmentPath) -and -not $Force) {

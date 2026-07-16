@@ -28,10 +28,8 @@ param(
 
 $ErrorActionPreference = 'Continue'
 
-function Write-Step { param([string]$M) Write-Host "==> $M" -ForegroundColor Cyan }
-function Write-Ok   { param([string]$M) Write-Host "  [+] $M" -ForegroundColor Green }
-function Write-Skip { param([string]$M) Write-Host "  [=] $M" -ForegroundColor Gray }
-function Write-Warn { param([string]$M) Write-Host "  [!] $M" -ForegroundColor Yellow }
+# Dot-source shared output helpers from profile/lib/output.ps1
+. (Join-Path $PSScriptRoot '..\..\profile\lib\output.ps1')
 
 Write-Host "`n🧹 POWERSHELL MODULE STACK MODERNIZATION" -ForegroundColor Magenta
 Write-Host "   Target: PowerShell 7.6+ ready, PSResourceGet primary`n"

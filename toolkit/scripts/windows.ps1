@@ -30,10 +30,8 @@ if ($IsLinux -or $IsMacOS) {
     exit 1
 }
 
-function Write-Step { param([string]$M) Write-Host "==> $M" -ForegroundColor Cyan }
-function Write-Ok   { param([string]$M) Write-Host "  [+] $M" -ForegroundColor Green }
-function Write-Skip { param([string]$M) Write-Host "  [=] $M" -ForegroundColor Gray }
-function Write-Info { param([string]$M) Write-Host "  [*] $M" -ForegroundColor DarkGray }
+# Dot-source shared output helpers from profile/lib/output.ps1
+. (Join-Path $PSScriptRoot '..\..\profile\lib\output.ps1')
 
 # ── Explorer settings ──────────────────────────────────────────
 Write-Step "Configuring Explorer..."

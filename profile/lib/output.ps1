@@ -15,4 +15,5 @@ function Write-Ok   { param([string]$M) Write-Host "  [+] $M" -ForegroundColor G
 function Write-Skip { param([string]$M) Write-Host "  [=] $M" -ForegroundColor Gray }
 function Write-Fail { param([string]$M) Write-Host "  [x] $M" -ForegroundColor Red }
 function Write-Warn { param([string]$M) Write-Host "  [!] $M" -ForegroundColor Yellow }
+function Write-Info { param([string]$M) Write-Host "  [*] $M" -ForegroundColor DarkGray }
 # ⚠️ CANONICAL SOURCE. Keep in sync with toolkit/lib/common.ps1 (the module's convenience copy).
