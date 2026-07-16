@@ -8,7 +8,7 @@
 function Show-VSCodeMenu {
     if (-not (Get-Command code -ErrorAction SilentlyContinue)) {
         Write-Err "VS Code (code) is not in PATH."
-        Read-Host "`nStiskni Enter..."; return
+        return
     }
     # .vscode/ lives inside THIS repo — $env:DOTFILES_TOOLS is only ever set by the companion
     # profile, so fall back to deriving our own root when it isn't loaded (e.g. the WT "Menu"

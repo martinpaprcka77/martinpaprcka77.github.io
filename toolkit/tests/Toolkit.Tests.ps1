@@ -159,6 +159,27 @@ Describe 'Toolkit Module' {
             Mock Write-Err { } -ModuleName Toolkit
             { Show-GitMenu } | Should -Not -Throw
         }
+
+        It 'Show-TerminalMenu runs without errors (mocked menu)' {
+            Mock Show-Menu { } -ModuleName Toolkit
+            { Show-TerminalMenu } | Should -Not -Throw
+        }
+
+        It 'Show-DotfilesMenu runs without errors (mocked menu)' {
+            Mock Show-Menu { } -ModuleName Toolkit
+            { Show-DotfilesMenu } | Should -Not -Throw
+        }
+
+        It 'Show-PwshMenu runs without errors (mocked menu)' {
+            Mock Show-Menu { } -ModuleName Toolkit
+            { Show-PwshMenu } | Should -Not -Throw
+        }
+
+        It 'Show-VSCodeMenu runs without errors (mocked menu + code present)' {
+            Mock Get-Command { return @{ Source = 'code' } } -ModuleName Toolkit -ParameterFilter { $Name -eq 'code' }
+            Mock Show-Menu { } -ModuleName Toolkit
+            { Show-VSCodeMenu } | Should -Not -Throw
+        }
     }
 
     # ── Checkers ──────────────────────────────────────────────

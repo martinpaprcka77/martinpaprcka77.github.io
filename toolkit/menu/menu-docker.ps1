@@ -8,7 +8,7 @@
 function Show-DockerMenu {
     if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
         Write-Err "Docker is not installed or not in PATH."
-        Read-Host "`nStiskni Enter..."; return
+        return
     }
     $items = [ordered]@{
         '1. 📊 Check Status' = @{ Action = { docker info --format '{{.Containers}} containers, {{.Images}} images, {{.ServerVersion}}' 2>&1; Read-Host "`nStiskni Enter..." }; Desc = 'Quick Docker daemon status' }

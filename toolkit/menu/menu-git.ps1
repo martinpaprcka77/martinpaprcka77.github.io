@@ -8,7 +8,7 @@
 function Show-GitMenu {
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
         Write-Err "Git is not installed or not in PATH."
-        Read-Host "`nStiskni Enter..."; return
+        return
     }
     $items = [ordered]@{
         '1. 📊 Check Status' = @{ Action = { git status; Read-Host "`nStiskni Enter..." }; Desc = 'Working tree status' }
