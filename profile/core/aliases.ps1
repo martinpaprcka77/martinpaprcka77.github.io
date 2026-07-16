@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Aliasy pro každodenní použití.
 .DESCRIPTION

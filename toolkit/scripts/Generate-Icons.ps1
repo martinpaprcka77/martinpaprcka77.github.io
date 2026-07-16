@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Vygeneruje placeholder ikony (32x32 PNG) pro menu/projekty/PS5/PS7.
 .DESCRIPTION

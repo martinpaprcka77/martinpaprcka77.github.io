@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Specifické nastavení pro PowerShell 7+.
 .DESCRIPTION

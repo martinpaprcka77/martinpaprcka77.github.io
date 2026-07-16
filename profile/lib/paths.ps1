@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Known-Folder-correct path resolution for install.ps1.
 .DESCRIPTION

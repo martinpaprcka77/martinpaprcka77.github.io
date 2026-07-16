@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Specifické nastavení pro Windows PowerShell 5.1.
 .DESCRIPTION

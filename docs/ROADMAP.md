@@ -117,6 +117,8 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 | `Show-Menu` box se rozbil (přetekl přes hranici konzole), když `Detector` vrátil dlouhý text | ✅ Vyřešeno (field-reported) | `$boxWidth` ořezán na `[Console]::WindowWidth`, `Desc`/`Detector` text zkrácen s výpustkou (`…`) |
 | `Resolve-DocumentsPath` padal na poškozené Known Folder registrové hodnotě | ✅ Vyřešeno (field-reported) | `Test-RootedPath` validuje každého kandidáta před použitím |
 | Cross-repo coupling — menu volalo funkce existující jen v druhém repu | ✅ Vyřešeno sloučením | Jeden repo, `profile/` + `toolkit/`; zbylé self-referenční lookupy používají `$PSScriptRoot` |
+| Windows PowerShell 5.1 (`powershell.exe`, ne `pwsh`) padal na parse error ve skriptech s pomlčkou/emoji (`—`, `✅`…) | ✅ Vyřešeno (field-reported) | Bez UTF-8 BOM čte WinPS 5.1 soubor v systémové ANSI codepage — víceb bajtový UTF-8 znak se rozpadne na nesmyslné bajty a rozhodí tokenizer. Všech 45 `.ps1`/`.psm1`/`.psd1` souborů teď má UTF-8 BOM |
+| `remote-install.ps1` u existující instalace ze starého (pre-merge) repa jen tiše `git pull`-oval ve starém originu — instalátor zůstal navždy stará dvourepová verze | ✅ Vyřešeno (field-reported) | Detekce `git remote get-url origin` proti novému URL; při neshodě `git remote set-url` + `git fetch` + `git reset --hard origin/main` místo prostého pull |
 | Cesty s diakritikou nejsou testovány | Netestováno | Přidat testy |
 | PS5 nepodporuje `&&` a `||` | Omezení PS5 | Používat `;` nebo `if` |
 

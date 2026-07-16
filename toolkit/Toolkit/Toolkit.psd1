@@ -1,4 +1,4 @@
-@{
+﻿@{
     # Module manifest for Toolkit
     RootModule        = 'Toolkit.psm1'
     ModuleVersion     = '1.0.0'

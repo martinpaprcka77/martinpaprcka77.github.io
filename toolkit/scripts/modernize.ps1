@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Modernizes the PowerShell module stack — PSResourceGet, cleanup, security baseline.
 .DESCRIPTION

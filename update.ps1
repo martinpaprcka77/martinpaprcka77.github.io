@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Aktualizuje dotfiles ekosystém na nejnovější verzi.
 .DESCRIPTION

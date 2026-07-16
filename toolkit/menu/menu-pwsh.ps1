@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PowerShell profile and environment management.
 .NOTES

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PSModulePath manager — list, add, remove, reset, export/import, validate.
 .DESCRIPTION

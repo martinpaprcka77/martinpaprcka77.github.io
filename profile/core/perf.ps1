@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Performance optimization tools for the PowerShell Dotfiles Ecosystem.
 .DESCRIPTION

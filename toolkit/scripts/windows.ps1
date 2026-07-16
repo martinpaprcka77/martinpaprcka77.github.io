@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Configures Windows system defaults — Explorer, privacy, taskbar, bloatware removal.
 .DESCRIPTION
