@@ -104,9 +104,10 @@ if (-not $SecurityOnly) {
 if (-not $SecurityOnly) {
     Write-Step "Configuring modern PSModulePath..."
 
+    # LOCALAPPDATA is the safe baseline — Documents can be OneDrive-redirected
     $modernPath = @(
         "$env:ProgramFiles\PowerShell\7\Modules",
-        "$env:USERPROFILE\Documents\PowerShell\Modules"
+        "$env:LOCALAPPDATA\PowerShell\Modules"
     ) -join [IO.Path]::PathSeparator
 
     if ($PSCmdlet.ShouldProcess('PSModulePath', 'Set modern priority')) {

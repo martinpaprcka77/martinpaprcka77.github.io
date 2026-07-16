@@ -13,6 +13,9 @@
 .NOTES
     Windows-only. $IsWindows doesn't exist on PS5.1 (PS6+ automatic variable);
     PS5.1 only ever runs on Windows, so the version check covers it.
+
+    ⚠️ CANONICAL SOURCE. Keep in sync with profile/core/functions.ps1 (convenience duplicate
+    for profile startup before the module loads).
 #>
 function Test-Admin {
     if ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows) {
@@ -58,6 +61,8 @@ function Write-Warn {
     param([string]$Message)
     Write-Host "[!] $Message" -ForegroundColor Yellow
 }
+# ⚠️ DUPLICATE of profile/lib/output.ps1 (canonical source — used by install.ps1/update.ps1 standalone).
+# Keep in sync if changing the format.
 
 <#
 .SYNOPSIS

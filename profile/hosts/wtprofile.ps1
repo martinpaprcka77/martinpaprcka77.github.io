@@ -20,6 +20,8 @@ if (-not $env:WT_SESSION) { return }
 # Windows-only (registry write via the User environment-variable store; throws
 # PlatformNotSupportedException on Linux/macOS). Check-before-write so this
 # doesn't touch the registry on every single session start.
+# Uses PSVersion check first (short-circuits on PS5.1 before evaluating $IsWindows,
+# which is a PS6+ automatic variable — important under Set-StrictMode).
 $isWindowsHost = $PSVersionTable.PSVersion.Major -lt 6 -or $IsWindows
 if ($isWindowsHost) {
     if ([System.Environment]::GetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', 'User') -ne '1') {

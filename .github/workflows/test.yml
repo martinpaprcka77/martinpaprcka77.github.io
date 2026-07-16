@@ -6,10 +6,10 @@ name: CI
 on:
   push:
     branches: [main]
-    paths: ['toolkit/**', '.github/workflows/test.yml']
+    paths: ['profile/**', 'toolkit/**', '.github/workflows/test.yml']
   pull_request:
     branches: [main]
-    paths: ['toolkit/**', '.github/workflows/test.yml']
+    paths: ['profile/**', 'toolkit/**', '.github/workflows/test.yml']
   workflow_dispatch:
 
 jobs:
