@@ -83,7 +83,6 @@ Write-Host "`n--- FONTS ---" -ForegroundColor Magenta
 
 $fontName = 'CaskaydiaCove NF'
 $fontRegPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
-$fontFile = 'CaskaydiaCoveNerdFont-Regular.ttf'
 $alreadyInstalled = Get-ItemProperty -Path $fontRegPath -Name "*$fontName*" -ErrorAction SilentlyContinue
 
 if ($alreadyInstalled) {
