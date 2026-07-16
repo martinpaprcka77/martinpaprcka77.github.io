@@ -100,7 +100,7 @@ function Test-Admin {
 #>
 function mkcd {
     [CmdletBinding()]
-    param([string]$Path)
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Path)
     New-Item -ItemType Directory -Path $Path -Force | Out-Null
     Set-Location $Path
 }

@@ -19,7 +19,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 # Cross-platform guard — System.Drawing is Windows-only
-if ($IsLinux -or $IsMacOS) {
+if ($PSVersionTable.PSVersion.Major -ge 6 -and ($IsLinux -or $IsMacOS)) {
     Write-Error "Generate-Icons.ps1 vyžaduje Windows (System.Drawing). Nelze spustit na Linux/macOS."
     exit 1
 }

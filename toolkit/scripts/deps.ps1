@@ -23,7 +23,7 @@ param(
 )
 
 # Cross-platform guard — winget is Windows-only
-if ($IsLinux -or $IsMacOS) {
+if ($PSVersionTable.PSVersion.Major -ge 6 -and ($IsLinux -or $IsMacOS)) {
     Write-Error "deps.ps1 requires Windows (winget). This is a Linux/macOS system."
     exit 1
 }

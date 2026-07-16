@@ -86,7 +86,7 @@ if ($null -ne (Get-Module -ListAvailable -Name PSReadLine | Sort-Object Version 
 #>
 function touch {
     [CmdletBinding()]
-    param([string]$File)
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$File)
     if (Test-Path $File) {
         (Get-Item $File).LastWriteTime = Get-Date
     } else {
@@ -102,7 +102,7 @@ function touch {
 #>
 function trash {
     [CmdletBinding()]
-    param([string]$Path)
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Path)
     if ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows) {
         Write-Warning "trash is Windows-only (uses Recycle Bin). Use Remove-Item instead."
         return
@@ -121,7 +121,7 @@ function trash {
 #>
 function ff {
     [CmdletBinding()]
-    param([string]$Name)
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Name)
     Get-ChildItem -Recurse -Filter $Name -File -ErrorAction SilentlyContinue |
         Select-Object -ExpandProperty FullName
 }
@@ -132,7 +132,7 @@ function ff {
 #>
 function which {
     [CmdletBinding()]
-    param([string]$Name)
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Name)
     (Get-Command $Name -ErrorAction SilentlyContinue).Source
 }
 
@@ -143,7 +143,9 @@ function which {
 function sed {
     [CmdletBinding()]
     # ponytail: case-sensitive .Replace(), not regex like real sed; add -Replace for regex if needed
-    param([string]$File, [string]$Find, [string]$Replace)
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$File,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Find,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Replace)
     (Get-Content $File -Raw).Replace($Find, $Replace) | Set-Content $File -NoNewline
 }
 
@@ -178,7 +180,7 @@ function pgrep {
 #>
 function pkill {
     [CmdletBinding()]
-    param([string]$Name)
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Name)
     Get-Process -Name $Name -ErrorAction SilentlyContinue | Stop-Process -Force
 }
 

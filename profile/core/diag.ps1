@@ -10,7 +10,9 @@
     Requires: PSDiagnostics module (built into PowerShell 7 on Windows)
 #>
 
-if ($IsLinux -or $IsMacOS) { return }  # PSDiagnostics is Windows-only
+# PSDiagnostics is Windows-only. $IsLinux/$IsMacOS are PS6+ automatic variables;
+# on PS5.1 the guard short-circuits before evaluating them.
+if ($PSVersionTable.PSVersion.Major -ge 6 -and ($IsLinux -or $IsMacOS)) { return }
 
 # ── Start-PSProfiling — one-command profile trace ──────────────
 <#

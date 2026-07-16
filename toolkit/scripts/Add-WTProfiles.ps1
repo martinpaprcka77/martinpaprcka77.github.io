@@ -24,7 +24,7 @@ param(
 )
 
 # Cross-platform guard
-if ($IsLinux -or $IsMacOS) {
+if ($PSVersionTable.PSVersion.Major -ge 6 -and ($IsLinux -or $IsMacOS)) {
     Write-Error "Add-WTProfiles.ps1 requires Windows. This is a Linux/macOS system."
     exit 1
 }
@@ -190,13 +190,17 @@ if ($PSCmdlet.ShouldProcess($fragmentPath, 'Create JSON fragment')) {
     # Write without BOM (UTF-8)
     $json = $fragment | ConvertTo-Json -Depth 5
     $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-    [System.IO.File]::WriteAllText($fragmentPath, $json, $utf8NoBom)
-    Write-Ok "Fragment created: $fragmentPath"
+    try {
+        [System.IO.File]::WriteAllText($fragmentPath, $json, $utf8NoBom)
+        Write-Ok "Fragment created: $fragmentPath"
 
-    # Also save copy to scripts/ for reference
-    $refPath = Join-Path $PSScriptRoot 'profiles-fragment.json'
-    [System.IO.File]::WriteAllText($refPath, $json, $utf8NoBom)
-    Write-Ok "Reference copy: $refPath"
+        # Also save copy to scripts/ for reference
+        $refPath = Join-Path $PSScriptRoot 'profiles-fragment.json'
+        [System.IO.File]::WriteAllText($refPath, $json, $utf8NoBom)
+        Write-Ok "Reference copy: $refPath"
+    } catch {
+        Write-Fail "Failed to write fragment: $_"
+    }
 }
 
 # ── Result ─────────────────────────────────────────────────────

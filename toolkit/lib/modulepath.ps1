@@ -272,4 +272,5 @@ function Test-PSModulePath {
     } else {
         Write-Host "  ⚠️  $issues issue(s) found. Run Reset-PSModulePath to fix." -ForegroundColor Yellow
     }
+    return ($issues -eq 0)
 }
