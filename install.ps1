@@ -52,10 +52,10 @@ $script:restartNeeded = $false
 # reliably the repo root. No separate default-fallback path is needed here.
 $dotfilesPath = $PSScriptRoot
 
-# $IsWindows doesn't exist on PS5.1 (PS6+ automatic variable); PS5.1 only ever
-# runs on Windows, so treat that case as Windows too. Use this instead of the
-# raw $IsWindows anywhere below.
-$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
+# $PSVersionTable.OS exists in PS5.1 and PS7, and correctly reports non-Windows
+# even on PS5.1 running under Wine. Use this instead of the raw $IsWindows
+# anywhere below.
+$isWindowsHost = $PSVersionTable.OS -match 'Windows'
 
 # ── Preflight ──────────────────────────────────────────────────
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -117,7 +117,11 @@ try {
 if (-not $NoTerminal) {
     $wtScript = Join-Path $dotfilesPath 'toolkit\scripts\Add-WTProfiles.ps1'
     if ($isWindowsHost -and (Test-Path $wtScript)) {
-        $response = Read-Host "`nRun Add-WTProfiles.ps1 to configure Windows Terminal? (y/N)"
+        # Read-Host crashes in non-interactive mode (CI, pipeline); this is
+        # a soft prompt that can be skipped, so fall back to 'n' if prompt
+        # isn't available (try/catch covers all edge cases).
+        try { $response = Read-Host "`nRun Add-WTProfiles.ps1 to configure Windows Terminal? (y/N)" }
+        catch { $response = 'n' }
         if ($response -eq 'y' -or $response -eq 'Y') {
             if ($PSCmdlet.ShouldProcess('Windows Terminal', 'Add profiles')) {
                 try { & $wtScript } catch { Write-Fail "WT setup failed: $_" }
