@@ -114,10 +114,23 @@ function Show-Menu {
     $selected = 0
     $footer = '↑↓ navigate  ↵ select  Esc/q exit'
 
+    # Fixed redraw anchor — every frame redraws over the SAME rows, so pure
+    # navigation (arrow keys, no action run) never moves the box. Previously
+    # this was recomputed from "current cursor position" every frame, which
+    # is wherever the PREVIOUS frame's cleanup left the cursor (just below
+    # the box) — so the whole box drifted one box-height further down the
+    # screen on every single keypress, including arrow keys that change
+    # nothing but the highlighted row (field-reported). Only Inline mode's
+    # action-execution branches intentionally advance $menuTop afterward, so
+    # the next redraw appears below the action's own output (the "rolled/
+    # expanded feel" the docstring describes) — that shift is real, wanted
+    # motion; the arrow-key drift was not.
+    $menuTop = [Console]::CursorTop
+
     # ── Render loop ────────────────────────────────────────────
     do {
-        [Console]::SetCursorPosition(0, [Console]::CursorTop)
-        $startTop = [Console]::CursorTop
+        [Console]::SetCursorPosition(0, $menuTop)
+        $startTop = $menuTop
 
         # ── Header ─────────────────────────────────────────────
         Write-Host ''
@@ -233,8 +246,10 @@ function Show-Menu {
                     & $item.Action
                     Write-Host ('─' * ($boxWidth + 8)) -ForegroundColor DarkGray
                     Write-Host ''
-                    # Continue the loop — menu redraws
+                    # Continue the loop — menu redraws below the action's output
+                    # (intentional advance, unlike the fixed anchor used for pure navigation)
                     [Console]::CursorVisible = $false
+                    $menuTop = [Console]::CursorTop
                 } else {
                     Clear-Host
                     & $item.Action
@@ -275,6 +290,7 @@ function Show-Menu {
                             Write-Host ('─' * ($boxWidth + 8)) -ForegroundColor DarkGray
                             Write-Host ''
                             [Console]::CursorVisible = $false
+                            $menuTop = [Console]::CursorTop
                         } else {
                             Clear-Host
                             & $item.Action
