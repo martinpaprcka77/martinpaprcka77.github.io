@@ -76,8 +76,4 @@ function Show-PwshMenu {
     Show-Menu -Title 'POWERSHELL' -Items $items
 }
 
-if ($MyInvocation.InvocationName -ne '.') {
-    $modulePath = Join-Path $PSScriptRoot '..\Toolkit\Toolkit.psd1'
-    if (Test-Path $modulePath) { Import-Module $modulePath -Force }
-    Show-PwshMenu
-}
+if ($MyInvocation.InvocationName -ne '.') { Initialize-MenuMenu 'Show-PwshMenu' }

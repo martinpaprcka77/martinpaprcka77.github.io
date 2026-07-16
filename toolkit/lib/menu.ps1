@@ -285,3 +285,19 @@ function Show-Menu {
         }
     } while ($true)
 }
+
+<#
+.SYNOPSIS
+    Self-invocation guard for menu scripts. Dot-sources the Toolkit module
+    if this script was invoked directly (not dot-sourced into a module).
+.PARAMETER MenuFunction
+    Name of the Show-*Menu function to call after module is loaded.
+.EXAMPLE
+    if ($MyInvocation.InvocationName -ne '.') { Initialize-MenuMenu 'Show-DockerMenu' }
+#>
+function Initialize-MenuMenu {
+    param([Parameter(Mandatory)][string]$MenuFunction)
+    $modulePath = Join-Path $PSScriptRoot '..\Toolkit\Toolkit.psd1'
+    if (Test-Path $modulePath) { Import-Module $modulePath -Force }
+    & $MenuFunction
+}

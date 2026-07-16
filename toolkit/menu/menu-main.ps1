@@ -21,8 +21,4 @@ function Start-MainMenu {
     Show-Menu -Title 'HLAVNÍ MENU' -Items $items -Inline
 }
 
-if ($MyInvocation.InvocationName -ne '.') {
-    $modulePath = Join-Path $PSScriptRoot '..\Toolkit\Toolkit.psd1'
-    if (Test-Path $modulePath) { Import-Module $modulePath -Force }
-    Start-MainMenu
-}
+if ($MyInvocation.InvocationName -ne '.') { Initialize-MenuMenu 'Start-MainMenu' }

@@ -28,8 +28,4 @@ function Show-GitMenu {
     Show-Menu -Title 'GIT' -Items $items
 }
 
-if ($MyInvocation.InvocationName -ne '.') {
-    $modulePath = Join-Path $PSScriptRoot '..\Toolkit\Toolkit.psd1'
-    if (Test-Path $modulePath) { Import-Module $modulePath -Force }
-    Show-GitMenu
-}
+if ($MyInvocation.InvocationName -ne '.') { Initialize-MenuMenu 'Show-GitMenu' }

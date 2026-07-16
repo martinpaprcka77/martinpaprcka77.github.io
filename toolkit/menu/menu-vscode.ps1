@@ -78,8 +78,4 @@ function Show-VSCodeMenu {
     Show-Menu -Title 'VS CODE' -Items $items
 }
 
-if ($MyInvocation.InvocationName -ne '.') {
-    $modulePath = Join-Path $PSScriptRoot '..\Toolkit\Toolkit.psd1'
-    if (Test-Path $modulePath) { Import-Module $modulePath -Force }
-    Show-VSCodeMenu
-}
+if ($MyInvocation.InvocationName -ne '.') { Initialize-MenuMenu 'Show-VSCodeMenu' }

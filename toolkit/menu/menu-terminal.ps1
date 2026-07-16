@@ -86,8 +86,4 @@ function Show-TerminalMenu {
     Show-Menu -Title 'TERMINAL' -Items $items
 }
 
-if ($MyInvocation.InvocationName -ne '.') {
-    $modulePath = Join-Path $PSScriptRoot '..\Toolkit\Toolkit.psd1'
-    if (Test-Path $modulePath) { Import-Module $modulePath -Force }
-    Show-TerminalMenu
-}
+if ($MyInvocation.InvocationName -ne '.') { Initialize-MenuMenu 'Show-TerminalMenu' }
