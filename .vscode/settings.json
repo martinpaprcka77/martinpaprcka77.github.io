@@ -1,0 +1,22 @@
+{
+    "files.encoding": "utf8",
+    "files.eol": "\r\n",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "powershell.codeFormatting.preset": "Stroustrup",
+    "powershell.codeFormatting.addWhitespaceAroundPipe": true,
+    "powershell.codeFormatting.autoCorrectAliases": true,
+    "powershell.codeFormatting.useCorrectCasing": true,
+    "powershell.developer.powerShellExportsIsNew": true,
+    "powershell.integratedConsole.showOnStartup": false,
+    "[powershell]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-vscode.powershell"
+    },
+    "[json]": {
+        "editor.formatOnSave": true
+    },
+    "[markdown]": {
+        "editor.formatOnSave": true
+    }
+}
