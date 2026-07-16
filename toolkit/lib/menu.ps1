@@ -2,13 +2,15 @@
 .SYNOPSIS
     Modern interactive menu engine with arrow-key navigation and descriptions.
 .DESCRIPTION
-    Renders a highlighted menu using box-drawing characters. Supports:
+    Renders a minimal, borderless list — a title, a thin accent underline, and
+    a column-aligned item list with a colored `›` cursor on the selected row
+    (no boxed frame, no inverse-block highlight). Supports:
     - ↑↓ arrow keys to move selection
     - Enter to confirm (inline mode: runs action, keeps menu visible)
     - Number keys for direct selection
     - Escape / q to exit
-    - Descriptions: each item can have a dimmed hint shown when highlighted
-    - Configurable color scheme via Get-ToolkitConfig
+    - Descriptions: each item can have a dimmed hint shown in its own column
+    - Configurable accent color via Get-ToolkitConfig
 .PARAMETER Title
     Menu title displayed at the top.
 .PARAMETER Items
@@ -64,14 +66,10 @@ function Show-Menu {
 
     # ── Load color config ──────────────────────────────────────
     $accent = 'Cyan'
-    $highlightFg = 'Black'
-    $highlightBg = 'Cyan'
     try {
         $cfg = Get-ToolkitConfig -ErrorAction SilentlyContinue
         if ($cfg -and $cfg.menu.colorScheme) {
             $accent = $cfg.menu.colorScheme
-            $highlightFg = 'Black'
-            $highlightBg = $accent
         }
     } catch { }
 
@@ -80,7 +78,7 @@ function Show-Menu {
     # Check descriptions too
     $maxDescWidth = ($normalized.Values | ForEach-Object { $_.Desc.Length } | Measure-Object -Maximum).Maximum
     # Detector width: evaluated once here (not per-frame) purely to size the
-    # box consistently — the actual displayed values are still recomputed
+    # layout consistently — the actual displayed values are still recomputed
     # fresh every render frame in the loop below (see $detectorCache there).
     $maxDetectorWidth = 0
     foreach ($k in $keys) {
@@ -92,9 +90,10 @@ function Show-Menu {
     }
     $naturalWidth = [Math]::Max($Title.Length, $maxLabelWidth + $maxDescWidth + $maxDetectorWidth) + 4
     # Clamp to the terminal's actual width — a long Desc/Detector string
-    # otherwise pushes the box past the console width, the terminal wraps the
-    # line, and the box-drawing border breaks (field-reported). Leave room
-    # for the "  │ "/"│" frame (6 cols); never go narrower than a sane floor.
+    # otherwise pushes a row past the console width, the terminal wraps the
+    # line, and the layout breaks (field-reported against the old boxed
+    # version). Leave a small margin for the "  › " row prefix; never go
+    # narrower than a sane floor.
     $maxAvailableWidth = [Math]::Max(20, [Console]::WindowWidth - 6)
     $boxWidth = [Math]::Min($naturalWidth, $maxAvailableWidth)
 
@@ -115,11 +114,11 @@ function Show-Menu {
     $footer = '↑↓ navigate  ↵ select  Esc/q exit'
 
     # Fixed redraw anchor — every frame redraws over the SAME rows, so pure
-    # navigation (arrow keys, no action run) never moves the box. Previously
+    # navigation (arrow keys, no action run) never moves the list. Previously
     # this was recomputed from "current cursor position" every frame, which
     # is wherever the PREVIOUS frame's cleanup left the cursor (just below
-    # the box) — so the whole box drifted one box-height further down the
-    # screen on every single keypress, including arrow keys that change
+    # the list) — so the whole thing drifted one render-height further down
+    # the screen on every single keypress, including arrow keys that change
     # nothing but the highlighted row (field-reported). Only Inline mode's
     # action-execution branches intentionally advance $menuTop afterward, so
     # the next redraw appears below the action's own output (the "rolled/
@@ -132,15 +131,10 @@ function Show-Menu {
         [Console]::SetCursorPosition(0, $menuTop)
         $startTop = $menuTop
 
-        # ── Header ─────────────────────────────────────────────
+        # ── Header — plain title + thin accent underline, no box ───
         Write-Host ''
-        Write-Host "  ╭$('─' * $boxWidth)╮" -ForegroundColor DarkGray
-        Write-Host "  │ " -ForegroundColor DarkGray -NoNewline
-        Write-Host $Title.PadRight($boxWidth - 1) -ForegroundColor $accent -NoNewline
-        Write-Host '│' -ForegroundColor DarkGray
-        Write-Host '  ├' -ForegroundColor DarkGray -NoNewline
-        Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray -NoNewline
-        Write-Host '┤' -ForegroundColor DarkGray
+        Write-Host "  $Title" -ForegroundColor $accent
+        Write-Host "  $('─' * $boxWidth)" -ForegroundColor DarkGray
 
         # ── Detector cache — fresh every render frame (every keypress), so
         # displayed status never goes stale mid-session. Function-local, not
@@ -155,17 +149,17 @@ function Show-Menu {
             }
         }
 
-        # ── Items ──────────────────────────────────────────────
+        # ── Items — column-aligned, cursor-marked, no inverse block ─
         for ($i = 0; $i -lt $keys.Count; $i++) {
             $key = $keys[$i]
             $item = $normalized[$key]
             $det = $detectorCache[$key]
             $detTextRaw = if ($det -and $det.Text) { "$($det.Icon) $($det.Text)" } else { '' }
 
-            # Fit Desc + Detector text into the box width, trimming the
+            # Fit Desc + Detector text into the available width, trimming the
             # detector text first, then the description, instead of letting
             # a long status string push the row past the console width.
-            $extraBudget = [Math]::Max(0, $boxWidth - $key.Length - 4)
+            $extraBudget = [Math]::Max(0, $boxWidth - $maxLabelWidth - 2)
             $desc = $item.Desc
             $detText = $detTextRaw
             $combinedLen = $desc.Length + $(if ($detText) { $detText.Length + 2 } else { 0 })
@@ -178,43 +172,39 @@ function Show-Menu {
                 }
             }
 
-            $detLen = if ($detText) { $detText.Length + 2 } else { 0 }
-            $pad = [Math]::Max(0, $boxWidth - $key.Length - ($desc.Length + 2) - $detLen)
-
             if ($i -eq $selected) {
-                Write-Host '  │ ' -ForegroundColor DarkGray -NoNewline
-                Write-Host '▸' -ForegroundColor $accent -NoNewline
-                Write-Host " $key " -ForegroundColor $highlightFg -BackgroundColor $highlightBg -NoNewline
-                if ($desc) {
-                    Write-Host ' ' -BackgroundColor $highlightBg -NoNewline
-                    Write-Host $desc -ForegroundColor $highlightFg -BackgroundColor $highlightBg -NoNewline
-                }
-                if ($detText) {
-                    Write-Host '  ' -BackgroundColor $highlightBg -NoNewline
-                    Write-Host $detText -ForegroundColor $highlightFg -BackgroundColor $highlightBg -NoNewline
-                }
-                Write-Host (' ' * [Math]::Max(0, $pad - 1)) -BackgroundColor $highlightBg
-                Write-Host '│' -ForegroundColor DarkGray
-            } else {
-                Write-Host '  │  ' -ForegroundColor DarkGray -NoNewline
-                Write-Host $key -ForegroundColor White -NoNewline
+                Write-Host '  › ' -ForegroundColor $accent -NoNewline
+                Write-Host $key.PadRight($maxLabelWidth) -ForegroundColor $accent -NoNewline
                 if ($desc) {
                     Write-Host '  ' -NoNewline
-                    Write-Host $desc -ForegroundColor DarkGray -NoNewline
+                    Write-Host $desc.PadRight($maxDescWidth) -ForegroundColor White -NoNewline
+                } elseif ($maxDescWidth -gt 0) {
+                    Write-Host (' ' * ($maxDescWidth + 2)) -NoNewline
+                }
+                if ($detText) {
+                    Write-Host '  ' -NoNewline
+                    Write-Host $detText -ForegroundColor $accent -NoNewline
+                }
+                Write-Host ''
+            } else {
+                Write-Host '    ' -NoNewline
+                Write-Host $key.PadRight($maxLabelWidth) -ForegroundColor Gray -NoNewline
+                if ($desc) {
+                    Write-Host '  ' -NoNewline
+                    Write-Host $desc.PadRight($maxDescWidth) -ForegroundColor DarkGray -NoNewline
+                } elseif ($maxDescWidth -gt 0) {
+                    Write-Host (' ' * ($maxDescWidth + 2)) -NoNewline
                 }
                 if ($detText) {
                     Write-Host '  ' -NoNewline
                     Write-Host $detText -ForegroundColor DarkGray -NoNewline
                 }
-                Write-Host (' ' * [Math]::Max(0, $pad)) -NoNewline
-                Write-Host '│' -ForegroundColor DarkGray
+                Write-Host ''
             }
         }
 
         # ── Footer ─────────────────────────────────────────────
-        Write-Host '  ╰' -ForegroundColor DarkGray -NoNewline
-        Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray -NoNewline
-        Write-Host '╯' -ForegroundColor DarkGray
+        Write-Host ''
         Write-Host "  $footer" -ForegroundColor DarkGray
 
         # ── Clear below (handle shrunken renders) ──────────────
@@ -242,9 +232,9 @@ function Show-Menu {
                         Write-Host (' ' * ($boxWidth + 10)) -NoNewline
                     }
                     [Console]::SetCursorPosition(0, $startTop)
-                    Write-Host ('─' * ($boxWidth + 8)) -ForegroundColor DarkGray
+                    Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray
                     & $item.Action
-                    Write-Host ('─' * ($boxWidth + 8)) -ForegroundColor DarkGray
+                    Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray
                     Write-Host ''
                     # Continue the loop — menu redraws below the action's output
                     # (intentional advance, unlike the fixed anchor used for pure navigation)
@@ -285,9 +275,9 @@ function Show-Menu {
                                 Write-Host (' ' * ($boxWidth + 10)) -NoNewline
                             }
                             [Console]::SetCursorPosition(0, $startTop)
-                            Write-Host ('─' * ($boxWidth + 8)) -ForegroundColor DarkGray
+                            Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray
                             & $item.Action
-                            Write-Host ('─' * ($boxWidth + 8)) -ForegroundColor DarkGray
+                            Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray
                             Write-Host ''
                             [Console]::CursorVisible = $false
                             $menuTop = [Console]::CursorTop
