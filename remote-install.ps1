@@ -72,7 +72,8 @@ if ($env:DOTFILES_FORCE)      { $Force = $true }
 if ($env:DOTFILES_NO_UPDATES) { $NoUpdates = $true }
 if ($env:DOTFILES_NO_TERMINAL) { $NoTerminal = $true }
 
-$isWindowsHost = $PSVersionTable.OS -match 'Windows'
+try { $isWindowsHost = $PSVersionTable.OS -match 'Windows' }
+catch { $isWindowsHost = $PSVersionTable.PSVersion.Major -lt 6 }
 
 Write-Step "PowerShell Dotfiles Ecosystem — remote bootstrap"
 
