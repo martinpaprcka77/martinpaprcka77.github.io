@@ -26,3 +26,8 @@ desktop.ini
 toolkit/scripts/profiles-fragment.json
 toolkit/icons/*.png
 *.log
+
+# Tooling metadata
+.reasonix/
+reasonix.toml
+PowerShell/
