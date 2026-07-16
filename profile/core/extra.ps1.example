@@ -1,0 +1,16 @@
+<#
+.SYNOPSIS
+    Lokální uživatelská přizpůsobení (NENÍ verzováno v Gitu).
+.DESCRIPTION
+    Tento soubor je v .gitignore — můžeš si sem dát vlastní funkce,
+    aliasy, proměnné, které nechceš sdílet. Automaticky se načítá
+    z profile.ps1 pokud existuje.
+.NOTES
+    Cesta: ~/.config/powershell/profile/core/extra.ps1
+    Chceš-li použít: smaž tento komentář a napiš vlastní kód.
+#>
+
+# Příklad:
+# Set-Alias n notepad
+# function My-SecretFunction { ... }
+# $env:MY_API_KEY = '...'

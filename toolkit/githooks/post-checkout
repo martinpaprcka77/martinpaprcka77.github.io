@@ -1,0 +1,9 @@
+#!/bin/sh
+# Git post-checkout hook — reloads PowerShell profile on branch switch
+# Copy to: .git/hooks/post-checkout (in this repo)
+# chmod +x .git/hooks/post-checkout
+
+# Only run when switching branches (not file checkout)
+if [ "$3" = "1" ]; then
+    echo "🔄 Branch changed. Reload your PowerShell session or run: . ~/.config/powershell/profile/profile.ps1"
+fi
