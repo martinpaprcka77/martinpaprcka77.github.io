@@ -63,19 +63,19 @@ function Get-ModuleStackStatus {
 
 <#
 .SYNOPSIS
-    Detector: is the dotfiles-powershell profile loaded in this session?
+    Detector: is the dotfiles profile loaded in this session?
 .DESCRIPTION
     Several menu actions (Status, Performance) call functions that live in
-    the companion dotfiles-powershell repo, not this one. This is the
+    the companion profile, not this module. This is the
     guard: a graceful "⚠️ not loaded" beats a "term not recognized" crash.
 #>
 function Get-DotfilesCompanionStatus {
     [CmdletBinding()]
     param()
     if (Get-Command Show-Status -ErrorAction SilentlyContinue) {
-        return @{ Icon = '✅'; Text = 'dotfiles-powershell loaded' }
+        return @{ Icon = '✅'; Text = 'profile loaded' }
     }
-    return @{ Icon = '⚠️'; Text = 'not loaded — load dotfiles-powershell profile first' }
+    return @{ Icon = '⚠️'; Text = 'not loaded — run install.ps1 or reload profile' }
 }
 
 <#
@@ -100,7 +100,7 @@ function Get-ModulePathStatus {
 .SYNOPSIS
     Runs Action only if Command is available in this session; otherwise
     warns instead of crashing. Use for menu actions that depend on the
-    companion dotfiles-powershell profile being loaded.
+    companion profile being loaded.
 .EXAMPLE
     Invoke-IfAvailable -Command 'Show-Status' -Action { Show-Status }
 #>
@@ -113,6 +113,6 @@ function Invoke-IfAvailable {
     if (Get-Command $Command -ErrorAction SilentlyContinue) {
         & $Action
     } else {
-        Write-Warn "Requires dotfiles-powershell profile loaded (missing: $Command)"
+        Write-Warn "Profile function not available (missing: $Command)"
     }
 }

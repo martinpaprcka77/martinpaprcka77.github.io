@@ -16,7 +16,7 @@
 .DESCRIPTION
     Read-only — never modifies PATH. For PSModulePath specifically (a
     related but separate concern, including OneDrive-pollution detection),
-    see Test-PSModulePath / Reset-PSModulePath in the dotfiles-tools repo.
+    see Test-PSModulePath / Reset-PSModulePath in the toolkit module.
 #>
 function Test-PathHealth {
     [CmdletBinding()]

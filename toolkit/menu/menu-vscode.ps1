@@ -12,7 +12,7 @@ function Show-VSCodeMenu {
     }
     # .vscode/ lives inside THIS repo — $env:DOTFILES_TOOLS is only ever set by the companion
     # profile, so fall back to deriving our own root when it isn't loaded (e.g. the WT "Menu"
-    # profile launches menu-main.ps1 directly, without dotfiles-powershell's profile).
+    # profile launches menu-main.ps1 directly, without the companion profile).
     $toolsRoot = if ($env:DOTFILES_TOOLS) { $env:DOTFILES_TOOLS } else { Split-Path $PSScriptRoot -Parent }
     $vsc = Join-Path $toolsRoot '.vscode'
     $items = [ordered]@{

@@ -9,7 +9,7 @@ function Show-DotfilesMenu {
     # scripts/configure.ps1, deps.ps1, modernize.ps1, windows.ps1 live inside THIS repo —
     # $env:DOTFILES_TOOLS is only ever set by the companion profile, so fall back to deriving
     # our own root when it isn't loaded (e.g. the WT "Menu" profile launches menu-main.ps1
-    # directly, without dotfiles-powershell's profile).
+    # directly, without the companion profile).
     $toolsRoot = if ($env:DOTFILES_TOOLS) { $env:DOTFILES_TOOLS } else { Split-Path $PSScriptRoot -Parent }
     $items = [ordered]@{
         '1. 📊 Check Status'     = @{ Action = { Invoke-IfAvailable -Command 'Show-Status' -Action { Show-Status } }; Desc = 'Full ecosystem health dashboard'; Detector = { Get-DotfilesCompanionStatus } }
@@ -28,7 +28,7 @@ function Show-DotfilesMenu {
             New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
             $ts = Get-Date -Format 'yyyyMMdd-HHmmss'
             # Known-Folder-correct when available (Get-NativeProfilePaths lives in
-            # the companion dotfiles-powershell repo's lib/paths.ps1, loaded if its
+            # The companion profile's lib/paths.ps1, loaded if its
             # profile is active this session) — falls back to the naive $HOME guess
             # otherwise, same as it always did.
             $profiles = if (Get-Command Get-NativeProfilePaths -ErrorAction SilentlyContinue) {
