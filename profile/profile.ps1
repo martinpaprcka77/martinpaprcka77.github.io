@@ -18,11 +18,20 @@
 # checks $env:WT_SESSION itself where it's used. See docs/ARCHITECTURE.md for
 # the full picture of where each environment check actually happens.
 $isPSCore      = $PSVersionTable.PSVersion.Major -ge 6
-$isWindowsHost = if ($isPSCore) { $IsWindows } else { $true }  # $IsWindows doesn't exist on PS5.1
+# $PSVersionTable.OS exists in PS5.1 and PS7, and correctly reports non-Windows
+# even on PS5.1 running under Wine (the old $isPSCore/{$IsWindows}/else pattern
+# would return $true for any PS5.1 regardless of host OS).
+$isWindowsHost = $PSVersionTable.OS -match 'Windows'
 #endregion
 
 #region Environment setup
-$env:DOTFILES_PWSH = Split-Path -Parent $MyInvocation.MyCommand.Path
+# Resolve-Path + ProviderPath canonicalizes symlinks: if the profile repo
+# is accessed through a symlink, $MyInvocation.MyCommand.Path gives the
+# symlink path, but we want the real target so that relative references
+# (..\toolkit\lib, etc.) resolve correctly regardless of how the repo
+# was reached.
+$env:DOTFILES_PWSH = (Resolve-Path $MyInvocation.MyCommand.Path).ProviderPath |
+    Split-Path -Parent
 # Monorepo: profile/ and toolkit/ are siblings under one root — derive
 # DOTFILES_TOOLS from DOTFILES_PWSH's parent instead of a separate clone.
 $env:DOTFILES_TOOLS = Join-Path (Split-Path $env:DOTFILES_PWSH -Parent) "toolkit"
@@ -38,7 +47,11 @@ $env:DOTFILES_TOOLS = Join-Path (Split-Path $env:DOTFILES_PWSH -Parent) "toolkit
 if ($isWindowsHost) {
     $localModulesSubdir = if ($isPSCore) { 'PowerShell' } else { 'WindowsPowerShell' }
     $localModules = "$env:LOCALAPPDATA\$localModulesSubdir\Modules"
-    if ($localModules -notin ($env:PSModulePath -split [IO.Path]::PathSeparator)) {
+    # Trim each entry — PSModulePath can accumulate stray spaces from
+    # registry concatenation or manual edits, which silently break -in/-notin.
+    $paths = $env:PSModulePath -split [IO.Path]::PathSeparator |
+        ForEach-Object { $_.Trim() } | Where-Object { $_ }
+    if ($localModules -notin $paths) {
         $env:PSModulePath = "$localModules$([IO.Path]::PathSeparator)$env:PSModulePath"
     }
 }
@@ -61,26 +74,26 @@ $profileStart = if ($env:PROFILE_BENCHMARK -eq 'true') { [Diagnostics.Stopwatch]
 #region Core modules
 $coreDir = Join-Path $env:DOTFILES_PWSH "core"
 if (Test-Path $coreDir) {
-    Get-ChildItem -Path $coreDir -Filter *.ps1 | ForEach-Object {
+    # Sort-Object Name ensures deterministic load order — Get-ChildItem
+    # on some filesystems (FAT, exFAT, network shares) may not return
+    # files alphabetically, and function definitions must not race.
+    Get-ChildItem -Path $coreDir -Filter *.ps1 | Sort-Object Name | ForEach-Object {
         . $_.FullName
     }
 }
 #endregion
 
 #region Version-specific profile
-$psVersionDir = if ($isPSCore) { "ps7" } else { "ps5" }
-$versionProfile = Join-Path $env:DOTFILES_PWSH "$psVersionDir\profile.ps1"
-if (Test-Path $versionProfile) {
-    . $versionProfile
+function Load-Script($path) {
+    if (Test-Path $path) { . $path }
 }
+$psVersionDir = if ($isPSCore) { "ps7" } else { "ps5" }
+Load-Script (Join-Path $env:DOTFILES_PWSH "$psVersionDir\profile.ps1")
 #endregion
 
 #region Host-specific profile
 $hostName = if ($Host.Name -match 'Code') { 'VSCode' } else { 'ConsoleHost' }
-$hostProfile = Join-Path $env:DOTFILES_PWSH "hosts\$hostName.ps1"
-if (Test-Path $hostProfile) {
-    . $hostProfile
-}
+Load-Script (Join-Path $env:DOTFILES_PWSH "hosts\$hostName.ps1")
 #endregion
 
 #region Benchmark output
