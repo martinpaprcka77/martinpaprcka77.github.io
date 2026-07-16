@@ -183,6 +183,23 @@ Describe 'Toolkit Module' {
 
     # ── PSModulePath functions ────────────────────────────────
     Context 'PSModulePath functions' {
+        BeforeAll {
+            # Fixture paths must never contain [IO.Path]::PathSeparator itself —
+            # on Windows that's ';' so 'C:\Mods\A' splits fine, but on Linux/macOS
+            # it's ':', which collides with the drive-letter colon and silently
+            # shreds 'C:\Mods\A' into 'C' + '\Mods\A' (field-reported as 7
+            # cross-platform Pester failures). Use a real Windows path on
+            # Windows, a colon-free POSIX-style path everywhere else — the
+            # functions under test only care about the separator, not the
+            # path format, so this doesn't weaken what's being verified.
+            # $IsWindows doesn't exist on PS5.1 (PS6+ automatic variable) — same
+            # guard used repo-wide (install.ps1, profile.ps1, wtprofile.ps1).
+            $script:isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
+            $modPrefix = if ($script:isWindowsHost) { 'C:\Mods\' } else { '/Mods/' }
+            $script:modA, $script:modB, $script:modNew, $script:modOther =
+                'A', 'B', 'New', 'Other' | ForEach-Object { "$modPrefix$_" }
+        }
+
         BeforeEach {
             $script:origPSModulePath = $env:PSModulePath
         }
@@ -192,33 +209,33 @@ Describe 'Toolkit Module' {
         }
 
         It 'Get-PSModulePath returns the split entries' {
-            $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
+            $env:PSModulePath = @($script:modA, $script:modB) -join [IO.Path]::PathSeparator
             $result = Get-PSModulePath
-            $result | Should -Be @('C:\Mods\A', 'C:\Mods\B')
+            $result | Should -Be @($script:modA, $script:modB)
         }
 
         It 'Add-PSModulePath adds a new path' {
-            $env:PSModulePath = 'C:\Mods\A'
-            Add-PSModulePath -Path 'C:\Mods\New'
-            ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Contain 'C:\Mods\New'
+            $env:PSModulePath = $script:modA
+            Add-PSModulePath -Path $script:modNew
+            ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Contain $script:modNew
         }
 
         It 'Add-PSModulePath is a no-op when the path already exists' {
-            $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
-            Add-PSModulePath -Path 'C:\Mods\A'
-            ($env:PSModulePath -split [IO.Path]::PathSeparator | Where-Object { $_ -eq 'C:\Mods\A' }).Count | Should -Be 1
+            $env:PSModulePath = @($script:modA, $script:modB) -join [IO.Path]::PathSeparator
+            Add-PSModulePath -Path $script:modA
+            ($env:PSModulePath -split [IO.Path]::PathSeparator | Where-Object { $_ -eq $script:modA }).Count | Should -Be 1
         }
 
         It 'Remove-PSModulePath removes by index' {
-            $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
+            $env:PSModulePath = @($script:modA, $script:modB) -join [IO.Path]::PathSeparator
             Remove-PSModulePath -Index 0
-            ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Be @('C:\Mods\B')
+            ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Be @($script:modB)
         }
 
         It 'Remove-PSModulePath removes by path' {
-            $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
-            Remove-PSModulePath -Path 'C:\Mods\A'
-            ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Be @('C:\Mods\B')
+            $env:PSModulePath = @($script:modA, $script:modB) -join [IO.Path]::PathSeparator
+            Remove-PSModulePath -Path $script:modA
+            ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Be @($script:modB)
         }
 
         It 'Reset-PSModulePath sets the modern baseline entries in order' {
@@ -232,21 +249,21 @@ Describe 'Toolkit Module' {
         }
 
         It 'Export-PSModulePath writes JSON with the correct entry count' {
-            $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
+            $env:PSModulePath = @($script:modA, $script:modB) -join [IO.Path]::PathSeparator
             $outPath = Join-Path $TestDrive 'psmodulepath.json'
             Export-PSModulePath -OutputPath $outPath
             $exported = Get-Content $outPath -Raw | ConvertFrom-Json
             $exported.EntryCount | Should -Be 2
-            $exported.Entries | Should -Be @('C:\Mods\A', 'C:\Mods\B')
+            $exported.Entries | Should -Be @($script:modA, $script:modB)
         }
 
         It 'Import-PSModulePath restores entries from an exported file' {
-            $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
+            $env:PSModulePath = @($script:modA, $script:modB) -join [IO.Path]::PathSeparator
             $outPath = Join-Path $TestDrive 'psmodulepath-import.json'
             Export-PSModulePath -OutputPath $outPath
-            $env:PSModulePath = 'C:\Mods\Other'
+            $env:PSModulePath = $script:modOther
             Import-PSModulePath -InputPath $outPath
-            ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Be @('C:\Mods\A', 'C:\Mods\B')
+            ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Be @($script:modA, $script:modB)
         }
 
         It 'Import-PSModulePath errors cleanly when the file is missing' {
@@ -256,7 +273,7 @@ Describe 'Toolkit Module' {
         }
 
         It 'Test-PSModulePath runs without throwing' {
-            $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
+            $env:PSModulePath = @($script:modA, $script:modB) -join [IO.Path]::PathSeparator
             { Test-PSModulePath } | Should -Not -Throw
         }
     }

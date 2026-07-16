@@ -47,8 +47,6 @@ function Write-Warn { param([string]$M) Write-Host "  [!] $M" -ForegroundColor Y
 
 $script:restartNeeded = $false
 
-$dotfilesRepoUrl = 'https://github.com/martinpaprcka77/martinpaprcka77.github.io.git'
-
 # install.ps1 always runs FROM the already-cloned repo (that's how it's
 # invoked — clone, then run <clone>/install.ps1), so $PSScriptRoot is
 # reliably the repo root. No separate default-fallback path is needed here.

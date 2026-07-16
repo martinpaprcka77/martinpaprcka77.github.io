@@ -96,6 +96,9 @@ function Show-Menu {
     # narrower than a sane floor.
     $maxAvailableWidth = [Math]::Max(20, [Console]::WindowWidth - 6)
     $boxWidth = [Math]::Min($naturalWidth, $maxAvailableWidth)
+    # Fit budget for Desc + Detector text — depends only on $boxWidth/$maxLabelWidth
+    # (both fixed above), so it's computed once here rather than per item per frame.
+    $extraBudget = [Math]::Max(0, $boxWidth - $maxLabelWidth - 2)
 
     # Truncates $Text to fit $MaxLength, appending an ellipsis if it doesn't.
     # Local to Show-Menu — a rendering detail, not part of the public API.
@@ -159,7 +162,6 @@ function Show-Menu {
             # Fit Desc + Detector text into the available width, trimming the
             # detector text first, then the description, instead of letting
             # a long status string push the row past the console width.
-            $extraBudget = [Math]::Max(0, $boxWidth - $maxLabelWidth - 2)
             $desc = $item.Desc
             $detText = $detTextRaw
             $combinedLen = $desc.Length + $(if ($detText) { $detText.Length + 2 } else { 0 })
@@ -172,35 +174,26 @@ function Show-Menu {
                 }
             }
 
+            # Selected row gets a colored cursor + accent key instead of a
+            # separate near-duplicate render branch — only the prefix/colors differ.
             if ($i -eq $selected) {
-                Write-Host '  › ' -ForegroundColor $accent -NoNewline
-                Write-Host $key.PadRight($maxLabelWidth) -ForegroundColor $accent -NoNewline
-                if ($desc) {
-                    Write-Host '  ' -NoNewline
-                    Write-Host $desc.PadRight($maxDescWidth) -ForegroundColor White -NoNewline
-                } elseif ($maxDescWidth -gt 0) {
-                    Write-Host (' ' * ($maxDescWidth + 2)) -NoNewline
-                }
-                if ($detText) {
-                    Write-Host '  ' -NoNewline
-                    Write-Host $detText -ForegroundColor $accent -NoNewline
-                }
-                Write-Host ''
+                $prefix = '  › '; $keyColor = $accent; $descColor = 'White'; $detColor = $accent
             } else {
-                Write-Host '    ' -NoNewline
-                Write-Host $key.PadRight($maxLabelWidth) -ForegroundColor Gray -NoNewline
-                if ($desc) {
-                    Write-Host '  ' -NoNewline
-                    Write-Host $desc.PadRight($maxDescWidth) -ForegroundColor DarkGray -NoNewline
-                } elseif ($maxDescWidth -gt 0) {
-                    Write-Host (' ' * ($maxDescWidth + 2)) -NoNewline
-                }
-                if ($detText) {
-                    Write-Host '  ' -NoNewline
-                    Write-Host $detText -ForegroundColor DarkGray -NoNewline
-                }
-                Write-Host ''
+                $prefix = '    '; $keyColor = 'Gray'; $descColor = 'DarkGray'; $detColor = 'DarkGray'
             }
+            Write-Host $prefix -ForegroundColor $keyColor -NoNewline
+            Write-Host $key.PadRight($maxLabelWidth) -ForegroundColor $keyColor -NoNewline
+            if ($desc) {
+                Write-Host '  ' -NoNewline
+                Write-Host $desc.PadRight($maxDescWidth) -ForegroundColor $descColor -NoNewline
+            } elseif ($maxDescWidth -gt 0) {
+                Write-Host (' ' * ($maxDescWidth + 2)) -NoNewline
+            }
+            if ($detText) {
+                Write-Host '  ' -NoNewline
+                Write-Host $detText -ForegroundColor $detColor -NoNewline
+            }
+            Write-Host ''
         }
 
         # ── Footer ─────────────────────────────────────────────
