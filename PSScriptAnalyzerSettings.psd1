@@ -1,4 +1,4 @@
-@{
+﻿@{
     # PSScriptAnalyzer settings for the PowerShell Dotfiles Ecosystem.
     # Used by CI (.github/workflows/test.yml) and picked up automatically by
     # editors/extensions that look for this file at the repo root (VS Code's
