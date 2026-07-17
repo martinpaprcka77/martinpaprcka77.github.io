@@ -2,15 +2,17 @@
 .SYNOPSIS
     Modern interactive menu engine with arrow-key navigation and descriptions.
 .DESCRIPTION
-    Renders a minimal, borderless list — a title, a thin accent underline, and
-    a column-aligned item list with a colored `›` cursor on the selected row
-    (no boxed frame, no inverse-block highlight). Supports:
-    - ↑↓ arrow keys to move selection
+    Renders a polished box-drawn frame with column-aligned items, a colored
+    `›` cursor on the selected row, and support for:
+    - ↑↓ arrow keys + Home/End + Page Up/Down to navigate
     - Enter to confirm (inline mode: runs action, keeps menu visible)
     - Number keys for direct selection
-    - Escape / q to exit
+    - / to activate search/filter mode with live matching
+    - Escape, q, or Ctrl+C to exit
     - Descriptions: each item can have a dimmed hint shown in its own column
+    - Detectors: live status icons (✅⚠️❌) refreshed every render frame
     - Configurable accent color via Get-ToolkitConfig
+    - Auto-redraw on terminal resize
 .PARAMETER Title
     Menu title displayed at the top.
 .PARAMETER Items
