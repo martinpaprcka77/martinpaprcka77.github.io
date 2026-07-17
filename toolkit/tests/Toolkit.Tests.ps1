@@ -36,7 +36,7 @@ Describe 'Toolkit Module' {
         }
     }
 
-    # ── All 37 exported functions ─────────────────────────────
+    # ── All 38 exported functions ─────────────────────────────
     Context 'Public functions' {
         $expectedFunctions = @(
             'Test-Admin', 'Get-ScriptDirectory',
@@ -51,7 +51,8 @@ Describe 'Toolkit Module' {
             'Test-PSModulePath',
             'Test-LegacyPowerShellGetPresent', 'Test-PSResourceGetReady',
             'Get-ModuleStackStatus', 'Get-DotfilesCompanionStatus',
-            'Get-ModulePathStatus', 'Invoke-IfAvailable'
+            'Get-ModulePathStatus', 'Initialize-MenuMenu',
+            'Invoke-IfAvailable'
         )
 
         It "Function '<_>' is exported" -ForEach $expectedFunctions {

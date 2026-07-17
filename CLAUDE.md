@@ -26,7 +26,7 @@ the environment that did the merge, so that's the extent of "archiving."
 - `profile/core/status.ps1` — health dashboard (`Test-PathHealth`, single `.git` check at repo root)
 - `toolkit/lib/menu.ps1` — `Show-Menu` engine (arrow-key nav, live status column, width-clamped)
 - `toolkit/lib/detectors.ps1` — Show-Menu status detectors + `Invoke-IfAvailable` guard
-- `toolkit/Toolkit/Toolkit.psm1` + `.psd1` — module (37 functions)
+- `toolkit/Toolkit/Toolkit.psm1` + `.psd1` — module (38 functions)
 
 ## Module structure
 ```

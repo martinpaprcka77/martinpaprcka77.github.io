@@ -2,13 +2,13 @@
 .SYNOPSIS
     Read-only, cheap detector functions for Show-Menu's live status column.
 .DESCRIPTION
-    Each detector returns @{ Icon = '✅'|'⚠️'|'❌'; Text = '...' } or $null.
-    Detectors run on every menu render frame (every keypress) — keep them
+    Each detector returns @{ Icon = '[OK]'|'[!]'|'[X]'; Text = '...' } or $null.
+    Detectors run on every menu render frame (every keypress)  -  keep them
     cheap: Get-Command/Test-Path/cached config reads only, no network calls,
     no subprocess spawns.
 
     Test-LegacyPowerShellGetPresent / Test-PSResourceGetReady are also used
-    by scripts/modernize.ps1 directly (not just by the menu's detector) —
+    by scripts/modernize.ps1 directly (not just by the menu's detector)  - 
     this is deliberate: the menu's displayed state and modernize.ps1's
     actual behavior read the same predicates, so they can never disagree.
 .NOTES
@@ -56,9 +56,9 @@ function Test-PSResourceGetReady {
 function Get-ModuleStackStatus {
     [CmdletBinding()]
     param()
-    if (Test-LegacyPowerShellGetPresent) { return @{ Icon = '⚠️'; Text = 'legacy PowerShellGet present' } }
-    if (-not (Test-PSResourceGetReady))  { return @{ Icon = '⚠️'; Text = 'PSResourceGet not installed' } }
-    return @{ Icon = '✅'; Text = 'PSResourceGet, modern' }
+    if (Test-LegacyPowerShellGetPresent) { return @{ Icon = '[!]'; Text = 'legacy PowerShellGet present' } }
+    if (-not (Test-PSResourceGetReady))  { return @{ Icon = '[!]'; Text = 'PSResourceGet not installed' } }
+    return @{ Icon = '[OK]'; Text = 'PSResourceGet, modern' }
 }
 
 <#
@@ -67,15 +67,15 @@ function Get-ModuleStackStatus {
 .DESCRIPTION
     Several menu actions (Status, Performance) call functions that live in
     the companion profile, not this module. This is the
-    guard: a graceful "⚠️ not loaded" beats a "term not recognized" crash.
+    guard: a graceful "[!] not loaded" beats a "term not recognized" crash.
 #>
 function Get-DotfilesCompanionStatus {
     [CmdletBinding()]
     param()
     if (Get-Command Show-Status -ErrorAction SilentlyContinue) {
-        return @{ Icon = '✅'; Text = 'profile loaded' }
+        return @{ Icon = '[OK]'; Text = 'profile loaded' }
     }
-    return @{ Icon = '⚠️'; Text = 'not loaded — run install.ps1 or reload profile' }
+    return @{ Icon = '[!]'; Text = 'not loaded  -  run install.ps1 or reload profile' }
 }
 
 <#
@@ -87,13 +87,13 @@ function Get-ModulePathStatus {
     [CmdletBinding()]
     param()
     if (-not (Get-Command Test-PSModulePath -ErrorAction SilentlyContinue)) {
-        return @{ Icon = '❌'; Text = 'Test-PSModulePath unavailable' }
+        return @{ Icon = '[X]'; Text = 'Test-PSModulePath unavailable' }
     }
     $entries = $env:PSModulePath -split [IO.Path]::PathSeparator | Where-Object { $_ }
     $hasDupes = ($entries | Group-Object | Where-Object { $_.Count -gt 1 })
     $hasOneDrive = ($entries | Where-Object { $_ -match 'OneDrive' })
-    if ($hasDupes -or $hasOneDrive) { return @{ Icon = '⚠️'; Text = 'issues found — run Test-PSModulePath' } }
-    return @{ Icon = '✅'; Text = "$($entries.Count) entries, clean" }
+    if ($hasDupes -or $hasOneDrive) { return @{ Icon = '[!]'; Text = 'issues found  -  run Test-PSModulePath' } }
+    return @{ Icon = '[OK]'; Text = "$($entries.Count) entries, clean" }
 }
 
 <#

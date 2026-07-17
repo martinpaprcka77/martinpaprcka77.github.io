@@ -15,7 +15,7 @@ interactive toolbox, in one repo, plus the GitHub Pages portal at the repo root.
 | **Location on disk** | `~/.config/powershell/` |
 | **Portal** | [martinpaprcka77.github.io](https://martinpaprcka77.github.io) (this repo's Pages, root URL) |
 | **Language** | PowerShell 5.1 / 7+ |
-| **Module** | `toolkit/Toolkit` — 37 exported functions |
+| **Module** | `toolkit/Toolkit` — 38 exported functions |
 | **Tests** | 75 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` |
 | **Dependencies** | Git, PowerShell 5.1+; Docker (optional, for `toolkit`'s Docker menu) |
 
@@ -81,7 +81,7 @@ and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_T
 │
 └── toolkit/                 ← INTERACTIVE TOOLBOX
     ├── bin/                 ← in PATH: menu.ps1 (→ Start-MainMenu), check.ps1 (→ Invoke-SystemCheck)
-    ├── Toolkit/             ← PowerShell module: Toolkit.psd1 (37 FunctionsToExport), Toolkit.psm1
+    ├── Toolkit/             ← PowerShell module: Toolkit.psd1 (38 FunctionsToExport), Toolkit.psm1
     │
     ├── lib/
     │   ├── common.ps1       ← Test-Admin, Write-Info/Success/Warn/Err, Confirm-Action
@@ -200,7 +200,7 @@ Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
 
 ---
 
-## Toolkit module — 37 exported functions
+## Toolkit module — 38 exported functions
 
 | Category | Functions |
 |----------|-----------|

@@ -51,7 +51,7 @@ One repo, cloned to `~/.config/powershell/`:
 │
 └── toolkit/                           ← interactive toolbox
     ├── bin/                           ← menu.ps1 · check.ps1 (in PATH)
-    ├── Toolkit/                       ← PowerShell module (37 functions)
+    ├── Toolkit/                       ← PowerShell module (38 functions)
     ├── lib/                           ← menu engine · checkers · config · detectors · modulepath
     ├── menu/                          ← 7 submenu definitions
     ├── scripts/                       ← deps · windows · modernize · precheck · Add-WTProfiles · configure
