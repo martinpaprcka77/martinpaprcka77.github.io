@@ -21,6 +21,7 @@
 .NOTES
     Cesta: ~/.config/powershell/install.ps1
 #>
+#Requires -Version 5.1
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [switch]$NoTerminal,
@@ -35,6 +36,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'profile\lib\paths.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\bootstrap.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\encoding.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\repair.ps1')
 
 $script:Summary = [System.Collections.Generic.List[string]]::new()
 
@@ -85,19 +87,15 @@ if (-not $NoUpdates) {
     Write-Skip "Skipping update (--NoUpdates): $dotfilesPath"
 }
 
-# ── Normalize file encoding ────────────────────────────────────
-# Ensure every non-ASCII source file carries a UTF-8 BOM before anything
-# dot-sources it under Windows PowerShell 5.1 (which otherwise reads BOM-less
-# UTF-8 as ANSI and crashes the parser). Idempotent no-op when already correct.
-Write-Step "Checking file encoding..."
-if ($PSCmdlet.ShouldProcess($dotfilesPath, 'Repair file encoding (UTF-8 BOM)')) {
-    $null = Repair-FileEncoding -Path $dotfilesPath
-}
-
-# ── Bootstrap profiles ────────────────────────────────────────
-Write-Step "Injecting bootstrap into PowerShell profiles..."
-if ($PSCmdlet.ShouldProcess('$PROFILE targets', 'Inject/repair bootstrap')) {
-    $script:restartNeeded = (Invoke-BootstrapInjection -Force:$Force) -or $script:restartNeeded
+# ── Self-heal ────────────────────────────────────────────────
+# One pass covering everything: bootstrap injection (Known-Folder-correct
+# $PROFILE targets), file encoding (UTF-8 BOM — Windows PowerShell 5.1 crashes
+# parsing a BOM-less non-ASCII file), and (Windows only) PSModulePath
+# validation/reset. See profile/lib/repair.ps1.
+Write-Step "Running self-heal (bootstrap, encoding, PSModulePath)..."
+if ($PSCmdlet.ShouldProcess($dotfilesPath, 'Invoke-DotfilesRepair')) {
+    $repairResult = Invoke-DotfilesRepair -Path $dotfilesPath -Force:$Force
+    $script:restartNeeded = $repairResult.RestartNeeded -or $script:restartNeeded
 }
 
 # ── PATH setup ─────────────────────────────────────────────────
