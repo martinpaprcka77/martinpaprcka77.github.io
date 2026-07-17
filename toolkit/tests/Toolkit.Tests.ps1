@@ -36,7 +36,7 @@ Describe 'Toolkit Module' {
         }
     }
 
-    # ── All 36 exported functions ─────────────────────────────
+    # ── All 37 exported functions ─────────────────────────────
     Context 'Public functions' {
         $expectedFunctions = @(
             'Test-Admin', 'Get-ScriptDirectory',

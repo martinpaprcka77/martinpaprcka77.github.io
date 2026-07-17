@@ -26,7 +26,7 @@ the environment that did the merge, so that's the extent of "archiving."
 - `profile/core/status.ps1` — health dashboard (`Test-PathHealth`, single `.git` check at repo root)
 - `toolkit/lib/menu.ps1` — `Show-Menu` engine (arrow-key nav, live status column, width-clamped)
 - `toolkit/lib/detectors.ps1` — Show-Menu status detectors + `Invoke-IfAvailable` guard
-- `toolkit/Toolkit/Toolkit.psm1` + `.psd1` — module (36 functions)
+- `toolkit/Toolkit/Toolkit.psm1` + `.psd1` — module (37 functions)
 
 ## Module structure
 ```
@@ -38,7 +38,7 @@ To add a function: write it in `toolkit/lib/`, add to `Export-ModuleMember` in `
 ## How to run
 - After install: `menu` or `check` from anywhere
 - Direct: `Import-Module ~/.config/powershell/toolkit/Toolkit/Toolkit.psd1`
-- Tests: `Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1` (63 cases)
+- Tests: `Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1` (75 cases)
 - Validate profile: `& $PROFILE` in a fresh session
 
 ## Architecture decisions

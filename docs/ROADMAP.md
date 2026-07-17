@@ -9,7 +9,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 - ✅ Modulární PowerShell profil (`profile/`)
 - ✅ Idempotentní instalátor (`install.ps1` — WhatIf, Force, backup, summary)
 - ✅ Update mechanism (`update.ps1` — git fetch + reload + bootstrap self-heal)
-- ✅ Toolkit modul — **36 exportovaných funkcí**
+- ✅ Toolkit modul — **37 exportovaných funkcí**
 - ✅ Interaktivní menu — 7 submenus (Dotfiles, Docker, Git, Terminal, PowerShell, VS Code, Diagnostika)
 - ✅ Moderní menu engine — šipky ↑↓, zvýraznění, popisky, inline režim, ořez na šířku konzole
 - ✅ Arrow-key menu s popisky u každé položky
@@ -27,7 +27,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 - ✅ Starship prompt (Rust) s `starship.toml` konfigurací (30+ modulů)
 - ✅ oh-my-posh jako fallback
 - ✅ Generování ikon (`Generate-Icons.ps1`)
-- ✅ 73 Pester testů (Mock pokrytí, config, PSModulePath, menu chybové cesty, smoke testy)
+- ✅ 75 Pester testů (full coverage včetně smoke testů pro všech 7 menu)
 - ✅ Bezpečné ukládání klíčů (`Get-SecretKey` — SecretManagement + env fallback)
 - ✅ `extra.ps1` pattern — uživatelské přizpůsobení mimo Git
 - ✅ AGENTS.md + CLAUDE.md v kořeni repozitáře
@@ -112,7 +112,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 | `gcm`/`gps` git zkratky nikdy nefungovaly (tiché stínění vestavěnými PS aliasy) | ✅ Vyřešeno | `Remove-Item Alias:` před definicí funkce |
 | `checkers.ps1`/`common.ps1` bez platform guardu — pád na Linuxu/macOS | ✅ Vyřešeno | `$isWindowsHost` guard |
 | `Reset-PSModulePath` vracel `Documents\...` — přesně OneDrive-postiženou cestu | ✅ Vyřešeno | `$env:LOCALAPPDATA\...\Modules` místo Documents |
-| 7 PSModulePath Pester testů selhávalo na Linuxu/macOS | ✅ Vyřešeno | Testovací fixtures používaly `C:\Mods\...` — dvojtečka kolidovala s `[IO.Path]::PathSeparator` (`:` na Linuxu/macOS, `;` na Windows); fixtures teď volí `C:\Mods\...` na Windows a `/Mods/...` jinde, 63/63 testů prochází na obou platformách |
+| 7 PSModulePath Pester testů selhávalo na Linuxu/macOS | ✅ Vyřešeno | Testovací fixtures používaly `C:\Mods\...` — dvojtečka kolidovala s `[IO.Path]::PathSeparator` (`:` na Linuxu/macOS, `;` na Windows); fixtures teď volí `C:\Mods\...` na Windows a `/Mods/...` jinde, 75/75 testů prochází na obou platformách |
 | Menu skripty padaly na `$null` `$env:DOTFILES_TOOLS`, pokud menu běželo bez načteného profilu | ✅ Vyřešeno (field-reported) | Fallback `$toolsRoot = if ($env:DOTFILES_TOOLS) {...} else { Split-Path $PSScriptRoot -Parent }` |
 | `Show-Menu` box se rozbil (přetekl přes hranici konzole), když `Detector` vrátil dlouhý text | ✅ Vyřešeno (field-reported) | `$boxWidth` ořezán na `[Console]::WindowWidth`, `Desc`/`Detector` text zkrácen s výpustkou (`…`) |
 | `Resolve-DocumentsPath` padal na poškozené Known Folder registrové hodnotě | ✅ Vyřešeno (field-reported) | `Test-RootedPath` validuje každého kandidáta před použitím |

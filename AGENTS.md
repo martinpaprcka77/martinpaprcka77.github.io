@@ -15,8 +15,8 @@ interactive toolbox, in one repo, plus the GitHub Pages portal at the repo root.
 | **Location on disk** | `~/.config/powershell/` |
 | **Portal** | [martinpaprcka77.github.io](https://martinpaprcka77.github.io) (this repo's Pages, root URL) |
 | **Language** | PowerShell 5.1 / 7+ |
-| **Module** | `toolkit/Toolkit` — 36 exported functions |
-| **Tests** | 63 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` |
+| **Module** | `toolkit/Toolkit` — 37 exported functions |
+| **Tests** | 75 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` |
 | **Dependencies** | Git, PowerShell 5.1+; Docker (optional, for `toolkit`'s Docker menu) |
 
 Previously split across two repos (`dotfiles-powershell`, `dotfiles-tools`) — merged here to
@@ -81,7 +81,7 @@ and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_T
 │
 └── toolkit/                 ← INTERACTIVE TOOLBOX
     ├── bin/                 ← in PATH: menu.ps1 (→ Start-MainMenu), check.ps1 (→ Invoke-SystemCheck)
-    ├── Toolkit/             ← PowerShell module: Toolkit.psd1 (36 FunctionsToExport), Toolkit.psm1
+    ├── Toolkit/             ← PowerShell module: Toolkit.psd1 (37 FunctionsToExport), Toolkit.psm1
     │
     ├── lib/
     │   ├── common.ps1       ← Test-Admin, Write-Info/Success/Warn/Err, Confirm-Action
@@ -101,7 +101,7 @@ and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_T
     │   ├── Generate-Icons.ps1, configure.ps1, deps.ps1, windows.ps1, modernize.ps1, precheck.ps1
     │
     ├── configs/              ← settings.json, wt-schemes.json (single source of truth for WT colors)
-    ├── tests/Toolkit.Tests.ps1 ← 63 Pester cases
+    ├── tests/Toolkit.Tests.ps1 ← 75 Pester cases
     ├── githooks/              ← post-checkout/post-merge reminders, install.sh
     └── icons/README.md
 ```
@@ -200,7 +200,7 @@ Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
 
 ---
 
-## Toolkit module — 36 exported functions
+## Toolkit module — 37 exported functions
 
 | Category | Functions |
 |----------|-----------|

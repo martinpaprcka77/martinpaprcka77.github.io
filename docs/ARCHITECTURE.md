@@ -134,7 +134,7 @@ graph TB
 
     subgraph "Toolkit Module"
         PSM1["Toolkit.psm1<br/>(dot-sources lib/)"]
-        PSD1["Toolkit.psd1<br/>(manifest, 36 funkcí)"]
+        PSD1["Toolkit.psd1<br/>(manifest, 37 funkcí)"]
     end
 
     subgraph "toolkit/lib/ (source functions)"
@@ -273,7 +273,7 @@ toolkit/bin/menu.ps1          toolkit/bin/check.ps1
     ▼                           ▼
 ┌─────────────────────────────────────────┐
 │           Toolkit.psd1 (manifest)       │
-│  FunctionsToExport: 36 functions         │
+│  FunctionsToExport: 37 functions         │
 └─────────────────────────────────────────┘
     │
     │ RootModule
