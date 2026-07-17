@@ -22,7 +22,7 @@ interactive toolbox, in one repo, plus the GitHub Pages portal at the repo root.
 Previously split across two repos (`dotfiles-powershell`, `dotfiles-tools`) — merged here to
 eliminate cross-repo coupling (menu items calling functions that only existed in the other repo)
 and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_TOOLS`. See
-`docs/ROADMAP.md` Fáze 5 for the full rationale.
+`docs/ROADMAP.md` Phase 5 for the full rationale.
 
 ---
 
@@ -206,9 +206,9 @@ Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
 
 | Category | Functions |
 |----------|-----------|
-| Menu | `Start-MainMenu`, `Show-DockerMenu`, `Show-GitMenu`, `Show-TerminalMenu`, `Show-DotfilesMenu`, `Show-PwshMenu`, `Show-VSCodeMenu`, `Show-Menu` |
+| Menu | `Start-MainMenu`, `Show-DockerMenu`, `Show-GitMenu`, `Show-TerminalMenu`, `Show-TerminalTroubleshootingMenu`, `Show-DotfilesMenu`, `Show-PwshMenu`, `Show-VSCodeMenu`, `Show-Menu` |
 | Diagnostics | `Invoke-SystemCheck`, `Get-DiskStatus`, `Get-ServiceStatus`, `Get-NetworkInfo`, `Get-TopProcesses` |
-| Utility | `Test-Admin`, `Get-ScriptDirectory`, `Confirm-Action` |
+| Utility | `Test-Admin`, `Get-ScriptDirectory`, `Confirm-Action`, `Initialize-MenuMenu` |
 | Logging | `Write-Info`, `Write-Success`, `Write-Warn`, `Write-Err` |
 | Config | `Get-ToolkitConfig`, `Save-ToolkitConfig`, `Merge-Hashtable` |
 | PSModulePath | `Get-PSModulePath`, `Add-PSModulePath`, `Remove-PSModulePath`, `Reset-PSModulePath`, `Export-PSModulePath`, `Import-PSModulePath`, `Test-PSModulePath` |
