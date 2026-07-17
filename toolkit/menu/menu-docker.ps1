@@ -30,13 +30,31 @@ function Show-DockerMenu {
             Read-Host "`nStiskni Enter..."
         }; Desc = 'docker compose down' }
         '9.  Networks' = @{ Action = { docker network ls; Read-Host "`nStiskni Enter..." }; Desc = 'List all Docker networks' }
-        '10.  Prune' = @{ Action = {
+        '10. Container Inspect' = @{ Action = {
+            $c = Read-Host 'Container name or ID'
+            if (-not [string]::IsNullOrEmpty($c)) {
+                docker inspect $c 2>&1 | ConvertFrom-Json | ConvertTo-Json -Depth 10; Read-Host "`nStiskni Enter..."
+            } else {
+                Write-Warn "No container specified."
+                Read-Host "`nStiskni Enter..."
+            }
+        }; Desc = 'Detailed container inspection (JSON format)' }
+        '11. Network Inspect' = @{ Action = {
+            $n = Read-Host 'Network name or ID'
+            if (-not [string]::IsNullOrEmpty($n)) {
+                docker network inspect $n 2>&1 | ConvertFrom-Json | ConvertTo-Json -Depth 10; Read-Host "`nStiskni Enter..."
+            } else {
+                Write-Warn "No network specified."
+                Read-Host "`nStiskni Enter..."
+            }
+        }; Desc = 'Detailed network inspection (JSON format)' }
+        '12. Prune' = @{ Action = {
             Write-Warn "This will remove all stopped containers, unused networks, dangling images, and build cache."
             $c = Read-Host "Continue? (y/N)"
             if ($c -eq 'y') { docker system prune -af --volumes 2>&1; Write-Success "Pruned." }
             Read-Host "`nStiskni Enter..."
         }; Desc = 'Docker system prune -af ([!]️ destructive!)' }
-        '11.   Back' = @{ Action = { return }; Desc = 'Return to main menu' }
+        '13. Back' = @{ Action = { return }; Desc = 'Return to main menu' }
     }
     Show-Menu -Title 'DOCKER' -Items $items
 }
