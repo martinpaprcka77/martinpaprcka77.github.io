@@ -59,9 +59,9 @@
 
 ---
 
-## Phase 5: Ekosystém (✅ Key Items Done)
+## Phase 5: Ekosystém (✅ Core Items Done)
 
-### [ ] Instalační skript pro Windows
+### [x] Instalační skript pro Windows
 **What**: Complete Windows setup from clean install  
 **Scope**: Large  
 **Notes**:
@@ -70,10 +70,16 @@
 - Currently split between `install.ps1` + `deps.ps1` + `windows.ps1`
 - Consolidate into single `Setup-Windows.ps1` or similar
 
-**Checklist**:
-- [ ] Design unified entry point (CLI args)
-- [ ] Test on clean Windows VM
-- [ ] Add smoke tests (GitHub Actions matrix: Windows Server 2019, 2022)
+**Status**: ✅ Done (commit: e1c4cdb)
+
+**Implemented**:
+- [x] Unified `Setup-Windows.ps1` with CLI flags (-Profile, -Dependencies, -Defaults, -VSCode, -All)
+- [x] Dependency detection + winget auto-install (Git, PS7, WT, Starship, zoxide)
+- [x] Windows defaults (privacy, taskbar, Explorer) with registry edits
+- [x] VS Code configuration (copy .vscode/ settings)
+- [x] Idempotent — safe to re-run
+- [ ] Test on clean Windows VM (user action: manual testing)
+- [ ] Add CI smoke tests (future: GitHub Actions Windows VM)
 
 ### [ ] Dokumentační web
 **What**: Static site generated from Markdown docs  
