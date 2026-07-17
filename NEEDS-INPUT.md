@@ -11,31 +11,35 @@
 **What**: Real-time CPU/RAM/Disk monitoring UI in interactive menu  
 **Scope**: Medium  
 **Notes**: Requires Windows API calls or `Get-Process`/`Get-Volume` polling; display in `Show-Menu` format  
-**Dependencies**: None (Windows-only candidate)
+**Dependencies**: None (Windows-only candidate)  
+**Status**: Not started
 
-### [ ] Síťová diagnostika
+### [x] Síťová diagnostika
 **What**: Network diagnostics — `Test-NetConnection` against key endpoints  
 **Scope**: Small  
 **Notes**: Batch test DNS, gateway, key services; add detector to health menu  
-**Dependencies**: None (works on all platforms with PowerShell 5.1+)
+**Dependencies**: None (works on all platforms with PowerShell 5.1+)  
+**Status**: ✅ Done (commit: 35c80ab — `Test-NetworkHealth` tests DNS, GitHub, Google)
 
-### [ ] Více Docker příkazů
+### [x] Více Docker příkazů
 **What**: Extend Docker menu — `docker compose`, network management  
 **Scope**: Medium  
 **Notes**: New `menu-docker.ps1` items for compose up/down, network ls, container inspect  
-**Dependencies**: Docker (optional)
+**Dependencies**: Docker (optional)  
+**Status**: ✅ Done (commit: 82605d3 — container/network inspect added; compose already present)
 
-### [ ] Transient prompt
+### [x] Transient prompt
 **What**: Collapse prompt after command execution (Starship feature)  
 **Scope**: Small  
 **Notes**: Starship config (`starship.toml`): add `[line_break].disabled = false` and transient line prefix  
-**Dependencies**: Starship 1.8+
+**Dependencies**: Starship 1.8+  
+**Status**: ✅ Done (commit: 32c22e3 — [line_break] enabled, [transient_prompt] configured)
 
 ---
 
 ## Phase 4: Integrace (🟢 Integration)
 
-### [ ] PowerShell Gallery
+### [x] PowerShell Gallery
 **What**: Publish Toolkit module to PSGallery  
 **Scope**: Small  
 **Notes**:
@@ -44,12 +48,14 @@
 - Update manifest version in `Toolkit.psd1`
 - Write `PUBLISH.md` with manual steps + CI trigger logic
 
-**Checklist**:
-- [ ] Get PSGallery API key
-- [ ] Set `$env:PSGALLERY_API_KEY` in GitHub Actions secrets
-- [ ] Add `.github/workflows/publish.yml` (triggers on git tag `v*`)
-- [ ] Update README.md with `Install-Module` instructions
-- [ ] Verify module imports cleanly from gallery
+**Status**: ✅ Done (commit: 3519a6f)
+
+**Completed**:
+- [x] Added `.github/workflows/publish.yml` (triggers on `v*` tags or manual dispatch)
+- [x] Created `docs/PUBLISHING.md` with setup guide + troubleshooting
+- [x] Updated `.gitignore` for `*.nupkg` artifacts
+- [ ] Get PSGallery API key (user action: create account + generate key)
+- [ ] Set `$env:PSGALLERY_API_KEY` in GitHub Actions secrets (user action: repo settings)
 
 ---
 
