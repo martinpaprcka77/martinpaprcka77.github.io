@@ -34,6 +34,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'profile\lib\output.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\paths.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\bootstrap.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\encoding.ps1')
 
 $script:Summary = [System.Collections.Generic.List[string]]::new()
 
@@ -52,11 +53,11 @@ $script:restartNeeded = $false
 # reliably the repo root. No separate default-fallback path is needed here.
 $dotfilesPath = $PSScriptRoot
 
-# $PSVersionTable.OS exists in PS5.1+ and PS7, correctly reports non-Windows
-# even on PS5.1 under Wine. PS5.0 lacks .OS — fall back to PSVersion check.
-# Use instead of raw $IsWindows anywhere below.
-try { $isWindowsHost = $PSVersionTable.OS -match 'Windows' }
-catch { $isWindowsHost = $PSVersionTable.PSVersion.Major -lt 6 }
+# $IsWindows is a PS6+ automatic variable — absent on Windows PowerShell 5.1
+# (and $PSVersionTable has no .OS key there). Guard on version: PS5.1 only runs
+# on Windows, so $true; PS7+ defers to the real $IsWindows. Use $isWindowsHost
+# instead of raw $IsWindows anywhere below.
+$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
 
 # ── Preflight ──────────────────────────────────────────────────
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -82,6 +83,15 @@ if (-not $NoUpdates) {
     }
 } else {
     Write-Skip "Skipping update (--NoUpdates): $dotfilesPath"
+}
+
+# ── Normalize file encoding ────────────────────────────────────
+# Ensure every non-ASCII source file carries a UTF-8 BOM before anything
+# dot-sources it under Windows PowerShell 5.1 (which otherwise reads BOM-less
+# UTF-8 as ANSI and crashes the parser). Idempotent no-op when already correct.
+Write-Step "Checking file encoding..."
+if ($PSCmdlet.ShouldProcess($dotfilesPath, 'Repair file encoding (UTF-8 BOM)')) {
+    $null = Repair-FileEncoding -Path $dotfilesPath
 }
 
 # ── Bootstrap profiles ────────────────────────────────────────

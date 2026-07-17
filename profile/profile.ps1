@@ -18,10 +18,13 @@
 # checks $env:WT_SESSION itself where it's used. See docs/ARCHITECTURE.md for
 # the full picture of where each environment check actually happens.
 $isPSCore      = $PSVersionTable.PSVersion.Major -ge 6
-# $PSVersionTable.OS exists in PS5.1 and PS7, and correctly reports non-Windows
-# even on PS5.1 running under Wine (the old $isPSCore/{$IsWindows}/else pattern
-# would return $true for any PS5.1 regardless of host OS).
-$isWindowsHost = $PSVersionTable.OS -match 'Windows'
+# $IsWindows is a PS6+ automatic variable — it does NOT exist on Windows
+# PowerShell 5.1 (where $PSVersionTable also has no .OS key), so guard on the
+# version first: PS5.1 only ever runs on Windows, so it's $true there; on PS7+
+# defer to the real $IsWindows. (An earlier "$PSVersionTable.OS -match 'Windows'"
+# form silently returned $false on PS5.1 — .OS is $null there — which disabled
+# the PSModulePath OneDrive fix below on exactly the host that needs it.)
+$isWindowsHost = if ($isPSCore) { $IsWindows } else { $true }
 #endregion
 
 #region Environment setup

@@ -25,6 +25,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'profile\lib\output.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\paths.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\bootstrap.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\encoding.ps1')
 
 if (-not (Test-Path (Join-Path $dotfilesPath '.git'))) {
     Write-Fail "Not a git repo at $dotfilesPath. Run install.ps1 first."
@@ -65,6 +66,17 @@ if ($PSCmdlet.ShouldProcess($dotfilesPath, 'git fetch && git status')) {
     }
     finally {
         Pop-Location
+    }
+}
+
+# ── Normalize file encoding (new upstream files) ───────────────
+# A freshly pulled commit could introduce a non-ASCII source file without a
+# UTF-8 BOM, which crashes Windows PowerShell 5.1's parser. Repair after every
+# pull so the next session loads cleanly. Idempotent no-op when unchanged.
+if ($updateNeeded) {
+    Write-Step "Checking file encoding..."
+    if ($PSCmdlet.ShouldProcess($dotfilesPath, 'Repair file encoding (UTF-8 BOM)')) {
+        $null = Repair-FileEncoding -Path $dotfilesPath
     }
 }
 

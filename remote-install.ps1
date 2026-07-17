@@ -72,8 +72,11 @@ if ($env:DOTFILES_FORCE)      { $Force = $true }
 if ($env:DOTFILES_NO_UPDATES) { $NoUpdates = $true }
 if ($env:DOTFILES_NO_TERMINAL) { $NoTerminal = $true }
 
-try { $isWindowsHost = $PSVersionTable.OS -match 'Windows' }
-catch { $isWindowsHost = $PSVersionTable.PSVersion.Major -lt 6 }
+# $IsWindows is PS6+ only; on PS5.1 it doesn't exist and $PSVersionTable has no
+# .OS key. Guard on version: PS5.1 is always Windows, PS7+ uses real $IsWindows.
+# (No Set-StrictMode here, so a "$PSVersionTable.OS -match 'Windows'" form would
+# silently return $false on PS5.1 rather than throw — the try/catch wouldn't save it.)
+$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
 
 Write-Step "PowerShell Dotfiles Ecosystem — remote bootstrap"
 
@@ -89,19 +92,22 @@ $isRepo = Test-Path (Join-Path $dotfilesPath '.git')
 if ($isRepo) {
     try {
         Push-Location $dotfilesPath
-        # A pre-merge install still has 'origin' pointing at the old
-        # dotfiles-powershell repo — a plain `git pull` there only fast-forwards
-        # within THAT repo's own (now-frozen, README-pointer-only) history, so
-        # this directory's install.ps1 silently stays the stale pre-merge
-        # version forever (field-reported: kept running the old two-repo
-        # installer even after this bootstrapper itself was fetched fresh from
-        # the new repo). Detect the mismatch and re-point + hard-sync instead
-        # of a plain pull. Any real user customizations live in untracked
-        # files (see core/extra.ps1.example) and survive a hard reset — only
-        # tracked repo content is replaced.
+        # A pre-merge install still has 'origin' pointing at one of the OLD
+        # repos (dotfiles-powershell / dotfiles-tools) — a plain `git pull`
+        # there only fast-forwards within THAT repo's own (now-frozen,
+        # README-pointer-only) history, so this directory's install.ps1 silently
+        # stays the stale pre-merge version forever (field-reported: kept
+        # running the old two-repo installer even after this bootstrapper itself
+        # was fetched fresh from the new repo). Detect ONLY that specific case by
+        # matching the old repo names — NOT any origin that merely differs from
+        # $dotfilesUrl, which would also catch a legitimate SSH clone
+        # (git@github.com:...) or a fork of THIS repo and hard-reset it, blowing
+        # away the user's remote choice and any local commits. Re-point +
+        # hard-sync only the genuine pre-merge case. User customizations live in
+        # untracked files (see core/extra.ps1.example) and survive a hard reset.
         $currentOrigin = (git remote get-url origin 2>$null)
-        if ($currentOrigin -and $currentOrigin -ne $dotfilesUrl) {
-            Write-Warn "Existing install points at a moved repo ($currentOrigin) — migrating to $dotfilesUrl"
+        if ($currentOrigin -and $currentOrigin -match 'dotfiles-powershell|dotfiles-tools') {
+            Write-Warn "Existing install points at a pre-merge repo ($currentOrigin) — migrating to $dotfilesUrl"
             git remote set-url origin $dotfilesUrl 2>&1 | Out-Null
             git fetch origin 2>&1 | Out-Null
             git reset --hard origin/main 2>&1 | Out-Null
