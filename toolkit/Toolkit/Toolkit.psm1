@@ -72,6 +72,5 @@ Export-ModuleMember -Function @(
     'Get-ModuleStackStatus',
     'Get-DotfilesCompanionStatus',
     'Get-ModulePathStatus',
-    'Initialize-MenuMenu',
     'Invoke-IfAvailable'
 )

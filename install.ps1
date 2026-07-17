@@ -21,6 +21,7 @@
 .NOTES
     Cesta: ~/.config/powershell/install.ps1
 #>
+#Requires -Version 5.1
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [switch]$NoTerminal,
@@ -34,6 +35,8 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'profile\lib\output.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\paths.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\bootstrap.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\encoding.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\repair.ps1')
 
 $script:Summary = [System.Collections.Generic.List[string]]::new()
 
@@ -52,7 +55,11 @@ $script:restartNeeded = $false
 # reliably the repo root. No separate default-fallback path is needed here.
 $dotfilesPath = $PSScriptRoot
 
-$isWindowsHost = $true
+# $IsWindows is a PS6+ automatic variable — absent on Windows PowerShell 5.1
+# (and $PSVersionTable has no .OS key there). Guard on version: PS5.1 only runs
+# on Windows, so $true; PS7+ defers to the real $IsWindows. Use $isWindowsHost
+# instead of raw $IsWindows anywhere below.
+$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
 
 # ── Preflight ──────────────────────────────────────────────────
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -80,46 +87,15 @@ if (-not $NoUpdates) {
     Write-Skip "Skipping update (--NoUpdates): $dotfilesPath"
 }
 
-# ── Directory junctions (git, chezmoi) ─────────────────────────
-Write-Step "Deploying directory junctions..."
-$junctions = @(
-    @{ Name = 'git';     Target = Join-Path $dotfilesPath 'git' }
-    @{ Name = 'chezmoi'; Target = Join-Path $dotfilesPath 'chezmoi' }
-)
-$junctionParent = Split-Path $dotfilesPath -Parent
-foreach ($j in $junctions) {
-    $linkPath = Join-Path $junctionParent $j.Name
-    $targetPath = $j.Target
-    if (-not (Test-Path $targetPath)) {
-        Write-Skip "Source missing (skip): $targetPath"
-        continue
-    }
-    if (Test-Path $linkPath) {
-        $item = Get-Item $linkPath -Force
-        $isCorrect = ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -and
-                     ((Get-Item $linkPath -Force).Target -eq $targetPath) 2>$null
-        if ($isCorrect) {
-            Write-Skip "Already deployed: $linkPath → $targetPath"
-            continue
-        }
-        # Exists but isn't our junction — block
-        Write-Fail "Path exists and is not our junction: $linkPath — move it aside or remove it, then re-run"
-        continue
-    }
-    if ($PSCmdlet.ShouldProcess($linkPath, "Create junction → $targetPath")) {
-        try {
-            New-Item -ItemType Junction -Path $linkPath -Target $targetPath -Force | Out-Null
-            Write-Ok "Junction: $linkPath → $targetPath"
-        } catch {
-            Write-Fail "Junction failed: $linkPath → $targetPath — $_"
-        }
-    }
-}
-
-# ── Bootstrap profiles ────────────────────────────────────────
-Write-Step "Injecting bootstrap into PowerShell profiles..."
-if ($PSCmdlet.ShouldProcess('$PROFILE targets', 'Inject/repair bootstrap')) {
-    $script:restartNeeded = (Invoke-BootstrapInjection -Force:$Force) -or $script:restartNeeded
+# ── Self-heal ────────────────────────────────────────────────
+# One pass covering everything: bootstrap injection (Known-Folder-correct
+# $PROFILE targets), file encoding (UTF-8 BOM — Windows PowerShell 5.1 crashes
+# parsing a BOM-less non-ASCII file), and (Windows only) PSModulePath
+# validation/reset. See profile/lib/repair.ps1.
+Write-Step "Running self-heal (bootstrap, encoding, PSModulePath)..."
+if ($PSCmdlet.ShouldProcess($dotfilesPath, 'Invoke-DotfilesRepair')) {
+    $repairResult = Invoke-DotfilesRepair -Path $dotfilesPath -Force:$Force
+    $script:restartNeeded = $repairResult.RestartNeeded -or $script:restartNeeded
 }
 
 # ── PATH setup ─────────────────────────────────────────────────
@@ -130,10 +106,12 @@ Write-Step "Setting user PATH..."
 
 $toolsBin = Join-Path $dotfilesPath 'toolkit\bin'
 try {
-    $currentUserPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
+    $currentUserPath = if ($isWindowsHost) { [Environment]::GetEnvironmentVariable('PATH', 'User') } else { $env:PATH }
     if ($toolsBin -notin ($currentUserPath -split [IO.Path]::PathSeparator)) {
         if ($PSCmdlet.ShouldProcess('User PATH', "Add $toolsBin")) {
-            [Environment]::SetEnvironmentVariable('PATH', "$toolsBin$([IO.Path]::PathSeparator)$currentUserPath", 'User')
+            if ($isWindowsHost) {
+                [Environment]::SetEnvironmentVariable('PATH', "$toolsBin$([IO.Path]::PathSeparator)$currentUserPath", 'User')
+            }
             $env:PATH = "$toolsBin$([IO.Path]::PathSeparator)$env:PATH"
             Write-Ok "Added to PATH: $toolsBin"
             $script:restartNeeded = $true
@@ -147,7 +125,7 @@ try {
 # ── Windows Terminal ───────────────────────────────────────────
 if (-not $NoTerminal) {
     $wtScript = Join-Path $dotfilesPath 'toolkit\scripts\Add-WTProfiles.ps1'
-    if (Test-Path $wtScript) {
+    if ($isWindowsHost -and (Test-Path $wtScript)) {
         # Read-Host crashes in non-interactive mode (CI, pipeline); this is
         # a soft prompt that can be skipped, so fall back to 'n' if prompt
         # isn't available (try/catch covers all edge cases).
@@ -160,8 +138,9 @@ if (-not $NoTerminal) {
             }
         }
     }
-    else { # Windows but script missing — silently skip (user may have partial repo)
-    }
+    elseif (-not $isWindowsHost) {
+        Write-Skip "Windows Terminal setup skipped (non-Windows OS)"
+    } # else: Windows but script missing — silently skip (user may have partial repo)
 }
 
 # ── Summary ────────────────────────────────────────────────────
