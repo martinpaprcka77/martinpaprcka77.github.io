@@ -9,7 +9,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 - ✅ Modulární PowerShell profil (`profile/`)
 - ✅ Idempotentní instalátor (`install.ps1` — WhatIf, Force, backup, summary)
 - ✅ Update mechanism (`update.ps1` — git fetch + reload + bootstrap self-heal)
-- ✅ Toolkit modul — **37 exportovaných funkcí**
+- ✅ Toolkit modul — **38 exportovaných funkcí**
 - ✅ Interaktivní menu — 6 submenus (Dotfiles, Docker, Git, Terminal, PowerShell, VS Code) + přímá systémová diagnostika
 - ✅ Moderní menu engine — šipky ↑↓, zvýraznění, popisky, inline režim, ořez na šířku konzole
 - ✅ Arrow-key menu s popisky u každé položky
@@ -93,6 +93,10 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
   Staré repozitáře (`dotfiles-powershell`, `dotfiles-tools`) zůstávají na GitHubu s README
   odkazem na nové umístění — žádný nástroj na archivaci repa nebyl v tomto prostředí k dispozici,
   takže "archivace" znamená jen odkaz, ne skutečné uzamčení repozitáře.
+- ✅ **Unifikace ostatních dotfiles** — `git/` (globální gitignore + Claude nastavení) a `chezmoi/`
+  (`chezmoi.toml`) absorbovány do monorepa jako `git/` a `chezmoi/` podadresáře. `install.ps1`
+  vytváří directory junctions na `~/.config/git` a `~/.config/chezmoi`, takže nástroje (git,
+  chezmoi) nadále nacházejí své konfigurace na původních cestách.
 - [ ] **Instalační skript pro Windows** — kompletní setup z čisté instalace
 - [ ] **Dokumentační web** — statický web generovaný z Markdown dokumentace
 - [ ] **Možné budoucí rozdělení zpět na 2 repa** — pokud ekosystém naroste natolik, že si zaslouží

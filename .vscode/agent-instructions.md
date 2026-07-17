@@ -16,6 +16,8 @@ This is a monorepo containing a modular PowerShell profile (`profile/`) and an i
 - `.vscode/` — this dir: settings, tasks, agent instructions
 - `profile/` — profile orchestration (core/, ps5/, ps7/, hosts/, lib/)
 - `toolkit/` — interactive toolbox (Toolkit module, menu/, scripts/, lib/)
+- `git/` — global gitignore (`ignore`) + Claude agent settings (deployed as junction to `~/.config/git/`)
+- `chezmoi/` — chezmoi config (`chezmoi.toml`, deployed as junction to `~/.config/chezmoi/`)
 - `docs/` — architecture, purpose, manual, roadmap
 - `index.html` — GitHub Pages portal at repo root
 
