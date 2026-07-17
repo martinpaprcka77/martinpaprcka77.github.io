@@ -7,7 +7,25 @@
 
 function Start-MainMenu {
     $items = [ordered]@{
-        '1. 📊 Status'     = @{ Action = { Invoke-IfAvailable -Command 'Show-Status' -Action { Show-Status } }; Desc = 'Global dashboard: Dotfiles, Terminal, PS, VS Code, Git, Docker'; Detector = { Get-DotfilesCompanionStatus } }
+        '1. 📊 Status'     = @{ Action = {
+            if (Get-Command Show-Status -ErrorAction SilentlyContinue) {
+                Show-Status
+            } else {
+                Write-Host "`n  ⚡ STANDALONE STATUS (profile not loaded)" -ForegroundColor Cyan
+                Write-Host "  $(('─' * 55))" -ForegroundColor DarkGray
+                Write-Host "  PS $($PSVersionTable.PSVersion) | $($Host.Name)" -ForegroundColor White
+                $pCount = ($env:PSModulePath -split [IO.Path]::PathSeparator).Count
+                Write-Host "  PSModulePath: $pCount entries" -ForegroundColor White
+                $bin = Join-Path (Split-Path $PSScriptRoot -Parent) 'bin'
+                $inPath = $bin -in ($env:PATH -split [IO.Path]::PathSeparator)
+                Write-Host "  toolkit/bin in PATH: $(if ($inPath) { '✅' } else { '❌' })" -ForegroundColor $(if ($inPath) { 'Green' } else { 'Red' })
+                if (Get-Command git -ErrorAction SilentlyContinue) { Write-Host "  git: ✅ $((git --version 2>$null))" -ForegroundColor Green }
+                if (Get-Command docker -ErrorAction SilentlyContinue) { Write-Host "  docker: ✅ $((docker --version 2>$null))" -ForegroundColor Green }
+                if (Get-Command starship -ErrorAction SilentlyContinue) { Write-Host "  starship: ✅" -ForegroundColor Green }
+                Write-Host "`n  Run 'install.ps1' or reload profile for full dashboard." -ForegroundColor Yellow
+                Read-Host "`nPress Enter..."
+            }
+        }; Desc = 'Global dashboard or standalone status'; Detector = { Get-DotfilesCompanionStatus } }
         '2. ⚡ Dotfiles'   = @{ Action = { Show-DotfilesMenu };     Desc = 'Install, update, configure, precheck, backup, restore, clean' }
         '3. 🔍 Systém'     = @{ Action = { Invoke-SystemCheck };    Desc = 'Disk, services, network, top processes' }
         '4. 🐳 Docker'     = @{ Action = { Show-DockerMenu };       Desc = 'Containers, images, stats, logs, prune' }
