@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Užitečné funkce do PowerShell profilu.
 .DESCRIPTION

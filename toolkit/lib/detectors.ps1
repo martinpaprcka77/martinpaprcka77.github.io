@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Read-only, cheap detector functions for Show-Menu's live status column.
 .DESCRIPTION

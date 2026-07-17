@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Nastavení proměnných prostředí.
 .DESCRIPTION

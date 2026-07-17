@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Sdílené konzolové výstupní funkce pro install.ps1 a update.ps1.
 .DESCRIPTION

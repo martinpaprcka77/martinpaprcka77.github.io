@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Spustí hlavní menu (Start-MainMenu z modulu Toolkit).
 .DESCRIPTION

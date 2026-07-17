@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Funkce pro systémové kontroly.
 .DESCRIPTION

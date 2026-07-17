@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Shared $PROFILE bootstrap-injection logic for install.ps1 and update.ps1.
 .DESCRIPTION

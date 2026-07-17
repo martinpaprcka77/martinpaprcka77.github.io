@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Nastavení pro klasickou konzoli (ConsoleHost).
 .DESCRIPTION

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Centrální správa konfigurace — merge defaults + JSON + env.
 .DESCRIPTION

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Hlavní interaktivní menu — kořen celého systému.
 .NOTES

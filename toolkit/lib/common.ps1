@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Obecné pomocné funkce.
 .DESCRIPTION

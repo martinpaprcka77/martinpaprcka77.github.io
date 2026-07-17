@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Generates a Windows Terminal JSON fragment extension (2026 recommended approach).
 .DESCRIPTION

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Idempotentní instalace PowerShell Dotfiles ekosystému (profile + toolkit).
 .DESCRIPTION

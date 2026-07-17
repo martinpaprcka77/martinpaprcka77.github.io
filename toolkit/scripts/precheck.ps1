@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pre-install inventory and health check for the PowerShell Dotfiles Ecosystem.
 .DESCRIPTION

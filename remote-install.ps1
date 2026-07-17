@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     One-command remote bootstrapper — safe to run via `irm <raw-url> | iex`.
 .DESCRIPTION
@@ -87,12 +87,32 @@ $dotfilesPath = Join-Path $HOME '.config\powershell'
 
 $isRepo = Test-Path (Join-Path $dotfilesPath '.git')
 if ($isRepo) {
-    Write-Step "Updating $dotfilesPath..."
     try {
         Push-Location $dotfilesPath
-        git pull --ff-only 2>&1 | Out-Null
-        if ($LASTEXITCODE -eq 0) { Write-Ok "Updated: $dotfilesPath" }
-        else { Write-Fail "git pull failed in $dotfilesPath — continuing with the existing local copy" }
+        # A pre-merge install still has 'origin' pointing at the old
+        # dotfiles-powershell repo — a plain `git pull` there only fast-forwards
+        # within THAT repo's own (now-frozen, README-pointer-only) history, so
+        # this directory's install.ps1 silently stays the stale pre-merge
+        # version forever (field-reported: kept running the old two-repo
+        # installer even after this bootstrapper itself was fetched fresh from
+        # the new repo). Detect the mismatch and re-point + hard-sync instead
+        # of a plain pull. Any real user customizations live in untracked
+        # files (see core/extra.ps1.example) and survive a hard reset — only
+        # tracked repo content is replaced.
+        $currentOrigin = (git remote get-url origin 2>$null)
+        if ($currentOrigin -and $currentOrigin -ne $dotfilesUrl) {
+            Write-Warn "Existing install points at a moved repo ($currentOrigin) — migrating to $dotfilesUrl"
+            git remote set-url origin $dotfilesUrl 2>&1 | Out-Null
+            git fetch origin 2>&1 | Out-Null
+            git reset --hard origin/main 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) { Write-Ok "Migrated: $dotfilesPath -> $dotfilesUrl" }
+            else { Write-Fail "Migration failed for $dotfilesPath — remove it and re-run this bootstrap." }
+        } else {
+            Write-Step "Updating $dotfilesPath..."
+            git pull --ff-only 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) { Write-Ok "Updated: $dotfilesPath" }
+            else { Write-Fail "git pull failed in $dotfilesPath — continuing with the existing local copy" }
+        }
     } catch {
         Write-Fail "Update failed: $_"
     } finally {

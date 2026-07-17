@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Windows Terminal enhanced profile — CTT-inspired utilities and quality-of-life.
 .DESCRIPTION

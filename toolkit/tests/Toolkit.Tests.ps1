@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Pester testy pro Toolkit modul — rozšířené pokrytí.
 .DESCRIPTION

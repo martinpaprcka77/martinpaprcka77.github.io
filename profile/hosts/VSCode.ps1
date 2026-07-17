@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Nastavení pro integrovaný terminál VS Code.
 .DESCRIPTION

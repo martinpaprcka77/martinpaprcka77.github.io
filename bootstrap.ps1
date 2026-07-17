@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Bootstrap skript vkládaný do nativních PowerShell profilů.
 .DESCRIPTION

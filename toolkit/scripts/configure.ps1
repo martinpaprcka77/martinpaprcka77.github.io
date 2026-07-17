@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Interaktivní průvodce nastavením dotfiles ekosystému.
 .DESCRIPTION

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     VS Code management menu.
 .NOTES

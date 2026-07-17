@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PowerShell diagnostic tracing tools — ETW, event logs, profiling.
 .DESCRIPTION

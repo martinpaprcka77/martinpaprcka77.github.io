@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Windows Terminal management — profiles, schemes, fonts, shell integration, backup, restore.
 .NOTES

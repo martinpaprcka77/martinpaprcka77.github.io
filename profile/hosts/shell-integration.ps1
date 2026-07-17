@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Windows Terminal shell integration — OSC 133 prompt markers.
 .DESCRIPTION

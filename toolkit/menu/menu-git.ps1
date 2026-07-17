@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Git management menu.
 .NOTES

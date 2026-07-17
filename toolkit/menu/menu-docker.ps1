@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Docker management menu.
 .NOTES

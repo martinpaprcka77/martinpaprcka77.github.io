@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Modern interactive menu engine with arrow-key navigation and descriptions.
 .DESCRIPTION

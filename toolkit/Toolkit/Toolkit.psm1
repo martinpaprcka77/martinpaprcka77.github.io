@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Toolkit – osobní PowerShell toolbox modul.
 .DESCRIPTION

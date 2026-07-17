@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Dotfiles ecosystem management — install, update, backup, restore, clean.
 .NOTES

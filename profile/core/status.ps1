@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Global health dashboard for the entire dotfiles ecosystem.
 .DESCRIPTION

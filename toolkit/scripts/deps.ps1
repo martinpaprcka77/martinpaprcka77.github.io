@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Installs all dependencies for the PowerShell Dotfiles Ecosystem via winget.
 .DESCRIPTION
