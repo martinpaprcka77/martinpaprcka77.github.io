@@ -25,11 +25,16 @@ the environment that did the merge, so that's the extent of "archiving."
 - `profile/lib/encoding.ps1` — `Repair-FileEncoding`, shared by `install.ps1`/`update.ps1`;
   idempotently adds a UTF-8 BOM to any non-ASCII source file (Windows PowerShell 5.1 reads
   BOM-less UTF-8 as ANSI and crashes the parser — field-reported)
+- `profile/lib/repair.ps1` — `Invoke-DotfilesRepair`, the single self-heal entry point; composes
+  bootstrap + encoding + (Windows) PSModulePath check/reset into one pass, called from
+  `install.ps1`/`update.ps1` or standalone
 - `profile/core/functions.ps1` — Edit-Profile, Reload-Profile, Get-SecretKey, mkcd
 - `profile/core/status.ps1` — health dashboard (`Test-PathHealth`, single `.git` check at repo root)
 - `toolkit/lib/menu.ps1` — `Show-Menu` engine (arrow-key nav, live status column, width-clamped)
 - `toolkit/lib/detectors.ps1` — Show-Menu status detectors + `Invoke-IfAvailable` guard
-- `toolkit/Toolkit/Toolkit.psm1` + `.psd1` — module (37 functions)
+- `toolkit/Toolkit/Toolkit.psm1` + `.psd1` — module (37 functions, v1.1.0)
+- `PSScriptAnalyzerSettings.psd1` — repo-root lint config; CI (`.github/workflows/test.yml`) runs
+  it, failing only on Error severity — Warnings are reported, not blocking
 
 ## Module structure
 ```
@@ -41,7 +46,8 @@ To add a function: write it in `toolkit/lib/`, add to `Export-ModuleMember` in `
 ## How to run
 - After install: `menu` or `check` from anywhere
 - Direct: `Import-Module ~/.config/powershell/toolkit/Toolkit/Toolkit.psd1`
-- Tests: `Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1` (86 cases)
+- Tests: `Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1` (91 cases)
+- Lint: `Invoke-ScriptAnalyzer -Path ~/.config/powershell -Recurse -Settings ~/.config/powershell/PSScriptAnalyzerSettings.psd1`
 - Validate profile: `& $PROFILE` in a fresh session
 
 ## Architecture decisions

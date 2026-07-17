@@ -387,6 +387,80 @@ Describe 'Toolkit Module' {
         }
     }
 
+    # ── Invoke-DotfilesRepair (profile/lib/repair.ps1) ────────
+    # Lives outside the Toolkit module — dot-source its dependency chain
+    # directly, the same load order install.ps1/update.ps1 use. Sub-steps are
+    # mocked: Invoke-BootstrapInjection writes into the real native $PROFILE
+    # paths (not scoped by -Path), so calling it for real here would touch
+    # the test runner's actual profile files — these tests verify composition
+    # (does Invoke-DotfilesRepair call the right things, under the right
+    # conditions), not the sub-steps' own internals (already covered
+    # separately: Repair-FileEncoding above, Test/Reset-PSModulePath in the
+    # PSModulePath Context).
+    Context 'Invoke-DotfilesRepair' {
+        BeforeAll {
+            $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..')
+            . (Join-Path $repoRoot 'profile\lib\output.ps1')
+            . (Join-Path $repoRoot 'profile\lib\paths.ps1')
+            . (Join-Path $repoRoot 'profile\lib\bootstrap.ps1')
+            . (Join-Path $repoRoot 'profile\lib\encoding.ps1')
+            . (Join-Path $repoRoot 'profile\lib\repair.ps1')
+        }
+
+        It 'composes Invoke-BootstrapInjection and Repair-FileEncoding into its summary' {
+            Mock Invoke-BootstrapInjection { $true }
+            Mock Repair-FileEncoding { 3 }
+            $result = Invoke-DotfilesRepair -Path $TestDrive -SkipModulePath
+            $result.RestartNeeded | Should -Be $true
+            $result.EncodingRepaired | Should -Be 3
+            Should -Invoke Invoke-BootstrapInjection -Times 1
+            Should -Invoke Repair-FileEncoding -Times 1 -ParameterFilter { $Path -eq $TestDrive }
+        }
+
+        It 'forwards -Force to Invoke-BootstrapInjection' {
+            Mock Invoke-BootstrapInjection { $false }
+            Mock Repair-FileEncoding { 0 }
+            Invoke-DotfilesRepair -Path $TestDrive -Force -SkipModulePath | Out-Null
+            Should -Invoke Invoke-BootstrapInjection -ParameterFilter { $Force -eq $true }
+        }
+
+        It '-SkipModulePath skips the PSModulePath section entirely' {
+            Mock Invoke-BootstrapInjection { $false }
+            Mock Repair-FileEncoding { 0 }
+            $result = Invoke-DotfilesRepair -Path $TestDrive -SkipModulePath
+            $result.ModulePathOk | Should -BeNullOrEmpty
+            $result.ModulePathReset | Should -Be $false
+        }
+
+        It 'skips PSModulePath repair automatically on non-Windows (no -SkipModulePath needed)' {
+            $localIsWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
+            if ($localIsWindowsHost) {
+                Set-ItResult -Skipped -Because 'covers the non-Windows auto-skip branch specifically'
+                return
+            }
+            Mock Invoke-BootstrapInjection { $false }
+            Mock Repair-FileEncoding { 0 }
+            $result = Invoke-DotfilesRepair -Path $TestDrive
+            $result.ModulePathOk | Should -BeNullOrEmpty
+        }
+
+        It '-WhatIf never mutates $env:PSModulePath' {
+            # Test-PSModulePath (read-only) still runs for real on Windows —
+            # only the actual Reset-PSModulePath mutation must be blocked by
+            # -WhatIf. Safe on non-Windows too, where the section auto-skips.
+            $origPSModulePath = $env:PSModulePath
+            Mock Invoke-BootstrapInjection { $false }
+            Mock Repair-FileEncoding { 0 }
+            try {
+                $result = Invoke-DotfilesRepair -Path $TestDrive -WhatIf
+                $result.ModulePathReset | Should -Be $false
+                $env:PSModulePath | Should -Be $origPSModulePath
+            } finally {
+                $env:PSModulePath = $origPSModulePath
+            }
+        }
+    }
+
     # ── Cleanup ───────────────────────────────────────────────
     AfterAll {
         Remove-Module Toolkit -ErrorAction SilentlyContinue

@@ -15,9 +15,10 @@ interactive toolbox, in one repo, plus the GitHub Pages portal at the repo root.
 | **Location on disk** | `~/.config/powershell/` |
 | **Portal** | [martinpaprcka77.github.io](https://martinpaprcka77.github.io) (this repo's Pages, root URL) |
 | **Language** | PowerShell 5.1 / 7+ |
-| **Module** | `toolkit/Toolkit` — 37 exported functions |
-| **Tests** | 86 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` |
+| **Module** | `toolkit/Toolkit` — 37 exported functions, v1.1.0 |
+| **Tests** | 91 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` |
 | **Dependencies** | Git, PowerShell 5.1+; Docker (optional, for `toolkit`'s Docker menu) |
+| **Lint** | `PSScriptAnalyzerSettings.psd1` at repo root; CI fails only on Error severity |
 
 Previously split across two repos (`dotfiles-powershell`, `dotfiles-tools`) — merged here to
 eliminate cross-repo coupling (menu items calling functions that only existed in the other repo)
@@ -33,11 +34,16 @@ and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_T
 ├── install.ps1              ← idempotent installer (git pull self, inject bootstrap, PATH setup)
 ├── remote-install.ps1       ← one-command bootstrapper, safe via `irm <url> | iex`
 ├── update.ps1               ← git pull + bootstrap self-heal + reload profile
-├── bootstrap.ps1            ← minimal reference snippet injected into $PROFILE
+├── bootstrap.ps1            ← minimal reference snippet injected into $PROFILE (never itself
+│                                run as a script — see its own docstring)
+├── PSScriptAnalyzerSettings.psd1 ← lint config: ExcludeRules for intentional house-style
+│                                     patterns (Write-Host, Global: scope), everything else
+│                                     stays visible; CI fails only on Error severity
 ├── index.html · prompts.html← GitHub Pages portal (root URL)
 ├── .nojekyll
 ├── .vscode/                 ← settings.json, tasks.json, agent-instructions.md (whole-repo config)
-├── .github/workflows/       ← test.yml (Pester + JSON validation, scoped to toolkit/**)
+├── .github/workflows/       ← test.yml (Pester + lint + JSON validation; triggers on
+│                                profile/**, toolkit/**, root *.ps1, and this settings file)
 ├── .gitignore
 │
 ├── docs/
@@ -58,9 +64,14 @@ and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_T
 │   │   │                       against corrupted Known Folder registry values
 │   │   ├── bootstrap.ps1    ← Invoke-BootstrapInjection — shared by install.ps1/update.ps1,
 │   │   │                       repairs a stale bootstrap target (self-heal)
-│   │   └── encoding.ps1     ← Repair-FileEncoding — idempotently adds a UTF-8 BOM to non-ASCII
-│   │                           source files (PS5.1 crashes parsing BOM-less UTF-8); run by
-│   │                           install.ps1 (preflight) and update.ps1 (after pull)
+│   │   ├── encoding.ps1     ← Repair-FileEncoding — idempotently adds a UTF-8 BOM to non-ASCII
+│   │   │                       source files (PS5.1 crashes parsing BOM-less UTF-8)
+│   │   └── repair.ps1       ← Invoke-DotfilesRepair — the single self-heal entry point;
+│   │                           composes bootstrap + encoding + (Windows) PSModulePath
+│   │                           validation/reset into one pass. Called by install.ps1
+│   │                           (preflight) and update.ps1 (every run, not just after a
+│   │                           pull — a drifted PSModulePath or missing BOM can exist even
+│   │                           when this repo is already current)
 │   │
 │   ├── core/                ← ALWAYS loaded (shared across all PS versions/hosts)
 │   │   ├── aliases.ps1      ← git, docker, kubectl shortcuts
@@ -172,6 +183,16 @@ Install-Module Pester -Force
 Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
 ```
 
+Lint (same check CI runs, `PSScriptAnalyzerSettings.psd1` applies the repo's ExcludeRules):
+
+```powershell
+Install-Module PSScriptAnalyzer -Force
+Invoke-ScriptAnalyzer -Path ~/.config/powershell -Recurse -Settings ~/.config/powershell/PSScriptAnalyzerSettings.psd1
+```
+
+CI fails only on Error-severity findings — Warnings are reported, not blocking (the settings
+file's trailing comments explain which warning categories are deliberately left visible and why).
+
 ---
 
 ## Coding conventions
@@ -202,6 +223,17 @@ Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
   (bit `gcm`/`gps` once; fix: `Remove-Item Alias:<name> -Force` before the function definition)
 - **Menu items calling `profile/` functions from `toolkit/`** (`Show-Status`, `Measure-Profile`, …)
   go through `Invoke-IfAvailable` — `toolkit/` can in principle be loaded standalone
+- **`#Requires -Version 5.1`** on every real entry point (`install.ps1`, `update.ps1`,
+  `toolkit/bin/*.ps1`, and `remote-install.ps1` for its direct-invocation path — it's a silent
+  no-op under `irm | iex`, since `#Requires` only enforces on file/call-operator invocation, not
+  `Invoke-Expression`, verified empirically) — gives a clean native error instead of a cryptic
+  mid-parse failure on an unsupported PowerShell. Not worth adding to `bootstrap.ps1`: that file
+  is a reference copy, never itself executed as a script (see its own `.NOTES`)
+- **State-changing functions get `SupportsShouldProcess`** (`-WhatIf`/`-Confirm`) — e.g.
+  `Reset-PSModulePath`/`Remove-PSModulePath`. Skip it for functions PSScriptAnalyzer flags on verb
+  alone but where confirm-before-running doesn't make sense (an interactive menu launcher, an ETW
+  start/stop toggle) — document the exception in `PSScriptAnalyzerSettings.psd1` rather than
+  bolting on a meaningless `ShouldProcess` gate
 
 ---
 
