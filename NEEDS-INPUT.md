@@ -5,14 +5,14 @@
 
 ---
 
-## Phase 3: Rozšíření (🟡 In Progress)
+## Phase 3: Rozšíření (✅ Substantially Complete)
 
-### [ ] Live dashboard
+### [x] Live dashboard
 **What**: Real-time CPU/RAM/Disk monitoring UI in interactive menu  
 **Scope**: Medium  
 **Notes**: Requires Windows API calls or `Get-Process`/`Get-Volume` polling; display in `Show-Menu` format  
 **Dependencies**: None (Windows-only candidate)  
-**Status**: Not started
+**Status**: ✅ Done (commit: 682a538 — `Watch-SystemMetrics` with configurable interval/samples)
 
 ### [x] Síťová diagnostika
 **What**: Network diagnostics — `Test-NetConnection` against key endpoints  
