@@ -44,9 +44,11 @@ function Get-ToolkitConfig {
 
     # ── File overrides ────────────────────────────────────────
     $toolsRoot = if ($env:DOTFILES_TOOLS) { $env:DOTFILES_TOOLS } else { Split-Path $PSScriptRoot -Parent }
-    # Nested Join-Path (not 'configs\settings.json' as one string) so the
-    # separator is correct on every platform — an embedded backslash becomes a
-    # literal filename on Linux/macOS, which silently disabled the file override.
+    # Nested Join-Path, one segment per call — matches the house style used
+    # throughout this repo. (Correction to an earlier comment here: PowerShell's
+    # Join-Path actually normalizes '\' to the platform separator even on
+    # Linux/macOS, so a single 'configs\settings.json' string was never broken
+    # cross-platform; this nesting isn't a bug fix, just the consistent form.)
     $configFile = Join-Path (Join-Path $toolsRoot 'configs') 'settings.json'
     if (Test-Path $configFile) {
         try {
@@ -106,9 +108,11 @@ function Merge-Hashtable {
 function Save-ToolkitConfig {
     param([hashtable]$Config)
     $toolsRoot = if ($env:DOTFILES_TOOLS) { $env:DOTFILES_TOOLS } else { Split-Path $PSScriptRoot -Parent }
-    # Nested Join-Path (not 'configs\settings.json' as one string) so the
-    # separator is correct on every platform — an embedded backslash becomes a
-    # literal filename on Linux/macOS, which silently disabled the file override.
+    # Nested Join-Path, one segment per call — matches the house style used
+    # throughout this repo. (Correction to an earlier comment here: PowerShell's
+    # Join-Path actually normalizes '\' to the platform separator even on
+    # Linux/macOS, so a single 'configs\settings.json' string was never broken
+    # cross-platform; this nesting isn't a bug fix, just the consistent form.)
     $configFile = Join-Path (Join-Path $toolsRoot 'configs') 'settings.json'
     if (Test-Path $configFile) {
         Copy-Item -Path $configFile -Destination "$configFile.backup" -Force
