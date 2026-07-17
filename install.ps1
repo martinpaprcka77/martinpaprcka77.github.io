@@ -21,6 +21,7 @@
 .NOTES
     Cesta: ~/.config/powershell/install.ps1
 #>
+#Requires -Version 5.1
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [switch]$NoTerminal,
@@ -34,6 +35,8 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'profile\lib\output.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\paths.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\bootstrap.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\encoding.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\repair.ps1')
 
 $script:Summary = [System.Collections.Generic.List[string]]::new()
 
@@ -52,11 +55,11 @@ $script:restartNeeded = $false
 # reliably the repo root. No separate default-fallback path is needed here.
 $dotfilesPath = $PSScriptRoot
 
-# $PSVersionTable.OS exists in PS5.1+ and PS7, correctly reports non-Windows
-# even on PS5.1 under Wine. PS5.0 lacks .OS — fall back to PSVersion check.
-# Use instead of raw $IsWindows anywhere below.
-try { $isWindowsHost = $PSVersionTable.OS -match 'Windows' }
-catch { $isWindowsHost = $PSVersionTable.PSVersion.Major -lt 6 }
+# $IsWindows is a PS6+ automatic variable — absent on Windows PowerShell 5.1
+# (and $PSVersionTable has no .OS key there). Guard on version: PS5.1 only runs
+# on Windows, so $true; PS7+ defers to the real $IsWindows. Use $isWindowsHost
+# instead of raw $IsWindows anywhere below.
+$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
 
 # ── Preflight ──────────────────────────────────────────────────
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -84,10 +87,15 @@ if (-not $NoUpdates) {
     Write-Skip "Skipping update (--NoUpdates): $dotfilesPath"
 }
 
-# ── Bootstrap profiles ────────────────────────────────────────
-Write-Step "Injecting bootstrap into PowerShell profiles..."
-if ($PSCmdlet.ShouldProcess('$PROFILE targets', 'Inject/repair bootstrap')) {
-    $script:restartNeeded = (Invoke-BootstrapInjection -Force:$Force) -or $script:restartNeeded
+# ── Self-heal ────────────────────────────────────────────────
+# One pass covering everything: bootstrap injection (Known-Folder-correct
+# $PROFILE targets), file encoding (UTF-8 BOM — Windows PowerShell 5.1 crashes
+# parsing a BOM-less non-ASCII file), and (Windows only) PSModulePath
+# validation/reset. See profile/lib/repair.ps1.
+Write-Step "Running self-heal (bootstrap, encoding, PSModulePath)..."
+if ($PSCmdlet.ShouldProcess($dotfilesPath, 'Invoke-DotfilesRepair')) {
+    $repairResult = Invoke-DotfilesRepair -Path $dotfilesPath -Force:$Force
+    $script:restartNeeded = $repairResult.RestartNeeded -or $script:restartNeeded
 }
 
 # ── PATH setup ─────────────────────────────────────────────────

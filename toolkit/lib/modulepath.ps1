@@ -78,6 +78,7 @@ function Add-PSModulePath {
     Remove-PSModulePath -Index 3
 #>
 function Remove-PSModulePath {
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [string]$Path,
         [int]$Index = -1
@@ -86,16 +87,20 @@ function Remove-PSModulePath {
 
     if ($Index -ge 0 -and $Index -lt $entries.Count) {
         $removed = $entries[$Index]
-        $entries.RemoveAt($Index)
-        $env:PSModulePath = $entries -join [IO.Path]::PathSeparator
-        Write-Host "  [+] Removed [$Index]: $removed" -ForegroundColor Green
+        if ($PSCmdlet.ShouldProcess('$env:PSModulePath', "Remove entry [$Index]: $removed")) {
+            $entries.RemoveAt($Index)
+            $env:PSModulePath = $entries -join [IO.Path]::PathSeparator
+            Write-Host "  [+] Removed [$Index]: $removed" -ForegroundColor Green
+        }
         return
     }
 
     if ($Path -and ($Path -in $entries)) {
-        $entries.Remove($Path)
-        $env:PSModulePath = $entries -join [IO.Path]::PathSeparator
-        Write-Host "  [+] Removed: $Path" -ForegroundColor Green
+        if ($PSCmdlet.ShouldProcess('$env:PSModulePath', "Remove entry: $Path")) {
+            $entries.Remove($Path)
+            $env:PSModulePath = $entries -join [IO.Path]::PathSeparator
+            Write-Host "  [+] Removed: $Path" -ForegroundColor Green
+        }
         return
     }
 
@@ -113,6 +118,8 @@ function Remove-PSModulePath {
     Reset-PSModulePath
 #>
 function Reset-PSModulePath {
+    [CmdletBinding(SupportsShouldProcess)]
+    param()
     # $env:USERPROFILE\Documents\... was here previously — exactly the
     # OneDrive-affected path this function's own OneDrive-pollution check
     # (Test-PSModulePath) warns about. LOCALAPPDATA is never a Known-Folder
@@ -121,6 +128,7 @@ function Reset-PSModulePath {
         "$env:ProgramFiles\PowerShell\7\Modules",
         "$env:LOCALAPPDATA\PowerShell\Modules"
     )
+    if (-not $PSCmdlet.ShouldProcess('$env:PSModulePath', 'Reset to modern baseline')) { return }
     Write-Host "`n🔄 Resetting PSModulePath to modern baseline..." -ForegroundColor Magenta
     foreach ($p in $modern) {
         if (-not (Test-Path $p)) {

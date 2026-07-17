@@ -305,6 +305,162 @@ Describe 'Toolkit Module' {
         }
     }
 
+    # ── Config file override + Merge-Hashtable edges ─────────
+    Context 'Config file override' {
+        It 'Get-ToolkitConfig applies configs/settings.json overrides on top of defaults' {
+            $cfgDir = Join-Path $TestDrive 'configs'
+            New-Item -ItemType Directory -Path $cfgDir -Force | Out-Null
+            @{ menu = @{ theme = 'from-file' } } | ConvertTo-Json -Depth 5 |
+                Set-Content -Path (Join-Path $cfgDir 'settings.json') -Encoding UTF8
+            $old = $env:DOTFILES_TOOLS
+            $env:DOTFILES_TOOLS = $TestDrive
+            try {
+                InModuleScope Toolkit { $script:Config = $null }
+                $cfg = Get-ToolkitConfig
+                $cfg.menu.theme | Should -Be 'from-file'          # overridden by the file
+                $cfg.system.checkDisks | Should -Be $true         # untouched key keeps its default
+            } finally {
+                $env:DOTFILES_TOOLS = $old
+                InModuleScope Toolkit { $script:Config = $null }
+            }
+        }
+    }
+
+    Context 'Merge-Hashtable edge cases' {
+        It 'returns the override when the base is empty' {
+            (Merge-Hashtable -Base @{} -Override @{ a = 1 }).a | Should -Be 1
+        }
+        It 'keeps base keys the override does not mention' {
+            (Merge-Hashtable -Base @{ a = 1 } -Override @{}).a | Should -Be 1
+        }
+        It 'a scalar override replaces a hashtable base (type mismatch, no merge)' {
+            (Merge-Hashtable -Base @{ x = @{ nested = 1 } } -Override @{ x = 'scalar' }).x | Should -Be 'scalar'
+        }
+        It 'a hashtable override replaces a scalar base' {
+            (Merge-Hashtable -Base @{ x = 1 } -Override @{ x = @{ y = 2 } }).x.y | Should -Be 2
+        }
+    }
+
+    # ── Menu edge cases ───────────────────────────────────────
+    # Show-Menu's rendering/ordering/truncation are only observable by driving
+    # the interactive [Console]::ReadKey loop (a TTY), so headless coverage is
+    # limited to the pre-loop error path.
+    Context 'Show-Menu edge cases' {
+        It 'throws on an empty Items collection' {
+            { Show-Menu -Title 'Empty' -Items ([ordered]@{}) } | Should -Throw
+        }
+    }
+
+    # ── Detector fallback without a loaded profile ───────────
+    Context 'Detectors' {
+        It 'Get-DotfilesCompanionStatus returns a status object (never throws) without the profile' {
+            # Show-Status isn't loaded in the test session, so this exercises the
+            # graceful "not loaded" fallback rather than crashing.
+            $status = Get-DotfilesCompanionStatus
+            $status.Icon | Should -Not -BeNullOrEmpty
+            $status.Text | Should -Not -BeNullOrEmpty
+        }
+        It 'Invoke-IfAvailable warns instead of throwing for a missing command' {
+            Mock Write-Warn { } -ModuleName Toolkit
+            { Invoke-IfAvailable -Command 'definitely-not-a-real-command-xyz' -Action { 'ran' } } | Should -Not -Throw
+        }
+    }
+
+    # ── Test-RootedPath (profile/lib/paths.ps1) ──────────────
+    # paths.ps1 lives in profile/lib (outside the toolkit module); dot-source it
+    # directly to cover the corrupted-Known-Folder guard spec §10 asks for.
+    Context 'Test-RootedPath (profile paths)' {
+        BeforeAll {
+            . (Join-Path $PSScriptRoot '..\..\profile\lib\paths.ps1')
+        }
+        It 'accepts a normal rooted Windows path' {
+            Test-RootedPath 'C:\Users\x\Documents' | Should -Be $true
+        }
+        It 'rejects a value with a residual %...% token (corrupted Known Folder)' {
+            # Field-reported: HKCU Personal held '%C:\Users\x%\Documents' which
+            # survived ExpandEnvironmentVariables and crashed Join-Path.
+            Test-RootedPath '%C:\Users\x%\Documents' | Should -Be $false
+        }
+        It 'rejects an empty or non-rooted value' {
+            [bool](Test-RootedPath '') | Should -Be $false
+            [bool](Test-RootedPath 'relative\path') | Should -Be $false
+        }
+    }
+
+    # ── Invoke-DotfilesRepair (profile/lib/repair.ps1) ────────
+    # Lives outside the Toolkit module — dot-source its dependency chain
+    # directly, the same load order install.ps1/update.ps1 use. Sub-steps are
+    # mocked: Invoke-BootstrapInjection writes into the real native $PROFILE
+    # paths (not scoped by -Path), so calling it for real here would touch
+    # the test runner's actual profile files — these tests verify composition
+    # (does Invoke-DotfilesRepair call the right things, under the right
+    # conditions), not the sub-steps' own internals (already covered
+    # separately: Repair-FileEncoding above, Test/Reset-PSModulePath in the
+    # PSModulePath Context).
+    Context 'Invoke-DotfilesRepair' {
+        BeforeAll {
+            $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..')
+            . (Join-Path $repoRoot 'profile\lib\output.ps1')
+            . (Join-Path $repoRoot 'profile\lib\paths.ps1')
+            . (Join-Path $repoRoot 'profile\lib\bootstrap.ps1')
+            . (Join-Path $repoRoot 'profile\lib\encoding.ps1')
+            . (Join-Path $repoRoot 'profile\lib\repair.ps1')
+        }
+
+        It 'composes Invoke-BootstrapInjection and Repair-FileEncoding into its summary' {
+            Mock Invoke-BootstrapInjection { $true }
+            Mock Repair-FileEncoding { 3 }
+            $result = Invoke-DotfilesRepair -Path $TestDrive -SkipModulePath
+            $result.RestartNeeded | Should -Be $true
+            $result.EncodingRepaired | Should -Be 3
+            Should -Invoke Invoke-BootstrapInjection -Times 1
+            Should -Invoke Repair-FileEncoding -Times 1 -ParameterFilter { $Path -eq $TestDrive }
+        }
+
+        It 'forwards -Force to Invoke-BootstrapInjection' {
+            Mock Invoke-BootstrapInjection { $false }
+            Mock Repair-FileEncoding { 0 }
+            Invoke-DotfilesRepair -Path $TestDrive -Force -SkipModulePath | Out-Null
+            Should -Invoke Invoke-BootstrapInjection -ParameterFilter { $Force -eq $true }
+        }
+
+        It '-SkipModulePath skips the PSModulePath section entirely' {
+            Mock Invoke-BootstrapInjection { $false }
+            Mock Repair-FileEncoding { 0 }
+            $result = Invoke-DotfilesRepair -Path $TestDrive -SkipModulePath
+            $result.ModulePathOk | Should -BeNullOrEmpty
+            $result.ModulePathReset | Should -Be $false
+        }
+
+        It 'skips PSModulePath repair automatically on non-Windows (no -SkipModulePath needed)' {
+            $localIsWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
+            if ($localIsWindowsHost) {
+                Set-ItResult -Skipped -Because 'covers the non-Windows auto-skip branch specifically'
+                return
+            }
+            Mock Invoke-BootstrapInjection { $false }
+            Mock Repair-FileEncoding { 0 }
+            $result = Invoke-DotfilesRepair -Path $TestDrive
+            $result.ModulePathOk | Should -BeNullOrEmpty
+        }
+
+        It '-WhatIf never mutates $env:PSModulePath' {
+            # Test-PSModulePath (read-only) still runs for real on Windows —
+            # only the actual Reset-PSModulePath mutation must be blocked by
+            # -WhatIf. Safe on non-Windows too, where the section auto-skips.
+            $origPSModulePath = $env:PSModulePath
+            Mock Invoke-BootstrapInjection { $false }
+            Mock Repair-FileEncoding { 0 }
+            try {
+                $result = Invoke-DotfilesRepair -Path $TestDrive -WhatIf
+                $result.ModulePathReset | Should -Be $false
+                $env:PSModulePath | Should -Be $origPSModulePath
+            } finally {
+                $env:PSModulePath = $origPSModulePath
+            }
+        }
+    }
+
     # ── Cleanup ───────────────────────────────────────────────
     AfterAll {
         Remove-Module Toolkit -ErrorAction SilentlyContinue

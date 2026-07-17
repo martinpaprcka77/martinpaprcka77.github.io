@@ -17,10 +17,16 @@
 
 <#
 .SYNOPSIS
-    True if legacy PowerShellGet 1.x / PackageManagement 1.0.0.1 modules
-    are still present under the built-in module directories.
+    The candidate full paths of legacy PowerShellGet 1.x / PackageManagement
+    1.0.0.1 modules under the built-in module directories.
+.DESCRIPTION
+    Single source of truth for "which legacy-module locations do we care about".
+    Test-LegacyPowerShellGetPresent (the menu's live-status predicate) and
+    scripts/modernize.ps1 (which actually removes them) both enumerate THIS
+    list, so the displayed status and the cleanup action can never disagree.
+    Not exported — an internal shared helper; callers dot-source detectors.ps1.
 #>
-function Test-LegacyPowerShellGetPresent {
+function Get-LegacyModulePath {
     [CmdletBinding()]
     param()
     $modulePaths = @(
@@ -33,8 +39,22 @@ function Test-LegacyPowerShellGetPresent {
     )
     foreach ($mp in $modulePaths) {
         foreach ($lm in $legacyModules) {
-            if (Test-Path (Join-Path $mp $lm)) { return $true }
+            # Nested Join-Path (never 3 positional args — that needs PS6+).
+            Join-Path $mp $lm
         }
+    }
+}
+
+<#
+.SYNOPSIS
+    True if legacy PowerShellGet 1.x / PackageManagement 1.0.0.1 modules
+    are still present under the built-in module directories.
+#>
+function Test-LegacyPowerShellGetPresent {
+    [CmdletBinding()]
+    param()
+    foreach ($p in Get-LegacyModulePath) {
+        if (Test-Path $p) { return $true }
     }
     return $false
 }
