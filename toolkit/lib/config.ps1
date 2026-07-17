@@ -44,7 +44,10 @@ function Get-ToolkitConfig {
 
     # ── File overrides ────────────────────────────────────────
     $toolsRoot = if ($env:DOTFILES_TOOLS) { $env:DOTFILES_TOOLS } else { Split-Path $PSScriptRoot -Parent }
-    $configFile = Join-Path $toolsRoot 'configs\settings.json'
+    # Nested Join-Path (not 'configs\settings.json' as one string) so the
+    # separator is correct on every platform — an embedded backslash becomes a
+    # literal filename on Linux/macOS, which silently disabled the file override.
+    $configFile = Join-Path (Join-Path $toolsRoot 'configs') 'settings.json'
     if (Test-Path $configFile) {
         try {
             $fileConfig = Get-Content $configFile -Raw | ConvertFrom-Json
@@ -103,7 +106,10 @@ function Merge-Hashtable {
 function Save-ToolkitConfig {
     param([hashtable]$Config)
     $toolsRoot = if ($env:DOTFILES_TOOLS) { $env:DOTFILES_TOOLS } else { Split-Path $PSScriptRoot -Parent }
-    $configFile = Join-Path $toolsRoot 'configs\settings.json'
+    # Nested Join-Path (not 'configs\settings.json' as one string) so the
+    # separator is correct on every platform — an embedded backslash becomes a
+    # literal filename on Linux/macOS, which silently disabled the file override.
+    $configFile = Join-Path (Join-Path $toolsRoot 'configs') 'settings.json'
     if (Test-Path $configFile) {
         Copy-Item -Path $configFile -Destination "$configFile.backup" -Force
     }

@@ -6,6 +6,14 @@ toolkit/configs/secrets.*
 *.secret
 .env
 
+# Local toolkit config — user's saved settings + Save-ToolkitConfig backup.
+# The shipped default lives in configs/settings.example.json; Get-ToolkitConfig
+# falls back to its hardcoded defaults when this file is absent. Tracking it
+# would make `configure`/Save-ToolkitConfig dirty the tree and break the next
+# `update.ps1` (git pull --ff-only) / remote-install `git reset --hard`.
+toolkit/configs/settings.json
+toolkit/configs/settings.json.backup
+
 # Node
 node_modules/
 

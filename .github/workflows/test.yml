@@ -29,10 +29,11 @@ jobs:
         run: |
           Invoke-Pester toolkit/tests/Toolkit.Tests.ps1 -Output Detailed -CI
 
-      - name: Validate JSON (settings.json)
+      - name: Validate JSON (config)
         shell: pwsh
         run: |
-          $files = @('toolkit/configs/settings.json', 'toolkit/configs/wt-schemes.json')
+          # settings.json is gitignored (user-local); validate the shipped template.
+          $files = @('toolkit/configs/settings.example.json', 'toolkit/configs/wt-schemes.json')
           foreach ($f in $files) {
             try {
               Get-Content $f -Raw | ConvertFrom-Json | Out-Null
