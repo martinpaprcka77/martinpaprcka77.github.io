@@ -119,87 +119,99 @@ function Show-Menu {
     $searchMode = $false
     $searchQuery = ''
     $prevBufferWidth = [Console]::WindowWidth
+    $prevSelected = -1  # Track previous selection for partial redraw
     $footer = '↑↓ navigate  ↵ select  Home/End ⇱⇲  Page↑↓  / search  Esc/q exit'
+    $dirty = $true      # Full redraw needed on first render
 
-    # Fixed redraw anchor — every frame redraws over the SAME rows, so pure
-    # navigation (arrow keys, no action run) never moves the list. Previously
-    # this was recomputed from "current cursor position" every frame, which
-    # is wherever the PREVIOUS frame's cleanup left the cursor (just below
-    # the list) — so the whole thing drifted one render-height further down
-    # the screen on every single keypress, including arrow keys that change
-    # nothing but the highlighted row (field-reported). Only Inline mode's
-    # action-execution branches intentionally advance $menuTop afterward, so
-    # the next redraw appears below the action's own output (the "rolled/
-    # expanded feel" the docstring describes) — that shift is real, wanted
-    # motion; the arrow-key drift was not.
-    $menuTop = [Console]::CursorTop
+    # ── Redraw a single item row ────────────────────────────
+    function Redraw-Item {
+        param([int]$Index, [string[]]$Keys, [hashtable]$Normalized, [hashtable]$DetectorCache,
+              [int]$Selected, [int]$MaxLabelWidth, [int]$MaxDescWidth, [int]$ExtraBudget,
+              [string]$Accent)
+        $key = $Keys[$Index]
+        $item = $Normalized[$key]
+        $det = $DetectorCache[$key]
+        $detTextRaw = if ($det -and $det.Text) { "$($det.Icon) $($det.Text)" } else { '' }
+        $desc = $item.Desc; $detText = $detTextRaw
+        $combinedLen = $desc.Length + $(if ($detText) { $detText.Length + 2 } else { 0 })
+        if ($combinedLen -gt $ExtraBudget) {
+            $detRoom = [Math]::Max(0, $ExtraBudget - $desc.Length - 2)
+            $detText = if ($detText -and $detRoom -gt 0) { Get-TruncatedText $detText $detRoom } else { '' }
+            if ($desc.Length -gt $ExtraBudget) { $desc = Get-TruncatedText $desc $ExtraBudget; $detText = '' }
+        }
+        $row = [Console]::CursorTop
+        [Console]::SetCursorPosition(2, $row)
+        if ($Index -eq $Selected) {
+            Write-Host '│  › ' -ForegroundColor DarkGray -NoNewline
+            Write-Host $key.PadRight($MaxLabelWidth) -ForegroundColor $Accent -NoNewline
+            Write-Host '  ' -NoNewline
+            Write-Host $desc.PadRight($MaxDescWidth) -ForegroundColor 'White' -NoNewline
+            if ($detText) { Write-Host '  ' -NoNewline; Write-Host $detText -ForegroundColor $Accent -NoNewline }
+            Write-Host '  │' -ForegroundColor DarkGray
+        } else {
+            Write-Host '│     ' -NoNewline
+            Write-Host $key.PadRight($MaxLabelWidth) -ForegroundColor 'Gray' -NoNewline
+            Write-Host '  ' -NoNewline
+            Write-Host $desc.PadRight($MaxDescWidth) -ForegroundColor 'DarkGray' -NoNewline
+            if ($detText) { Write-Host '  ' -NoNewline; Write-Host $detText -ForegroundColor 'DarkGray' -NoNewline }
+            Write-Host '  │' -ForegroundColor DarkGray
+        }
+    }
 
-    # ── Render loop ────────────────────────────────────────────
+    # ── Render header + footer once ─────────────────────────
+    Write-Host "  ╭─ $Title " -ForegroundColor $accent -NoNewline
+    Write-Host ('─' * [Math]::Max(0, $boxWidth - $Title.Length - 1)) -ForegroundColor DarkGray
+    Write-Host "  │" -ForegroundColor DarkGray
+
+    $detectorCache = @{}
+    foreach ($k in $keys) {
+        $d = $normalized[$k].Detector
+        if ($d) { $detectorCache[$k] = try { & $d } catch { @{ Icon = '❌'; Text = 'detection failed' } } }
+    }
+
+    $startTop = [Console]::CursorTop - 1  # Row of header
+    for ($i = 0; $i -lt $keys.Count; $i++) {
+        Redraw-Item -Index $i -Keys $keys -Normalized $normalized -DetectorCache $detectorCache `
+            -Selected 0 -MaxLabelWidth $maxLabelWidth -MaxDescWidth $maxDescWidth `
+            -ExtraBudget $extraBudget -Accent $accent | Out-Null
+    }
+    Write-Host '  ╰' -ForegroundColor DarkGray -NoNewline
+    Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray -NoNewline
+    Write-Host '╯' -ForegroundColor DarkGray
+    Write-Host ''
+    Write-Host "  $footer" -ForegroundColor DarkGray
+    $endTop = [Console]::CursorTop  # Track bottom of menu
+    Write-Host ''
+    $prevSelected = 0
+
+    # ── Input loop — partial update only ──────────────────────
     do {
-        [Console]::SetCursorPosition(0, $menuTop)
-        $startTop = $menuTop
-
-        # ── Header — boxed title + thin underline ──────────────────
-        Write-Host "  ╭─ $Title " -ForegroundColor $accent -NoNewline
-        Write-Host ('─' * [Math]::Max(0, $boxWidth - $Title.Length - 1)) -ForegroundColor DarkGray
-        Write-Host "  │" -ForegroundColor DarkGray
-
-        # ── Detector cache — fresh every render frame (every keypress), so
-        # displayed status never goes stale mid-session. Function-local, not
-        # $script:-scoped: dies with this call, matching the rest of this
-        # engine's stateless design. A throwing detector degrades to a
-        # visible "detection failed" row instead of crashing the menu.
-        $detectorCache = @{}
-        foreach ($k in $keys) {
-            $d = $normalized[$k].Detector
-            if ($d) {
-                $detectorCache[$k] = try { & $d } catch { @{ Icon = '❌'; Text = 'detection failed' } }
-            }
+        # Only check for resize on full redraw trigger
+        if ([Console]::WindowWidth -ne $prevBufferWidth) {
+            $prevBufferWidth = [Console]::WindowWidth
+            $dirty = $true
         }
 
-        # ── Items — column-aligned, cursor-marked, no inverse block ─
-        for ($i = 0; $i -lt $keys.Count; $i++) {
-            $key = $keys[$i]
-            $item = $normalized[$key]
-            $det = $detectorCache[$key]
-            $detTextRaw = if ($det -and $det.Text) { "$($det.Icon) $($det.Text)" } else { '' }
-
-            # Fit Desc + Detector text into the available width, trimming the
-            # detector text first, then the description, instead of letting
-            # a long status string push the row past the console width.
-            $desc = $item.Desc
-            $detText = $detTextRaw
-            $combinedLen = $desc.Length + $(if ($detText) { $detText.Length + 2 } else { 0 })
-            if ($combinedLen -gt $extraBudget) {
-                $detRoom = [Math]::Max(0, $extraBudget - $desc.Length - 2)
-                $detText = if ($detText -and $detRoom -gt 0) { Get-TruncatedText $detText $detRoom } else { '' }
-                if ($desc.Length -gt $extraBudget) {
-                    $desc = Get-TruncatedText $desc $extraBudget
-                    $detText = ''
-                }
+        if ($dirty) {
+            # Resize or search — full redraw
+            $boxWidth = [Math]::Min($naturalWidth, [Math]::Max(20, [Console]::WindowWidth - 6))
+            $extraBudget = [Math]::Max(0, $boxWidth - $maxLabelWidth - 2)
+            [Console]::SetCursorPosition(0, $startTop)
+            Write-Host "  ╭─ $Title " -ForegroundColor $accent -NoNewline
+            Write-Host ('─' * [Math]::Max(0, $boxWidth - $Title.Length - 1)) -ForegroundColor DarkGray
+            Write-Host "  │" -ForegroundColor DarkGray
+            for ($i = 0; $i -lt $keys.Count; $i++) {
+                Redraw-Item -Index $i -Keys $keys -Normalized $normalized -DetectorCache $detectorCache `
+                    -Selected $selected -MaxLabelWidth $maxLabelWidth -MaxDescWidth $maxDescWidth `
+                    -ExtraBudget $extraBudget -Accent $accent | Out-Null
             }
-
-            # Selected row gets a colored cursor + accent key instead of a
-            # separate near-duplicate render branch — only the prefix/colors differ.
-            if ($i -eq $selected) {
-                $prefix = '  › '; $keyColor = $accent; $descColor = 'White'; $detColor = $accent
-            } else {
-                $prefix = '    '; $keyColor = 'Gray'; $descColor = 'DarkGray'; $detColor = 'DarkGray'
-            }
-            Write-Host '  │' -ForegroundColor DarkGray -NoNewline
-            Write-Host $prefix -ForegroundColor $keyColor -NoNewline
-            Write-Host $key.PadRight($maxLabelWidth) -ForegroundColor $keyColor -NoNewline
-            if ($desc) {
-                Write-Host '  ' -NoNewline
-                Write-Host $desc.PadRight($maxDescWidth) -ForegroundColor $descColor -NoNewline
-            } elseif ($maxDescWidth -gt 0) {
-                Write-Host (' ' * ($maxDescWidth + 2)) -NoNewline
-            }
-            if ($detText) {
-                Write-Host '  ' -NoNewline
-                Write-Host $detText -ForegroundColor $detColor -NoNewline
-            }
+            Write-Host '  ╰' -ForegroundColor DarkGray -NoNewline
+            Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray -NoNewline
+            Write-Host '╯' -ForegroundColor DarkGray
             Write-Host ''
+            Write-Host "  $footer" -ForegroundColor DarkGray
+            Write-Host ''
+            $dirty = $false
         }
 
         # ── Footer ─────────────────────────────────────────────
@@ -215,6 +227,7 @@ function Show-Menu {
         Write-Host ''
         Write-Host "  $footer" -ForegroundColor DarkGray
         Write-Host ''
+        $dirty = $false  # Full redraw done
 
         # ── Clear below (handle shrunken renders) ──────────────
         $endTop = [Console]::CursorTop
@@ -261,7 +274,7 @@ function Show-Menu {
             'PageUp'     { $selected = [Math]::Max(0, $selected - 10) }
             'PageDown'   { $selected = [Math]::Min($keys.Count - 1, $selected + 10) }
             'OemQuestion' { # / key
-                $searchMode = $true; $searchQuery = ''
+                $searchMode = $true; $searchQuery = ''; $dirty = $true
             }
             'Enter'      {
                 $chosenKey = $keys[$selected]
@@ -340,6 +353,20 @@ function Show-Menu {
                 }
             }
         }
+        # ── Partial redraw: only update affected rows on nav ──
+        if ($prevSelected -ne $selected -and -not $dirty -and -not $searchMode) {
+            $rowBase = $startTop + 1  # Row right below header
+            [Console]::SetCursorPosition(0, $rowBase + $prevSelected)
+            Redraw-Item -Index $prevSelected -Keys $keys -Normalized $normalized -DetectorCache $detectorCache `
+                -Selected $selected -MaxLabelWidth $maxLabelWidth -MaxDescWidth $maxDescWidth `
+                -ExtraBudget $extraBudget -Accent $accent | Out-Null
+            [Console]::SetCursorPosition(0, $rowBase + $selected)
+            Redraw-Item -Index $selected -Keys $keys -Normalized $normalized -DetectorCache $detectorCache `
+                -Selected $selected -MaxLabelWidth $maxLabelWidth -MaxDescWidth $maxDescWidth `
+                -ExtraBudget $extraBudget -Accent $accent | Out-Null
+            [Console]::SetCursorPosition(0, $endTop)
+        }
+        $prevSelected = $selected
     } while ($true)
 }
 
