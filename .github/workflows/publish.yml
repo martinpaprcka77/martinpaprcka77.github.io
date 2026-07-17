@@ -1,0 +1,48 @@
+# Publish Toolkit module to PowerShell Gallery
+# Triggered manually via workflow_dispatch, or on git tags (v*)
+
+name: Publish to PSGallery
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    name: Publish Toolkit to PowerShell Gallery
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read module version
+        id: version
+        shell: pwsh
+        run: |
+          $manifest = Import-PowerShellDataFile -Path toolkit/Toolkit/Toolkit.psd1
+          Write-Host "::set-output name=version::$($manifest.ModuleVersion)"
+          Write-Host "Module version: $($manifest.ModuleVersion)"
+
+      - name: Publish to PSGallery
+        shell: pwsh
+        run: |
+          $apiKey = $env:PSGALLERY_API_KEY
+          if (-not $apiKey) {
+            Write-Error "PSGALLERY_API_KEY not set in GitHub Actions secrets"
+            exit 1
+          }
+
+          $modulePath = Resolve-Path toolkit/Toolkit/Toolkit.psd1
+          Write-Host "Publishing module from: $modulePath"
+
+          Publish-Module `
+            -Path (Split-Path $modulePath) `
+            -NuGetApiKey $apiKey `
+            -Verbose `
+            -Force
+
+          Write-Host "✅ Module published to PSGallery"
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
