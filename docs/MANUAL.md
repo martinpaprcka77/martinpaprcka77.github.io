@@ -394,11 +394,11 @@ HLAVNÍ MENU (9 položek)
 ├── 1. 📊 Status        → Show-Status (globální dashboard)
 ├── 2. ⚡ Dotfiles       → install, update, backup, restore, clean, configure, deps, windows (9 položek)
 ├── 3. 🔍 Systém         → Invoke-SystemCheck (disky, služby, síť, procesy)
-├── 4. 🐳 Docker         → check, containers, images, stats, disk, logs, prune (7 položek)
+├── 4. 🐳 Docker         → check, containers, images, stats, disk, logs, compose, networks, prune (11 položek)
 ├── 5. 📋 Git            → check, log, branches, remotes, stash, commit, clean (7 položek)
-├── 6. 🖥️  Terminal       → check, generate, backup, restore, reset, schemes, fonts (7 položek)
-├── 7. 💻 PowerShell     → check, edit, reload, backup, restore, performance, modules (7 položek)
-├── 8. 📝 VS Code        → check, settings, tasks, agent, backup, restore, extensions, open (8 položek)
+├── 6. 🖥️  Terminal       → check, generate, backup, restore, reset, schemes, fonts, WSL, troubleshooting (10 položek)
+├── 7. 💻 PowerShell     → check, edit, reload, backup, restore, performance, modules, modulepath (8 položek)
+├── 8. 📝 VS Code        → check, settings, tasks, agent, extensions, install rec., backup, restore, open (11 položek)
 └── 9. 🚪 Exit
 ```
 

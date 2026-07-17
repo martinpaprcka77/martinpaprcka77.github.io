@@ -10,7 +10,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 - ✅ Idempotentní instalátor (`install.ps1` — WhatIf, Force, backup, summary)
 - ✅ Update mechanism (`update.ps1` — git fetch + reload + bootstrap self-heal)
 - ✅ Toolkit modul — **37 exportovaných funkcí**
-- ✅ Interaktivní menu — 7 submenus (Dotfiles, Docker, Git, Terminal, PowerShell, VS Code, Diagnostika)
+- ✅ Interaktivní menu — 6 submenus (Dotfiles, Docker, Git, Terminal, PowerShell, VS Code) + přímá systémová diagnostika
 - ✅ Moderní menu engine — šipky ↑↓, zvýraznění, popisky, inline režim, ořez na šířku konzole
 - ✅ Arrow-key menu s popisky u každé položky
 - ✅ Živá detekce stavu přímo v menu (`Detector` na položku — modul stack, PSModulePath, dostupnost

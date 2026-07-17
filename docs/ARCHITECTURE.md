@@ -237,31 +237,33 @@ flowchart TD
 ```mermaid
 graph LR
     MAIN["HLAVNÍ MENU<br/>Start-MainMenu"]
+    STATUS["STATUS<br/>Show-Status"]
+    DOTFILES_M["DOTFILES MENU<br/>Show-DotfilesMenu"]
+    SYS_M["SYSTÉM<br/>Invoke-SystemCheck"]
     DOCKER_M["DOCKER MENU<br/>Show-DockerMenu"]
     GIT_M["GIT MENU<br/>Show-GitMenu"]
-    CHECK["DIAGNOSTIKA<br/>Invoke-SystemCheck"]
-    TOOLS["NÁSTROJE<br/>(placeholder)"]
+    TERM_M["TERMINAL MENU<br/>Show-TerminalMenu"]
+    PWSH_M["POWERSHELL MENU<br/>Show-PwshMenu"]
+    VSCODE_M["VS CODE MENU<br/>Show-VSCodeMenu"]
 
-    MAIN -->|"1"| DOCKER_M
-    MAIN -->|"2"| CHECK
-    MAIN -->|"3"| GIT_M
-    MAIN -->|"4"| TOOLS
-    MAIN -->|"5"| EXIT["Konec"]
+    MAIN -->|"1"| STATUS
+    MAIN -->|"2"| DOTFILES_M
+    MAIN -->|"3"| SYS_M
+    MAIN -->|"4"| DOCKER_M
+    MAIN -->|"5"| GIT_M
+    MAIN -->|"6"| TERM_M
+    MAIN -->|"7"| PWSH_M
+    MAIN -->|"8"| VSCODE_M
+    MAIN -->|"9"| EXIT["Konec"]
 
-    DOCKER_M -->|"1"| DPS["docker ps -a"]
-    DOCKER_M -->|"2"| DIM["docker images"]
-    DOCKER_M -->|"3"| DST["docker stats"]
-    DOCKER_M -->|"4"| DDF["docker system df"]
-    DOCKER_M -->|"5"| DLO["docker logs"]
-    DOCKER_M -->|"6"| BACK["Zpět"]
+    DOCKER_M -->|"1-5"| DPS["docker ps/images/stats/disk/logs"]
+    DOCKER_M -->|"7-8"| DCP["docker compose up/down"]
+    DOCKER_M -->|"9-10"| DNET["docker network ls / prune"]
+    DOCKER_M -->|"11"| BACK["Zpět"]
 
-    GIT_M -->|"1"| GST["git status"]
-    GIT_M -->|"2"| GLO["git log"]
-    GIT_M -->|"3"| GBR["git branch -a"]
-    GIT_M -->|"4"| GRM["git remote -v"]
-    GIT_M -->|"5"| GSL["git stash list"]
-    GIT_M -->|"6"| GCM["git commit -am"]
-    GIT_M -->|"7"| BACK
+    GIT_M -->|"1-5"| GST["git status/log/branches/remotes/stash"]
+    GIT_M -->|"6-7"| GCM["git commit/clean"]
+    GIT_M -->|"8"| BACK
 ```
 
 ## Vztah bin/ ↔ Toolkit ↔ lib/
