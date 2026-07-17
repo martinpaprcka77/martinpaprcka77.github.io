@@ -29,7 +29,7 @@ function Start-MainMenu {
                 if (Get-Command git -ErrorAction SilentlyContinue) { Write-Host "  git: ✅ $((git --version 2>$null))" -ForegroundColor Green }
                 if (Get-Command docker -ErrorAction SilentlyContinue) { Write-Host "  docker: ✅ $((docker --version 2>$null))" -ForegroundColor Green }
                 if (Get-Command starship -ErrorAction SilentlyContinue) { Write-Host "  starship: ✅" -ForegroundColor Green }
-                if (Get-Command code -ErrorAction SilentlyContinue) { Write-Host "  code: ✅ $((code --version 2>&1 | Select-Object -First 1))" -ForegroundColor Green }
+                if (Get-Command code -ErrorAction SilentlyContinue) { Write-Host "  code: ✅ $(code --version 2>&1 | Select-Object -First 1)" -ForegroundColor Green }
                 if ($env:WT_SESSION) { Write-Host "  WT session: ✅" -ForegroundColor Green }
                 Write-Host "`n  ➡ Run 'install.ps1' or 'update' to load the full profile." -ForegroundColor Yellow
                 Read-Host "`nPress Enter..."
