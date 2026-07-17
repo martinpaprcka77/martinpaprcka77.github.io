@@ -3,20 +3,61 @@
     "files.eol": "\r\n",
     "files.trimTrailingWhitespace": true,
     "files.insertFinalNewline": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.github": false,
+        "**/.vscode": false,
+        "**/backups": true,
+        "**/.reasonix": true,
+        "**/PowerShell": true,
+        "**/node_modules": true
+    },
+    "search.exclude": {
+        "**/backups": true,
+        "**/.reasonix": true,
+        "**/PowerShell": true,
+        "**/node_modules": true
+    },
+    "workbench.colorTheme": "Default Dark Modern",
+    "workbench.iconTheme": "vs-seti",
+    "editor.rulers": [120],
+    "editor.renderWhitespace": "boundary",
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": true,
+    "files.associations": {
+        "*.ps1": "powershell",
+        "*.psm1": "powershell",
+        "*.psd1": "powershell",
+        "*.pssc": "powershell",
+        "*.psrc": "powershell",
+        "*.ps1xml": "xml"
+    },
     "powershell.codeFormatting.preset": "Stroustrup",
     "powershell.codeFormatting.addWhitespaceAroundPipe": true,
     "powershell.codeFormatting.autoCorrectAliases": true,
     "powershell.codeFormatting.useCorrectCasing": true,
     "powershell.developer.powerShellExportsIsNew": true,
     "powershell.integratedConsole.showOnStartup": false,
+    "powershell.pester.useLegacyVersion": false,
+    "powershell.pester.outputVerbosity": "Detailed",
+    "powershell.scriptAnalysis.enable": true,
+    "powershell.scriptAnalysis.settingsPath": "",
+    "powershell.startAutomatically": true,
+    "powershell.enableProfileLoading": false,
     "[powershell]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "ms-vscode.powershell"
+        "editor.defaultFormatter": "ms-vscode.powershell",
+        "editor.semanticHighlighting.enabled": true
     },
     "[json]": {
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "vscode.json-language-features"
     },
     "[markdown]": {
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+    },
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml"
     }
 }
