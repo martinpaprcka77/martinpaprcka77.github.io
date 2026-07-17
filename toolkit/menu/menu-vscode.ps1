@@ -18,7 +18,7 @@ function Show-VSCodeMenu {
     $items = [ordered]@{
         '1. 📊 Check Status'  = @{ Action = {
             Write-Host "`n  Committed configs:" -ForegroundColor Cyan
-            @('settings.json', 'tasks.json', 'agent-instructions.md') | ForEach-Object {
+            @('settings.json', 'tasks.json', 'agent-instructions.md', 'extensions.json') | ForEach-Object {
                 $p = Join-Path $vsc $_
                 if (Test-Path $p) { Write-Host "    ✅ $_ ($((Get-Item $p).Length) bytes)" -ForegroundColor Green }
                 else { Write-Host "    ❌ $_" -ForegroundColor Red }
@@ -42,18 +42,35 @@ function Show-VSCodeMenu {
             if (Test-Path $p) { code $p } else { Write-Err "Not found" }
             Read-Host "`nStiskni Enter..."
         }; Desc = 'Copilot agent context file' }
-        '5. 💾 Backup Settings' = @{ Action = {
+        '5. 🔌 Extensions'    = @{ Action = {
+            $p = Join-Path $vsc 'extensions.json'
+            if (Test-Path $p) { code $p } else { Write-Err "Not found — run install.ps1 first" }
+            Read-Host "`nStiskni Enter..."
+        }; Desc = 'Open recommended extensions.json' }
+        '6. 📋 Install Rec.'  = @{ Action = {
+            $extFile = Join-Path $vsc 'extensions.json'
+            if (-not (Test-Path $extFile)) { Write-Warn "extensions.json not found."; Read-Host "`nStiskni Enter..."; return }
+            $recs = (Get-Content $extFile -Raw | ConvertFrom-Json).recommendations
+            $installed = code --list-extensions 2>&1
+            $missing = $recs | Where-Object { $_ -notin $installed }
+            if (-not $missing) { Write-Success "All recommended extensions are installed."; Read-Host "`nStiskni Enter..."; return }
+            Write-Host "`n  Installing $($missing.Count) missing extensions..." -ForegroundColor Yellow
+            $missing | ForEach-Object { Write-Host "    Installing: $_" ; code --install-extension $_ 2>&1 | Out-Null }
+            Write-Success "Done. Restart VS Code to activate."
+            Read-Host "`nStiskni Enter..."
+        }; Desc = 'Install all recommended from extensions.json' }
+        '7. 💾 Backup Configs' = @{ Action = {
             $backupDir = Join-Path $toolsRoot '.vscode\backups'
             New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
             $ts = Get-Date -Format 'yyyyMMdd-HHmmss'
-            @('settings.json', 'tasks.json', 'agent-instructions.md') | ForEach-Object {
+            @('settings.json', 'tasks.json', 'agent-instructions.md', 'extensions.json') | ForEach-Object {
                 $p = Join-Path $vsc $_
                 if (Test-Path $p) { Copy-Item $p (Join-Path $backupDir "$_.$ts.bak") }
             }
             Write-Success "Backed up to: $backupDir"
             Read-Host "`nStiskni Enter..."
-        }; Desc = 'Save settings/tasks/agent with timestamp' }
-        '6. ♻️  Restore Settings' = @{ Action = {
+        }; Desc = 'Save all configs with timestamp' }
+        '8. ♻️  Restore Configs' = @{ Action = {
             $backupDir = Join-Path $toolsRoot '.vscode\backups'
             $backups = Get-ChildItem $backupDir -Filter '*.bak' -ErrorAction SilentlyContinue | Sort LastWriteTime -Desc
             if (-not $backups) { Write-Warn "No backups."; Read-Host "`nStiskni Enter..."; return }
@@ -67,13 +84,13 @@ function Show-VSCodeMenu {
             }
             Read-Host "`nStiskni Enter..."
         }; Desc = 'Restore from timestamped backup' }
-        '7. 🧩 Extensions'    = @{ Action = {
+        '9. 🧩 Extensions'     = @{ Action = {
             code --list-extensions 2>&1 | Select-String 'powershell|terminal|copilot' | ForEach-Object { Write-Host "    $_" }
-            Write-Host "`n  Recommended: ms-vscode.powershell, GitHub.copilot, GitHub.copilot-chat" -ForegroundColor Yellow
+            Write-Host "`n  Recommended: see .vscode\\extensions.json" -ForegroundColor Yellow
             Read-Host "`nStiskni Enter..."
-        }; Desc = 'PowerShell-related extensions' }
-        '8. 🖥️  Open Folder'   = @{ Action = { code $toolsRoot }; Desc = 'Open toolkit/ in VS Code' }
-        '9. ↩️  Back'          = @{ Action = { return }; Desc = 'Return to main menu' }
+        }; Desc = 'List installed + recommended extensions' }
+        '10. 🖥️  Open Folder'   = @{ Action = { code $toolsRoot }; Desc = 'Open toolkit/ in VS Code' }
+        '11. ↩️  Back'          = @{ Action = { return }; Desc = 'Return to main menu' }
     }
     Show-Menu -Title 'VS CODE' -Items $items
 }
