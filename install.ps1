@@ -161,6 +161,7 @@ if (-not $NoTerminal) {
         }
     }
     else { # Windows but script missing — silently skip (user may have partial repo)
+    }
 }
 
 # ── Summary ────────────────────────────────────────────────────
