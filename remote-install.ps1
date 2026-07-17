@@ -92,7 +92,7 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 }
 
 $dotfilesUrl = 'https://github.com/martinpaprcka77/martinpaprcka77.github.io.git'
-$dotfilesPath = Join-Path $HOME '.config\powershell'
+$dotfilesPath = Join-Path (Join-Path $HOME '.config') 'powershell'
 
 $isRepo = Test-Path (Join-Path $dotfilesPath '.git')
 if ($isRepo) {

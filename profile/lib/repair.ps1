@@ -80,7 +80,7 @@ function Invoke-DotfilesRepair {
             # toolkit/lib/modulepath.ps1 isn't normally dot-sourced by a root
             # script — resolved from $Path (repo root), never $env:DOTFILES_TOOLS,
             # so this works even before profile.ps1 has ever set that variable.
-            $modulePathLib = Join-Path $Path 'toolkit\lib\modulepath.ps1'
+            $modulePathLib = Join-Path (Join-Path (Join-Path $Path 'toolkit') 'lib') 'modulepath.ps1'
             if (Test-Path $modulePathLib) {
                 Write-Step "Checking PSModulePath..."
                 . $modulePathLib
