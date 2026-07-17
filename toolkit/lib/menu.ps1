@@ -112,9 +112,10 @@ function Show-Menu {
         return $Text.Substring(0, $MaxLength - 1) + '…'
     }
 
-    # ── Hide cursor ────────────────────────────────────────────
-    $prevCursor = [Console]::CursorVisible
-    [Console]::CursorVisible = $false
+    # ── Enter alternate screen buffer (no scroll pollution) ────
+    $vt = $Host.UI.SupportsVirtualTerminal
+    if ($vt) { [Console]::Write("`e[?1049h`e[?25l") }
+    else { $prevCursor = [Console]::CursorVisible; [Console]::CursorVisible = $false }
     $selected = 0
     $searchMode = $false
     $searchQuery = ''
@@ -122,6 +123,13 @@ function Show-Menu {
     $prevSelected = -1  # Track previous selection for partial redraw
     $footer = '↑↓ navigate  ↵ select  Home/End ⇱⇲  Page↑↓  / search  Esc/q exit'
     $dirty = $true      # Full redraw needed on first render
+
+    # ── Cleanup function used by all exits ───────────────────
+    function Leave-Menu {
+        if ($vt) { [Console]::Write("`e[?25h`e[?1049l") }
+        else { [Console]::CursorVisible = $prevCursor; if (-not $Inline) { Clear-Host } }
+    }
+    $menuTop = [Console]::CursorTop
 
     # ── Redraw a single item row ────────────────────────────
     function Redraw-Item {
@@ -282,7 +290,7 @@ function Show-Menu {
             'Enter'      {
                 $chosenKey = $keys[$selected]
                 $item = $normalized[$chosenKey]
-                [Console]::CursorVisible = $prevCursor
+                if (-not $vt) { [Console]::CursorVisible = $prevCursor }
                 if ($Inline) {
                     # Inline mode: clear menu area minimally, run action
                     $clearTo = [Math]::Min($endTop, [Console]::BufferHeight - 1)
@@ -294,31 +302,18 @@ function Show-Menu {
                     & $item.Action
                     Write-Host ''
                     # Menu redraws below the action's output
-                    [Console]::CursorVisible = $false
+                    if (-not $vt) { [Console]::CursorVisible = $false }
                     $menuTop = [Console]::CursorTop
                 } else {
-                    Clear-Host
                     & $item.Action
-                    return
+                    Leave-Menu; return
                 }
             }
-            'Escape'     {
-                [Console]::CursorVisible = $prevCursor
-                if (-not $Inline) { Clear-Host }
-                return
-            }
-            'Q'          {
-                [Console]::CursorVisible = $prevCursor
-                if (-not $Inline) { Clear-Host }
-                return
-            }
+            'Escape'     { Leave-Menu; return }
+            'Q'          { Leave-Menu; return }
             'C'          {
                 # Ctrl+C — also exit
-                if ($keyInfo.Modifiers -band [ConsoleModifiers]::Control) {
-                    [Console]::CursorVisible = $prevCursor
-                    if (-not $Inline) { Clear-Host }
-                    return
-                }
+                if ($keyInfo.Modifiers -band [ConsoleModifiers]::Control) { Leave-Menu; return }
             }
             default {
                 # Number key shortcut
@@ -332,7 +327,7 @@ function Show-Menu {
                     $match = $keys | Where-Object { $_ -match "^\s*${num}\." }
                     if ($match) {
                         $item = $normalized[$match]
-                        [Console]::CursorVisible = $prevCursor
+                        if (-not $vt) { [Console]::CursorVisible = $prevCursor }
                         if ($Inline) {
                             $clearTo = [Math]::Min($endTop, [Console]::BufferHeight - 1)
                             for ($r = $startTop; $r -le $clearTo; $r++) {
@@ -342,11 +337,11 @@ function Show-Menu {
                             [Console]::SetCursorPosition(0, $startTop)
                             & $item.Action
                             Write-Host ''
-                            [Console]::CursorVisible = $false
+                            if (-not $vt) { [Console]::CursorVisible = $false }
                             $menuTop = [Console]::CursorTop
                         } else {
-                            Clear-Host
                             & $item.Action
+                            Leave-Menu; return
                             return
                         }
                     }
