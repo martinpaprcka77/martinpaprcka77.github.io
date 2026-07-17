@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Unified PowerShell Dotfiles setup wizard for Windows.
 .DESCRIPTION
