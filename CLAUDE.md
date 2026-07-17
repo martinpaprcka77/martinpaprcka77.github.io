@@ -38,7 +38,7 @@ To add a function: write it in `toolkit/lib/`, add to `Export-ModuleMember` in `
 ## How to run
 - After install: `menu` or `check` from anywhere
 - Direct: `Import-Module ~/.config/powershell/toolkit/Toolkit/Toolkit.psd1`
-- Tests: `Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1` (75 cases)
+- Tests: `Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1` (76 cases)
 - Validate profile: `& $PROFILE` in a fresh session
 
 ## Architecture decisions
@@ -47,10 +47,9 @@ To add a function: write it in `toolkit/lib/`, add to `Export-ModuleMember` in `
   class (menu calling functions that only existed in the other repo) and keeps
   `$env:DOTFILES_TOOLS` always derived from `$env:DOTFILES_PWSH` (can't drift apart anymore).
   Possible future split back into 2 repos is a documented option in `docs/ROADMAP.md`, not a plan.
-- `PSModulePath` fixed on **both PS5.1 and PS7** to avoid OneDrive pollution
+- `PSModulePath` fixed to avoid OneDrive pollution
 - Host detection via `$host.Name -match 'Code'`
-- Environment detection (`$isPSCore`, `$isWindowsHost`) consolidated once at the top of
-  `profile.ps1`, reused everywhere below it
+- Windows-only, PS7-only config — no cross-platform branching
 - Before naming a short function/alias: check `Get-Command -CommandType Alias` first — a built-in
   alias silently wins over a same-named function (bit `gcm`/`gps` once, see AGENTS.md)
 - Never trust a Known Folder/registry-derived path unvalidated — `Test-RootedPath` in

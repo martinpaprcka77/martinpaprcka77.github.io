@@ -139,7 +139,7 @@ th { background: #ffffff08; font-weight: 600; }
   </div>
   <div class="card">
     <h3><span class="icon">🔧</span> toolkit/</h3>
-    <p class="desc">Interactive toolbox — TUI menus with live status detection, diagnostics, Docker &amp; Git helpers, Toolkit (36 funcs). PSModulePathManager, PSResourceGet modernization, WSL auto-detection, ETW diagnostics.</p>
+    <p class="desc">Interactive toolbox — ANSI-only TUI menus with live status detection, diagnostics, Docker &amp; Git helpers, Toolkit (38 functions). PSModulePathManager, PSResourceGet modernization, WSL auto-detection.</p>
     <p><code>~/.config/powershell/toolkit/</code></p>
     <div class="links">
       <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/tree/main/toolkit">📦 GitHub</a>
@@ -169,7 +169,7 @@ th { background: #ffffff08; font-weight: 600; }
 <div class="flow">
   <span class="step">🐚 shell starts</span>
   <span class="arrow">→</span>
-  <span class="step">🔍 detect PS5/PS7, host, OS</span>
+  <span class="step">🔍 PS7 + host detection</span>
   <span class="arrow">→</span>
   <span class="step">📁 dot-source core/*.ps1</span>
   <span class="arrow">→</span>
@@ -225,10 +225,10 @@ th { background: #ffffff08; font-weight: 600; }
 <h2 class="section-title">🗺️ Roadmap</h2>
 <table>
 <tr><th>Phase</th><th>Status</th><th>What's included</th></tr>
-<tr><td><strong>1. Foundation</strong></td><td><span class="done">✅ Done</span></td><td>Modular profile, idempotent install, Toolkit (36 functions), TUI menu with live status detection, one-command remote bootstrapper, Known-Folder-correct paths, 63 Pester tests</td></tr>
+<tr><td><strong>1. Foundation</strong></td><td><span class="done">✅ Done</span></td><td>Modular profile (PS7-only, Windows-only), idempotent install, Toolkit (38 functions), ANSI TUI menu + scroll mode, one-command remote bootstrapper, Known-Folder-correct paths, 76 Pester tests</td></tr>
 <tr><td><strong>2. 2026 upgrades</strong></td><td><span class="done">✅ Done</span></td><td>winget deps installer, Windows defaults tuning, WT JSON fragment profiles, shell integration, VS Code integration, config wizard</td></tr>
-<tr><td><strong>3. Extensions</strong></td><td><span class="soon">🟡 Planned</span></td><td>Linux/macOS path support, live CPU/RAM/disk dashboard, network diagnostics, PSResourceGet full migration</td></tr>
-<tr><td><strong>4. Integration</strong></td><td><span class="later">🟢 Future</span></td><td>WSL profile auto-detection in WT fragment, git hooks, CI/CD (Pester + JSON validation), PowerShell Gallery publish</td></tr>
+<tr><td><strong>3. Extensions</strong></td><td><span class="soon">🟡 Planned</span></td><td>Live CPU/RAM/disk dashboard, network diagnostics, PSResourceGet full migration</td></tr>
+<tr><td><strong>4. Integrations</strong></td><td><span class="done">✅ Done</span></td><td>WSL profile auto-detection in WT fragment, git hooks, CI/CD (Pester + JSON validation), git/ + chezmoi/ absorbed into monorepo</td></tr>
 <tr><td><strong>5. Ecosystem</strong></td><td><span class="done">✅ Merged into one repo</span></td><td>Windows clean-install setup script, docs site, gitless (ZIP) install path — planned; <strong>monorepo merge</strong> — done, see below</td></tr>
 </table>
 <p style="margin-top:.3rem"><a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ROADMAP.md">→ Full roadmap with known issues &amp; contribution guide</a></p>
@@ -252,6 +252,50 @@ th { background: #ffffff08; font-weight: 600; }
     <span class="badge badge-o" style="opacity:.6">🔧 dotfiles-tools</span>
     <span style="color:var(--muted)">→</span>
     <span class="badge badge-g">📦 this repo</span>
+  </div>
+</div>
+
+<!-- ═══════════ GIST PORTAL ═══════════ -->
+<h2 class="section-title">📋 Gist Portal</h2>
+<div class="grid">
+  <div class="card">
+    <h3><span class="icon">📥</span> Install</h3>
+    <p class="desc">Minimal one-liner bootstrapper — clone the repo, inject <code>$PROFILE</code>, set up PATH. Copy-paste ready.</p>
+    <div style="background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;font-size:.82em;margin-bottom:.6rem"><code>irm https://raw.githubusercontent.com/martinpaprcka77/martinpaprcka77.github.io/main/remote-install.ps1 | iex</code></div>
+    <div class="links">
+      <a href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">📋 View Gist</a>
+      <a href="https://raw.githubusercontent.com/martinpaprcka77/martinpaprcka77.github.io/main/remote-install.ps1">📄 Raw script</a>
+    </div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">📋</span> Cheatsheet</h3>
+    <p class="desc">Quick reference for all commands, aliases, and menu functions. Keep it pinned for daily use.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin:.5rem 0">
+      <code style="font-size:.78em">menu</code> <code style="font-size:.78em">check</code> <code style="font-size:.78em">update</code>
+      <code style="font-size:.78em">ep</code> <code style="font-size:.78em">rp</code> <code style="font-size:.78em">status</code>
+      <code style="font-size:.78em">g/gst/gco/glo</code> <code style="font-size:.78em">dps/dcu/dcd</code>
+    </div>
+    <div class="links">
+      <a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">📋 View Gist</a>
+    </div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">🤖</span> Master Prompt</h3>
+    <p class="desc">The complete project specification prompt — send this to any AI to regenerate the entire ecosystem from scratch.</p>
+    <p style="color:var(--muted);font-size:.82em;margin:.4rem 0">8 models · 12 task types · 120+ lines of spec</p>
+    <div class="links">
+      <a href="https://gist.github.com/martinpaprcka77/1c74223f4e57b46977abd6df06d4e8fd">📋 View Gist</a>
+      <a href="prompts.html">🤖 AI prompts page</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ WEB CHARTS ═══════════ -->
+<div class="card" style="margin-top:.5rem">
+  <h3><span class="icon">📊</span> Charts &amp; Metrics</h3>
+  <p class="desc">Live Canvas-based charts showing test trends, module counts, and profile load benchmarks.</p>
+  <div class="links">
+    <a href="charts.html">📊 Open Charts Dashboard</a>
   </div>
 </div>
 

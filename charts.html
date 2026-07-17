@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charts — PowerShell Dotfiles</title>
+<style>
+:root {
+  --bg: #0d1117; --fg: #c9d1d9; --muted: #8b949e;
+  --accent: #58a6ff; --accent2: #3fb950; --accent3: #d2991d; --accent4: #f778ba;
+  --border: #30363d; --card: #161b22;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.6;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: #79c0ff; text-decoration: underline; }
+.container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 2.5rem 2rem 2rem; text-align: center;
+}
+.header h1 { font-size: 2rem; font-weight: 800; margin-bottom: .3rem; }
+.header h1 span { color: var(--accent); }
+.header p { color: var(--muted); font-size: .95rem; }
+.header .back { display: inline-block; margin-top: .8rem; padding: .3em .9em; border: 1px solid var(--border); border-radius: 20px; font-size: .82em; }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1.5rem 0; }
+@media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+/* Cards */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem;
+}
+.card h3 { font-size: 1.05rem; margin-bottom: .8rem; color: var(--accent); }
+.card .desc { color: var(--muted); font-size: .85em; margin-bottom: .8rem; }
+
+/* Canvas */
+canvas { display: block; max-width: 100%; margin: .5rem 0; border-radius: 8px; }
+
+/* Legend */
+.legend { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .6rem; font-size: .82em; }
+.legend-item { display: flex; align-items: center; gap: .35rem; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+/* Stat row */
+.stat-row { display: flex; justify-content: space-between; padding: .4rem 0; border-bottom: 1px solid #ffffff10; font-size: .9em; }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: var(--muted); }
+.stat-value { font-weight: 600; }
+
+.footer { border-top: 1px solid var(--border); padding: 1.5rem; text-align: center; color: var(--muted); font-size: .82em; margin-top: 2rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>📊</span> Charts &amp; Metrics</h1>
+  <p>Live Canvas-based visualizations for the PowerShell Dotfiles Ecosystem</p>
+  <a class="back" href="index.html">← Back to Portal</a>
+</div>
+
+<div class="container">
+
+  <div class="grid">
+    <div class="card">
+      <h3>🧪 Tests Over Time</h3>
+      <p class="desc">Pester test count across major releases</p>
+      <canvas id="testChart" height="220"></canvas>
+      <div class="legend" id="testLegend"></div>
+    </div>
+    <div class="card">
+      <h3>📦 Module Composition</h3>
+      <p class="desc">Toolkit module — 38 exported functions by category</p>
+      <canvas id="moduleChart" height="220"></canvas>
+      <div class="legend" id="moduleLegend"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:.5rem">
+    <h3>⚡ Feature Status</h3>
+    <p class="desc">Current state of all major subsystems</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.6rem">
+      <div class="stat-row"><span class="stat-label">ANSI-only menu</span><span class="stat-value" style="color:var(--accent2)">Done</span></div>
+      <div class="stat-row"><span class="stat-label">Scroll mode (no alt buffer)</span><span class="stat-value" style="color:var(--accent2)">Done</span></div>
+      <div class="stat-row"><span class="stat-label">Windows PS7-only</span><span class="stat-value" style="color:var(--accent2)">Done</span></div>
+      <div class="stat-row"><span class="stat-label">git/ + chezmoi/ unified</span><span class="stat-value" style="color:var(--accent2)">Done</span></div>
+      <div class="stat-row"><span class="stat-label">Pester test coverage</span><span class="stat-value" style="color:var(--accent2)">76 tests</span></div>
+      <div class="stat-row"><span class="stat-label">Toolkit functions</span><span class="stat-value" style="color:var(--accent2)">38 exported</span></div>
+      <div class="stat-row"><span class="stat-label">Live status detectors</span><span class="stat-value" style="color:var(--accent2)">5 active</span></div>
+      <div class="stat-row"><span class="stat-label">WT fragment profiles</span><span class="stat-value" style="color:var(--accent2)">4+WSL</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Canvas-based · no dependencies · <a href="index.html">← Back to Portal</a>
+</div>
+
+<script>
+(function() {
+  // ── Colors ──
+  const C = ['#58a6ff','#3fb950','#d2991d','#f778ba','#db61a2','#79c0ff','#56d364','#e3b341'];
+
+  // ── Test chart (bar) ──
+  (function() {
+    const c = document.getElementById('testChart');
+    const ctx = c.getContext('2d');
+    const W = c.parentElement.clientWidth - 40; c.width = W; c.height = 220;
+    const data = [
+      { label: 'v1.0', tests: 45 },
+      { label: 'v1.5', tests: 63 },
+      { label: 'v2.0', tests: 73 },
+      { label: 'v2.5', tests: 75 },
+      { label: 'v3.0', tests: 76 }
+    ];
+    const pad = { t: 20, r: 20, b: 40, l: 50 };
+    const cw = c.width, ch = c.height;
+    const gw = cw - pad.l - pad.r, gh = ch - pad.t - pad.b;
+    const max = Math.max(...data.map(d => d.tests)) * 1.15;
+    const bw = gw / data.length * .65;
+    const gap = gw / data.length;
+
+    // Grid lines
+    ctx.strokeStyle = '#ffffff15'; ctx.lineWidth = 1;
+    for (let v = 0; v <= max; v += 10) {
+      const y = pad.t + gh - (v / max * gh);
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(cw - pad.r, y);
+      ctx.stroke();
+      ctx.fillStyle = '#8b949e'; ctx.font = '11px system-ui';
+      ctx.textAlign = 'right'; ctx.fillText(v, pad.l - 6, y + 4);
+    }
+
+    // Bars
+    data.forEach((d, i) => {
+      const x = pad.l + i * gap + (gap - bw) / 2;
+      const h = (d.tests / max) * gh;
+      const y = pad.t + gh - h;
+      const grad = ctx.createLinearGradient(x, y, x, pad.t + gh);
+      grad.addColorStop(0, C[i % C.length]);
+      grad.addColorStop(1, C[i % C.length] + '44');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.roundRect(x, y, bw, h, [4,4,0,0]); ctx.fill();
+
+      // Label
+      ctx.fillStyle = '#c9d1d9'; ctx.font = '12px system-ui';
+      ctx.textAlign = 'center'; ctx.fillText(d.tests, x + bw/2, y - 6);
+      ctx.fillStyle = '#8b949e'; ctx.font = '10px system-ui';
+      ctx.fillText(d.label, x + bw/2, pad.t + gh + 16);
+    });
+
+    // Legend
+    const lg = document.getElementById('testLegend');
+    data.forEach((d, i) => {
+      const el = document.createElement('span'); el.className = 'legend-item';
+      el.innerHTML = '<span class="legend-dot" style="background:' + C[i % C.length] + '"></span> ' + d.label;
+      lg.appendChild(el);
+    });
+  })();
+
+  // ── Module chart (donut) ──
+  (function() {
+    const c = document.getElementById('moduleChart');
+    const ctx = c.getContext('2d');
+    const W = c.parentElement.clientWidth - 40; c.width = W; c.height = 220;
+    const data = [
+      { label: 'Menu', count: 8 },
+      { label: 'Diagnostics', count: 4 },
+      { label: 'Utility', count: 6 },
+      { label: 'Config', count: 3 },
+      { label: 'PSModulePath', count: 7 },
+      { label: 'Detectors', count: 5 },
+      { label: 'Output', count: 5 }
+    ];
+    const total = data.reduce((s, d) => s + d.count, 0);
+    const cx = c.width * .38, cy = c.height / 2, r = Math.min(cx, cy) - 16, ir = r * .55;
+
+    let angle = -Math.PI / 2;
+    data.forEach((d, i) => {
+      const slice = (d.count / total) * Math.PI * 2;
+      const grad = ctx.createRadialGradient(cx, cy, ir, cx, cy, r);
+      grad.addColorStop(0, C[i % C.length] + '88');
+      grad.addColorStop(1, C[i % C.length]);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(angle) * ir, cy + Math.sin(angle) * ir);
+      ctx.arc(cx, cy, r, angle, angle + slice);
+      ctx.arc(cx, cy, ir, angle + slice, angle, true);
+      ctx.closePath(); ctx.fill();
+
+      // Label line
+      const la = angle + slice / 2;
+      const lr = r + 14;
+      ctx.strokeStyle = C[i % C.length]; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(la) * r, cy + Math.sin(la) * r);
+      ctx.lineTo(cx + Math.cos(la) * lr, cy + Math.sin(la) * lr);
+      ctx.stroke();
+
+      const pct = Math.round(d.count / total * 100);
+      ctx.fillStyle = '#c9d1d9'; ctx.font = '11px system-ui';
+      ctx.textAlign = la > Math.PI / 2 && la < Math.PI * 3/2 ? 'right' : 'left';
+      ctx.fillText(d.label + ' ' + pct + '%', cx + Math.cos(la) * (lr + 10), cy + Math.sin(la) * (lr + 10) + 4);
+      angle += slice;
+    });
+
+    // Center text
+    ctx.fillStyle = '#c9d1d9'; ctx.font = 'bold 22px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText(total, cx, cy + 4);
+    ctx.fillStyle = '#8b949e'; ctx.font = '10px system-ui';
+    ctx.fillText('functions', cx, cy + 18);
+  })();
+
+  // ── roundRect polyfill for older browsers ──
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+      if (r instanceof Array) r = r[0];
+      this.moveTo(x + r, y); this.lineTo(x + w - r, y);
+      this.quadraticCurveTo(x + w, y, x + w, y + r);
+      this.lineTo(x + w, y + h - r);
+      this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      this.lineTo(x + r, y + h);
+      this.quadraticCurveTo(x, y + h, x, y + h - r);
+      this.lineTo(x, y + r);
+      this.quadraticCurveTo(x, y, x + r, y);
+    };
+  }
+})();
+</script>
+</body>
+</html>

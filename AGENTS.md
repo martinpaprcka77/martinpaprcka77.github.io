@@ -14,10 +14,10 @@ interactive toolbox, in one repo, plus the GitHub Pages portal at the repo root.
 |-----------|-------|
 | **Location on disk** | `~/.config/powershell/` |
 | **Portal** | [martinpaprcka77.github.io](https://martinpaprcka77.github.io) (this repo's Pages, root URL) |
-| **Language** | PowerShell 5.1 / 7+ |
+| **Language** | PowerShell 7+ (Windows) |
 | **Module** | `toolkit/Toolkit` — 38 exported functions |
-| **Tests** | 75 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` |
-| **Dependencies** | Git, PowerShell 5.1+; Docker (optional, for `toolkit`'s Docker menu) |
+| **Tests** | 76 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` |
+| **Dependencies** | Git, PowerShell 7+; Docker (optional, for `toolkit`'s Docker menu) |
 
 Previously split across two repos (`dotfiles-powershell`, `dotfiles-tools`) — merged here to
 eliminate cross-repo coupling (menu items calling functions that only existed in the other repo)
@@ -68,8 +68,7 @@ and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_T
 │   │   ├── status.ps1       ← Show-Status — global health dashboard, Test-PathHealth
 │   │   └── extra.ps1.example← template for gitignored user overrides (copy to extra.ps1)
 │   │
-│   ├── ps5/profile.ps1      ← Windows PowerShell 5.1 only (PSReadLine v2, UTF-8)
-│   ├── ps7/profile.ps1      ← PS 7+ only (PSReadLine v3, Starship/oh-my-posh, Terminal-Icons, PSFzf)
+│   ├── ps7/profile.ps1      ← PS 7+ (PSReadLine, Starship/oh-my-posh, Terminal-Icons, PSFzf)
 │   │
 │   └── hosts/
 │       ├── ConsoleHost.ps1  ← classic terminal (welcome banner, uptime, window title);
@@ -101,9 +100,13 @@ and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_T
     │   ├── Generate-Icons.ps1, configure.ps1, deps.ps1, windows.ps1, modernize.ps1, precheck.ps1
     │
     ├── configs/              ← settings.json, wt-schemes.json (single source of truth for WT colors)
-    ├── tests/Toolkit.Tests.ps1 ← 75 Pester cases
+    ├── tests/Toolkit.Tests.ps1 ← 76 Pester cases
     ├── githooks/              ← post-checkout/post-merge reminders, install.sh
     └── icons/README.md
+
+├── git/                     ← global gitignore (ignore) + Claude agent settings
+│                               (deployed as junction to ~/.config/git/)
+├── chezmoi/                 ← chezmoi.toml (deployed as junction to ~/.config/chezmoi/)
 ```
 
 ---
@@ -114,11 +117,11 @@ and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_T
 PowerShell starts
   → $PROFILE (bootstrap snippet, at the Known-Folder-correct Documents path)
     → profile/profile.ps1
-      → detect environment once: $isPSCore, $isWindowsHost
+      → Windows-only config (no version/host branching)
       → set $env:DOTFILES_PWSH (= profile/), derive $env:DOTFILES_TOOLS (sibling toolkit/)
-      → fix PSModulePath (PS5.1 and PS7 both: prepend LOCALAPPDATA, never Documents)
+      → fix PSModulePath (prepend LOCALAPPDATA, never Documents)
       → dot-source lib/paths.ps1, core/*.ps1
-      → dot-source ps5/ or ps7/ (based on $isPSCore)
+      → dot-source ps7/ (no PS5 version branch)
       → dot-source hosts/ConsoleHost or VSCode (based on $host.Name)
       → optionally show load time ($env:PROFILE_BENCHMARK)
 ```
@@ -149,7 +152,7 @@ instead (switches aren't reachable through `iex`).
 ## How to add a new feature
 
 1. **Profile function/alias** → `profile/core/functions.ps1` or `profile/core/aliases.ps1`
-2. **PS7-only** → `profile/ps7/profile.ps1`; **PS5-only** → `profile/ps5/profile.ps1`
+2. **PS7-only** → `profile/ps7/profile.ps1`
 3. **Host-specific** → `profile/hosts/ConsoleHost.ps1` or `VSCode.ps1`
 4. **New profile core file** → drop a `.ps1` into `profile/core/` — it auto-loads
 5. **New toolkit utility** → `toolkit/lib/common.ps1`; **new diagnostic** → `toolkit/lib/checkers.ps1`
@@ -178,8 +181,7 @@ Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
   or `core/*.ps1`, where one failing optional file must not abort the whole profile load
 - **Idempotency**: use `Test-Path` before creating/modifying
 - **No network calls in the profile** — keep startup fast
-- **Cross-platform**: `$IsWindows`/`$IsLinux`/`$IsMacOS` are PS6+ only — guard with
-  `$PSVersionTable.PSVersion.Major -ge 6` first, or PS5.1 throws under `Set-StrictMode`
+- **Cross-platform**: Not applicable — Windows-only, PS7-only. No `$IsLinux`/`$IsMacOS`/PS5 guards.
 - **Paths**: `Join-Path`, never string concatenation; prefer `$env:DOTFILES_PWSH`/`$env:DOTFILES_TOOLS`
   once a profile session exists — `bootstrap.ps1` and the injected snippet are deliberate exceptions
   (they run before those env vars exist)

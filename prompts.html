@@ -86,21 +86,21 @@ header p{color:var(--muted);max-width:700px;margin:.3rem auto 1rem}
 <pre>You are a PowerShell and dotfiles expert. Create a complete, runnable PowerShell dotfiles ecosystem in ONE Git repo, cloned to ~/.config/powershell/:
 
 profile/ — profile orchestration
-- profile.ps1 (PS5/7 + host detection, PSModulePath fix for OneDrive, benchmark)
+- profile.ps1 (PS7 + host detection, PSModulePath fix for OneDrive, benchmark)
 - lib/paths.ps1 (Known-Folder-correct, OneDrive-safe $PROFILE paths, validated against corrupted registry values)
 - lib/bootstrap.ps1 (Invoke-BootstrapInjection — shared by install.ps1/update.ps1, self-heals a stale bootstrap target)
 - core/aliases.ps1, core/functions.ps1 (Get-SecretKey, Edit-Profile, …), core/env.ps1
-- ps5/profile.ps1, ps7/profile.ps1 (PSReadLine, oh-my-posh, Terminal-Icons)
+- ps7/profile.ps1 (PSReadLine, oh-my-posh, Terminal-Icons)
 - hosts/ConsoleHost.ps1, hosts/VSCode.ps1
 
 toolkit/ — interactive toolbox
 - bin/menu.ps1, bin/check.ps1 (Import-Module Toolkit wrappers)
 - lib/common.ps1, lib/menu.ps1 (Show-Menu engine w/ live Detector column, console-width clamped), lib/checkers.ps1, lib/config.ps1, lib/detectors.ps1
-- Toolkit/Toolkit.psd1 (36 FunctionsToExport), Toolkit/Toolkit.psm1
+- Toolkit/Toolkit.psd1 (38 FunctionsToExport), Toolkit/Toolkit.psm1
 - menu/menu-main.ps1, menu-docker.ps1, menu-git.ps1
 - scripts/Add-WTProfiles.ps1 (WhatIf, platform guard, BOM-free, JSON fragment extensions)
 - scripts/Generate-Icons.ps1, scripts/configure.ps1
-- tests/Toolkit.Tests.ps1 (63 Pester cases, Mock coverage)
+- tests/Toolkit.Tests.ps1 (76 Pester cases, Mock coverage)
 
 Repo root
 - install.ps1 (idempotent: WhatIf, Force, backups, try/catch, summary — single self git-pull, no dual-repo clone)
@@ -121,19 +121,19 @@ Full spec at: https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/
 <pre>You are working on the PowerShell Dotfiles Ecosystem — one GitHub repo, cloned to ~/.config/powershell/:
 
 1. profile/ — profile orchestration
-   - profile.ps1 dotsources core/ → ps5|ps7/ → hosts/
+   - profile.ps1 dotsources core/ → ps7/ → hosts/
    - install.ps1 (repo root) is idempotent (WhatIf, Force, backups)
    - Location chosen to bypass OneDrive
    - AGENTS.md at repo root has the full codebase guide
 
 2. toolkit/ — interactive toolbox
-   - Toolkit module: 36 functions (menus, diagnostics, config, modulepath, detectors)
+   - Toolkit module: 38 functions (menus, diagnostics, config, modulepath, detectors)
    - bin/menu.ps1 + bin/check.ps1 are in PATH
    - TUI menu: live status Detector per item (module stack, PSModulePath, sibling profile/ dir), box width clamped to console width
    - deps.ps1 (winget installer), windows.ps1 (system defaults)
    - Add-WTProfiles.ps1 generates JSON fragment extensions
    - .vscode/ (repo root) with settings + 5 tasks committed
-   - 63 Pester tests in tests/Toolkit.Tests.ps1
+   - 76 Pester tests in tests/Toolkit.Tests.ps1
 
 $env:DOTFILES_PWSH points at profile/; $env:DOTFILES_TOOLS is derived from it as the sibling
 toolkit/ dir — always in sync (previously two independent repos/env-vars that could drift).
@@ -312,7 +312,7 @@ Conventions:
 
 Constraints:
 - PowerShell 5.1+ | Platform guards ($IsWindows) | Comment-based help
-- Module: Toolkit (36 functions in toolkit/Toolkit/Toolkit.psd1/.psm1)
+- Module: Toolkit (38 functions in toolkit/Toolkit/Toolkit.psd1/.psm1)
 - Menu engine: Show-Menu in toolkit/lib/menu.ps1 — hashtable of labels to scriptblocks
 - Config: Get-ToolkitConfig merges defaults > settings.json > $env:TOOLKIT_*
 - Tests: Pester in toolkit/tests/Toolkit.Tests.ps1
@@ -344,7 +344,7 @@ SECURITY:
 
 CORRECTNESS:
 - Do Toolkit.psm1 export lists match Toolkit.psd1 FunctionsToExport?
-- Are all 36 functions tested in Toolkit.Tests.ps1?
+- Are all 38 functions tested in Toolkit.Tests.ps1?
 - Do cross-platform guards cover all Windows-only code paths?
 - Do self-referential lookups inside toolkit/ fall back to $PSScriptRoot instead of assuming $env:DOTFILES_TOOLS is set?
 
@@ -392,7 +392,7 @@ Reference: docs/ARCHITECTURE.md at the repo root has Mermaid UML diagrams.</pre>
 [DESCRIBE WHAT TO DO — Copilot will use AGENTS.md for context]
 
 # Key patterns in this codebase:
-# - profile/profile.ps1 dot-sources core/*.ps1 → ps5|ps7/ → hosts/
+# - profile/profile.ps1 dot-sources core/*.ps1 → ps7/ → hosts/
 # - Toolkit module: toolkit/Toolkit/Toolkit.psd1 (manifest) → Toolkit.psm1 (dot-sources lib/*.ps1)
 # - Menu: Show-Menu @{label = {scriptblock}}
 # - Config: Get-ToolkitConfig (defaults → JSON → env)
