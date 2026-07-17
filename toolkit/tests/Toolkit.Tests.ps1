@@ -295,10 +295,8 @@ Describe 'Toolkit Module' {
             ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Be @($script:modA, $script:modB)
         }
 
-        It 'Import-PSModulePath errors cleanly when the file is missing' {
-            Mock Write-Err { } -ModuleName Toolkit
-            { Import-PSModulePath -InputPath (Join-Path $TestDrive 'does-not-exist.json') } | Should -Not -Throw
-            Should -Invoke Write-Err -ModuleName Toolkit -Times 1
+        It 'Import-PSModulePath throws cleanly when the file is missing' {
+            { Import-PSModulePath -InputPath (Join-Path $TestDrive 'does-not-exist.json') } | Should -Throw
         }
 
         It 'Test-PSModulePath runs without throwing' {

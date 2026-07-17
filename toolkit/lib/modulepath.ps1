@@ -179,8 +179,7 @@ function Import-PSModulePath {
         [switch]$Merge
     )
     if (-not (Test-Path $InputPath)) {
-        Write-Err "Export file not found: $InputPath"
-        return
+        throw "Export file not found: $InputPath"
     }
     try {
         $import = Get-Content $InputPath -Raw | ConvertFrom-Json

@@ -62,7 +62,7 @@ function Show-Menu {
         }
     }
     $keys = @($normalized.Keys | Sort-Object)
-    if ($keys.Count -eq 0) { Write-Warn "Menu has no items."; return }
+    if ($keys.Count -eq 0) { throw "Show-Menu: Items collection is empty — at least one menu item is required" }
 
     # ── Load color config ──────────────────────────────────────
     $accent = 'Cyan'

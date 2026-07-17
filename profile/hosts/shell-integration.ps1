@@ -24,13 +24,13 @@ if (-not $env:WT_SESSION) { return }
 $Global:__LastHistoryId = -1
 
 function Global:__Terminal-Get-LastExitCode {
+    param($HistoryEntry)
     if ($?) { return 0 }
     # Guard against no history yet / no recorded error — both are $null on a
     # fresh session before the first command runs, which throws under
     # Set-StrictMode when dereferenced directly.
-    $LastHistoryEntry = Get-History -Count 1
     $lastError = if ($Error.Count -gt 0) { $Error[0] } else { $null }
-    $IsPowerShellError = $lastError -and $LastHistoryEntry -and ($lastError.InvocationInfo.HistoryId -eq $LastHistoryEntry.Id)
+    $IsPowerShellError = $lastError -and $HistoryEntry -and ($lastError.InvocationInfo.HistoryId -eq $HistoryEntry.Id)
     if ($IsPowerShellError) { return -1 }
     return $LastExitCode
 }
@@ -40,8 +40,8 @@ $Global:__OriginalPrompt = $function:prompt
 
 function Global:prompt {
     $out = ''
-    $gle = __Terminal-Get-LastExitCode
     $LastHistoryEntry = Get-History -Count 1
+    $gle = __Terminal-Get-LastExitCode $LastHistoryEntry
 
     # ── OSC 133;D — end of previous command ──
     if ($Global:__LastHistoryId -ne -1) {
