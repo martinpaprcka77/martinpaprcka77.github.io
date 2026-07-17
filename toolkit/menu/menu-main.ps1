@@ -11,7 +11,14 @@ function Start-MainMenu {
             if (Get-Command Show-Status -ErrorAction SilentlyContinue) {
                 Show-Status
             } else {
-                Write-Host "`n  ⚡ STANDALONE STATUS (profile not loaded)" -ForegroundColor Cyan
+                # Auto-attempt: load profile from expected location
+                $profileFile = Join-Path $HOME '.config\powershell\profile\profile.ps1'
+                if (Test-Path $profileFile) { . $profileFile }
+                if (Get-Command Show-Status -ErrorAction SilentlyContinue) {
+                    Write-Host "`n  ✅ Profile auto-loaded from $profileFile" -ForegroundColor Green
+                    Show-Status; return
+                }
+                Write-Host "`n  ⚡ STANDALONE STATUS (profile not found)" -ForegroundColor Cyan
                 Write-Host "  $(('─' * 55))" -ForegroundColor DarkGray
                 Write-Host "  PS $($PSVersionTable.PSVersion) | $($Host.Name)" -ForegroundColor White
                 $pCount = ($env:PSModulePath -split [IO.Path]::PathSeparator).Count
@@ -22,7 +29,9 @@ function Start-MainMenu {
                 if (Get-Command git -ErrorAction SilentlyContinue) { Write-Host "  git: ✅ $((git --version 2>$null))" -ForegroundColor Green }
                 if (Get-Command docker -ErrorAction SilentlyContinue) { Write-Host "  docker: ✅ $((docker --version 2>$null))" -ForegroundColor Green }
                 if (Get-Command starship -ErrorAction SilentlyContinue) { Write-Host "  starship: ✅" -ForegroundColor Green }
-                Write-Host "`n  Run 'install.ps1' or reload profile for full dashboard." -ForegroundColor Yellow
+                if (Get-Command code -ErrorAction SilentlyContinue) { Write-Host "  code: ✅ $((code --version 2>&1 | Select-Object -First 1))" -ForegroundColor Green }
+                if ($env:WT_SESSION) { Write-Host "  WT session: ✅" -ForegroundColor Green }
+                Write-Host "`n  ➡ Run 'install.ps1' or 'update' to load the full profile." -ForegroundColor Yellow
                 Read-Host "`nPress Enter..."
             }
         }; Desc = 'Global dashboard or standalone status'; Detector = { Get-DotfilesCompanionStatus } }
