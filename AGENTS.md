@@ -16,7 +16,7 @@ interactive toolbox, in one repo, plus the GitHub Pages portal at the repo root.
 | **Portal** | [martinpaprcka77.github.io](https://martinpaprcka77.github.io) (this repo's Pages, root URL) |
 | **Language** | PowerShell 5.1 / 7+ |
 | **Module** | `toolkit/Toolkit` — 37 exported functions |
-| **Tests** | 75 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` |
+| **Tests** | 86 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` |
 | **Dependencies** | Git, PowerShell 5.1+; Docker (optional, for `toolkit`'s Docker menu) |
 
 Previously split across two repos (`dotfiles-powershell`, `dotfiles-tools`) — merged here to
@@ -56,8 +56,11 @@ and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_T
 │   │   ├── paths.ps1        ← Resolve-DocumentsPath/Test-RootedPath/Get-NativeProfilePaths —
 │   │   │                       Known-Folder-correct (OneDrive-safe) $PROFILE paths, validated
 │   │   │                       against corrupted Known Folder registry values
-│   │   └── bootstrap.ps1    ← Invoke-BootstrapInjection — shared by install.ps1/update.ps1,
-│   │                           repairs a stale bootstrap target (self-heal)
+│   │   ├── bootstrap.ps1    ← Invoke-BootstrapInjection — shared by install.ps1/update.ps1,
+│   │   │                       repairs a stale bootstrap target (self-heal)
+│   │   └── encoding.ps1     ← Repair-FileEncoding — idempotently adds a UTF-8 BOM to non-ASCII
+│   │                           source files (PS5.1 crashes parsing BOM-less UTF-8); run by
+│   │                           install.ps1 (preflight) and update.ps1 (after pull)
 │   │
 │   ├── core/                ← ALWAYS loaded (shared across all PS versions/hosts)
 │   │   ├── aliases.ps1      ← git, docker, kubectl shortcuts
@@ -100,8 +103,10 @@ and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_T
     │   ├── Add-WTProfiles.ps1 ← Windows Terminal JSON fragment generator
     │   ├── Generate-Icons.ps1, configure.ps1, deps.ps1, windows.ps1, modernize.ps1, precheck.ps1
     │
-    ├── configs/              ← settings.json, wt-schemes.json (single source of truth for WT colors)
-    ├── tests/Toolkit.Tests.ps1 ← 75 Pester cases
+    ├── configs/              ← settings.example.json (tracked default template), wt-schemes.json
+    │                            (WT colors). settings.json is the user's LOCAL config (gitignored;
+    │                            written by Save-ToolkitConfig — tracking it would break git pull)
+    ├── tests/Toolkit.Tests.ps1 ← 86 Pester cases
     ├── githooks/              ← post-checkout/post-merge reminders, install.sh
     └── icons/README.md
 ```
@@ -204,7 +209,7 @@ Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
 
 | Category | Functions |
 |----------|-----------|
-| Menu | `Start-MainMenu`, `Show-DockerMenu`, `Show-GitMenu`, `Show-TerminalMenu`, `Show-DotfilesMenu`, `Show-PwshMenu`, `Show-VSCodeMenu`, `Show-Menu` |
+| Menu | `Start-MainMenu`, `Show-DockerMenu`, `Show-GitMenu`, `Show-TerminalMenu`, `Show-TerminalTroubleshootingMenu`, `Show-DotfilesMenu`, `Show-PwshMenu`, `Show-VSCodeMenu`, `Show-Menu` |
 | Diagnostics | `Invoke-SystemCheck`, `Get-DiskStatus`, `Get-ServiceStatus`, `Get-NetworkInfo`, `Get-TopProcesses` |
 | Utility | `Test-Admin`, `Get-ScriptDirectory`, `Confirm-Action` |
 | Logging | `Write-Info`, `Write-Success`, `Write-Warn`, `Write-Err` |

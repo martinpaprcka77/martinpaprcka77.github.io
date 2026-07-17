@@ -22,6 +22,9 @@ the environment that did the merge, so that's the extent of "archiving."
   (a corrupted Known Folder registry value has been field-reported)
 - `profile/lib/bootstrap.ps1` — `Invoke-BootstrapInjection`, shared by `install.ps1`/`update.ps1`;
   repairs a stale bootstrap target automatically, not just on first install
+- `profile/lib/encoding.ps1` — `Repair-FileEncoding`, shared by `install.ps1`/`update.ps1`;
+  idempotently adds a UTF-8 BOM to any non-ASCII source file (Windows PowerShell 5.1 reads
+  BOM-less UTF-8 as ANSI and crashes the parser — field-reported)
 - `profile/core/functions.ps1` — Edit-Profile, Reload-Profile, Get-SecretKey, mkcd
 - `profile/core/status.ps1` — health dashboard (`Test-PathHealth`, single `.git` check at repo root)
 - `toolkit/lib/menu.ps1` — `Show-Menu` engine (arrow-key nav, live status column, width-clamped)
@@ -38,7 +41,7 @@ To add a function: write it in `toolkit/lib/`, add to `Export-ModuleMember` in `
 ## How to run
 - After install: `menu` or `check` from anywhere
 - Direct: `Import-Module ~/.config/powershell/toolkit/Toolkit/Toolkit.psd1`
-- Tests: `Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1` (75 cases)
+- Tests: `Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1` (86 cases)
 - Validate profile: `& $PROFILE` in a fresh session
 
 ## Architecture decisions
