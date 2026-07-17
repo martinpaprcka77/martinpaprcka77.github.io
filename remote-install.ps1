@@ -50,6 +50,12 @@
     started — there is no PowerShell-free path in. Install PowerShell first:
     https://aka.ms/install-powershell
 #>
+# Note: #Requires is silently ignored when this script runs via `irm | iex`
+# (Invoke-Expression evaluates text, not a script file — verified empirically:
+# no error, no enforcement, just a no-op). It DOES enforce for the documented
+# alternative invocation ("download this file first for full parameter
+# parity"), so it's kept here for that path — harmless either way.
+#Requires -Version 5.1
 param(
     [switch]$Force,
     [switch]$NoUpdates,

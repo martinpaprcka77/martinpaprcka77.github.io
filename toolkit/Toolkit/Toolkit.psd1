@@ -1,13 +1,19 @@
 ﻿@{
     # Module manifest for Toolkit
-    RootModule        = 'Toolkit.psm1'
-    ModuleVersion     = '1.0.0'
-    GUID              = 'd5e3f8a1-9b2c-4d7e-8f3a-1c5b9e2d4f6a'
-    Author            = 'USER'
-    CompanyName       = ''
-    Copyright         = '(c) 2026. MIT License.'
-    Description       = 'Osobní PowerShell toolbox – menu, diagnostika, pomocné funkce.'
-    PowerShellVersion = '5.1'
+    RootModule         = 'Toolkit.psm1'
+    # 1.1.0: Remove-PSModulePath/Reset-PSModulePath gained SupportsShouldProcess
+    # (-WhatIf/-Confirm) — a backward-compatible capability addition, not a
+    # breaking change, hence minor rather than major.
+    ModuleVersion      = '1.1.0'
+    GUID               = 'd5e3f8a1-9b2c-4d7e-8f3a-1c5b9e2d4f6a'
+    Author             = 'martinpaprcka77'
+    CompanyName        = ''
+    Copyright          = '(c) 2026. MIT License.'
+    Description        = 'Osobní PowerShell toolbox – menu, diagnostika, pomocné funkce.'
+    PowerShellVersion  = '5.1'
+    # Windows PowerShell (Desktop, 5.1) and PowerShell 7+ (Core) are both
+    # first-class targets throughout this repo — see AGENTS.md/CLAUDE.md.
+    CompatiblePSEditions = @('Desktop', 'Core')
 
     FunctionsToExport = @(
         'Test-Admin',
