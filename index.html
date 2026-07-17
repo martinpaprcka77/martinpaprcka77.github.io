@@ -9,15 +9,18 @@
   --bg: #0d1117; --fg: #c9d1d9; --muted: #8b949e;
   --accent: #58a6ff; --accent2: #3fb950; --accent3: #d2991d; --accent4: #f778ba;
   --border: #30363d; --card: #161b22; --hover: #1c2129;
-  --radius: 12px;
+  --radius: 12px; --transition: all .3s cubic-bezier(.4, 0, .2, 1);
 }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
   background: var(--bg); color: var(--fg);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   line-height: 1.6; min-height: 100vh;
 }
-a { color: var(--accent); text-decoration: none; transition: color .15s; }
+
+a { color: var(--accent); text-decoration: none; transition: var(--transition); }
 a:hover { color: #79c0ff; text-decoration: underline; }
 code { background: #ffffff15; padding: .15em .5em; border-radius: 4px; font-size: .9em; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; }
 pre { background: #0d1117; border: 1px solid var(--border); padding: 1rem 1.2rem; border-radius: var(--radius); overflow-x: auto; }
@@ -26,134 +29,344 @@ pre code { background: none; padding: 0; }
 /* Hero */
 .hero {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  border-bottom: 1px solid var(--border);
-  padding: 4rem 2rem 3rem; text-align: center;
+  position: relative; overflow: hidden; padding: 5rem 2rem 4rem;
+  text-align: center; border-bottom: 1px solid var(--border);
 }
-.hero h1 { font-size: 2.6rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: .5rem; }
-.hero h1 span { color: var(--accent); }
-.hero p { font-size: 1.2rem; color: var(--muted); max-width: 640px; margin: .5rem auto 1.5rem; }
-.hero .install {
-  display: inline-block; background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: .8rem 1.5rem; text-align: left;
-  font-size: .85em; max-width: 640px;
+
+.hero::before {
+  content: ''; position: absolute; top: -50%; right: -50%;
+  width: 500px; height: 500px; background: radial-gradient(circle, rgba(88, 166, 255, .1) 0%, transparent 70%);
+  border-radius: 50%; animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(30px); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero > * { position: relative; z-index: 1; animation: fadeInDown .8s ease-out; }
+
+.hero h1 { font-size: 3.2rem; font-weight: 900; letter-spacing: -.03em; margin-bottom: .8rem; background: linear-gradient(135deg, #58a6ff, #79c0ff, #3fb950); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+.hero p { font-size: 1.25rem; color: var(--muted); max-width: 720px; margin: .8rem auto 2rem; line-height: 1.7; }
+
+.hero-cta {
+  display: inline-flex; gap: 1rem; margin: 1.5rem auto; flex-wrap: wrap; justify-content: center;
+}
+
+.btn {
+  padding: .8rem 1.8rem; border-radius: 8px; font-weight: 600; font-size: 1rem;
+  border: 2px solid transparent; cursor: pointer; transition: var(--transition);
+  text-decoration: none; display: inline-flex; align-items: center; gap: .5rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #79c0ff);
+  color: #0d1117; border-color: var(--accent);
+}
+
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(88, 166, 255, .3); }
+
+.btn-secondary {
+  background: transparent; color: var(--accent); border-color: var(--accent);
+}
+
+.btn-secondary:hover { background: #58a6ff15; }
+
+.install-box {
+  background: rgba(22, 27, 34, .8); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.2rem 1.8rem;
+  text-align: left; max-width: 720px; margin: 2rem auto;
+  backdrop-filter: blur(10px); border-left: 4px solid var(--accent);
+}
+
+.install-box code { display: block; white-space: pre-wrap; word-break: break-all; margin: .5rem 0; }
+
+.badges {
+  display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; margin: 1.5rem 0;
+}
+
+.badge {
+  display: inline-flex; align-items: center; gap: .4em; padding: .4em 1em; border-radius: 20px;
+  font-size: .85em; font-weight: 600; border: 1px solid; transition: var(--transition);
+  cursor: pointer;
+}
+
+.badge:hover { transform: translateY(-2px); }
+
+.badge-b { border-color: #1f6feb44; color: #58a6ff; background: #1f6feb15; }
+.badge-g { border-color: #23863644; color: #3fb950; background: #23863615; }
+.badge-o { border-color: #9e6a0344; color: #d2991d; background: #9e6a0315; }
+.badge-p { border-color: #db61a244; color: #f778ba; background: #db61a215; }
+
+.badge:hover {
+  background: #ffffff10;
+  border-color: currentColor;
 }
 
 /* Container */
-.container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+.container { max-width: 1200px; margin: 0 auto; padding: 3rem 1.5rem; }
 
 /* Grid */
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin: 2rem 0; }
 @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+/* Feature Grid */
+.features-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 
 /* Cards */
 .card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1.5rem; transition: border-color .2s;
+  border-radius: var(--radius); padding: 2rem; transition: var(--transition);
+  position: relative; overflow: hidden;
 }
-.card:hover { border-color: var(--accent); }
-.card h3 { display: flex; align-items: center; gap: .5rem; font-size: 1.15rem; margin-bottom: .8rem; }
-.card h3 .icon { font-size: 1.4rem; }
-.card .desc { color: var(--muted); font-size: .9em; margin-bottom: .8rem; }
-.card .links { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
-.card .links a {
-  display: inline-block; padding: .25em .7em; border-radius: 6px; font-size: .82em; font-weight: 500;
-  border: 1px solid var(--border); transition: all .15s;
-}
-.card .links a:hover { border-color: var(--accent); text-decoration: none; background: #58a6ff10; }
 
-/* Badge pills */
-.badge { display: inline-flex; align-items: center; gap: .3em; padding: .2em .7em; border-radius: 20px; font-size: .75em; font-weight: 600; margin: .15em; }
-.badge-b { border: 1px solid #1f6feb44; color: #58a6ff; background: #1f6feb15; }
-.badge-g { border: 1px solid #23863644; color: #3fb950; background: #23863615; }
-.badge-o { border: 1px solid #9e6a0344; color: #d2991d; background: #9e6a0315; }
-.badge-p { border: 1px solid #db61a244; color: #f778ba; background: #db61a215; }
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  opacity: 0; transition: opacity .3s;
+}
+
+.card:hover {
+  border-color: var(--accent); transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(88, 166, 255, .15);
+}
+
+.card:hover::before { opacity: 1; }
+
+.card h3 {
+  display: flex; align-items: center; gap: .7rem; font-size: 1.3rem;
+  margin-bottom: 1rem; color: var(--fg);
+}
+
+.card h3 .icon { font-size: 1.8rem; }
+
+.card .desc { color: var(--muted); font-size: .95em; margin-bottom: 1rem; line-height: 1.6; }
+
+.card .links {
+  display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem;
+}
+
+.card .links a {
+  display: inline-block; padding: .5em .9em; border-radius: 6px; font-size: .85em;
+  font-weight: 500; border: 1px solid var(--border); transition: var(--transition);
+}
+
+.card .links a:hover {
+  border-color: var(--accent); text-decoration: none; background: #58a6ff10;
+}
+
+/* Stats Section */
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem; margin: 2rem 0; text-align: center;
+}
+
+.stat-box {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 2rem;
+  transition: var(--transition);
+}
+
+.stat-box:hover {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--card), rgba(88, 166, 255, .05));
+}
+
+.stat-number {
+  font-size: 2.5rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin: .5rem 0;
+}
+
+.stat-label { color: var(--muted); font-size: .9em; }
 
 /* Section header */
 .section-title {
-  font-size: 1.5rem; font-weight: 700; margin: 2.5rem 0 1rem;
-  padding-bottom: .5rem; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: .5rem;
+  font-size: 1.8rem; font-weight: 800; margin: 3rem 0 1.5rem;
+  padding-bottom: .8rem; border-bottom: 2px solid var(--border);
+  display: flex; align-items: center; gap: .7rem;
+  background: linear-gradient(90deg, var(--fg), var(--muted));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-
-/* Table */
-table { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; font-size: .9em; }
-th, td { border: 1px solid var(--border); padding: .6rem .8rem; text-align: left; }
-th { background: #ffffff08; font-weight: 600; }
-
-/* Status dots */
-.done { color: var(--accent2); }
-.soon { color: var(--accent3); }
-.later { color: var(--muted); }
 
 /* Flow diagram */
-.flow { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin: 1rem 0 1.5rem; }
+.flow {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6rem;
+  margin: 2rem 0; padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(88, 166, 255, .05), rgba(63, 185, 80, .05));
+  border-radius: var(--radius); border: 1px solid var(--border);
+}
+
 .flow .step {
   background: var(--card); border: 1px solid var(--border); border-radius: 8px;
-  padding: .55rem .9rem; font-size: .85em; white-space: nowrap;
+  padding: .7rem 1.1rem; font-size: .9em; white-space: nowrap;
+  transition: var(--transition);
 }
-.flow .arrow { color: var(--muted); font-size: 1.1em; }
+
+.flow .step:hover { border-color: var(--accent); background: rgba(88, 166, 255, .1); }
+
+.flow .arrow { color: var(--accent); font-weight: bold; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: .95em; }
+th, td { border: 1px solid var(--border); padding: .8rem 1rem; text-align: left; }
+th { background: linear-gradient(135deg, rgba(88, 166, 255, .1), rgba(63, 185, 80, .1)); font-weight: 700; }
+tr:hover { background: rgba(88, 166, 255, .05); }
+
+/* Status dots */
+.done { color: var(--accent2); font-weight: 600; }
+.soon { color: var(--accent3); font-weight: 600; }
+.later { color: var(--muted); }
+
+/* CTA Box */
+.cta-box {
+  background: linear-gradient(135deg, rgba(88, 166, 255, .1), rgba(63, 185, 80, .1));
+  border: 2px solid var(--accent); border-radius: var(--radius);
+  padding: 2.5rem; text-align: center; margin: 2.5rem 0;
+}
+
+.cta-box h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+
+.cta-box p { color: var(--muted); margin-bottom: 1.5rem; }
 
 /* Footer */
-.footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--muted); font-size: .85em; margin-top: 3rem; }
-.footer a { color: var(--muted); }
+.footer {
+  border-top: 1px solid var(--border); padding: 3rem 2rem;
+  text-align: center; color: var(--muted); font-size: .85em; margin-top: 4rem;
+  background: linear-gradient(180deg, transparent, rgba(88, 166, 255, .05));
+}
+
+.footer a { color: var(--muted); transition: var(--transition); }
 .footer a:hover { color: var(--fg); }
+
+/* Animations */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card { animation: slideUp .6s ease-out; }
+.card:nth-child(2) { animation-delay: .1s; }
+.card:nth-child(3) { animation-delay: .2s; }
+.card:nth-child(4) { animation-delay: .3s; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2.2rem; }
+  .hero p { font-size: 1rem; }
+  .section-title { font-size: 1.5rem; }
+  .stat-number { font-size: 2rem; }
+  .flow { gap: .4rem; font-size: .85em; }
+  .badge { font-size: .75em; padding: .3em .8em; }
+}
+
+/* Dark mode (default) */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #ffffff; --fg: #24292f; --muted: #57606a;
+    --card: #f6f8fa; --border: #e1e4e8; --hover: #f0f2f5;
+  }
+  .hero { background: linear-gradient(135deg, #e8f4ff 0%, #f0e8ff 50%, #ffe8f0 100%); }
+  .install-box { background: rgba(246, 248, 250, .9); }
+  .card { box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .card:hover { box-shadow: 0 8px 16px rgba(0,0,0,.12); }
+}
 </style>
 </head>
 <body>
 
 <!-- ═══════════ HERO ═══════════ -->
 <div class="hero">
-  <h1><span>⚡</span> PowerShell Dotfiles</h1>
-  <p>Modular, version-controlled, portable — profiles &amp; tools that bypass OneDrive and work across every machine.</p>
-  <div class="install">
-    <code style="color:var(--accent2)"># One command — any shell, auto-detects everything</code><br>
-    <code>irm https://raw.githubusercontent.com/martinpaprcka77/martinpaprcka77.github.io/main/remote-install.ps1 | iex</code>
+  <h1>⚡ PowerShell Dotfiles</h1>
+  <p>Production-grade profile ecosystem — modular, version-controlled, portable across every machine</p>
+
+  <div class="cta-box" style="background: none; border: none; padding: 0;">
+    <div class="install-box">
+      <code style="color: var(--accent2)">➜ # One command, any shell</code>
+      <code>irm https://raw.githubusercontent.com/martinpaprcka77/martinpaprcka77.github.io/main/remote-install.ps1 | iex</code>
+    </div>
+    <p style="color: var(--muted); font-size: .9em; margin-top: 1rem;">
+      From cmd.exe/bash: <code style="background: none; color: var(--muted);">powershell -c "irm .../remote-install.ps1 | iex"</code>
+      · <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io#-quick-install">manual install</a>
+    </p>
   </div>
-  <p style="margin-top:.6rem;color:var(--muted);font-size:.85em;max-width:640px;margin-left:auto;margin-right:auto">
-    From cmd.exe/bash: <code>powershell -c "irm .../remote-install.ps1 | iex"</code> ·
-    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io#-quick-install" style="color:inherit;text-decoration:underline">manual install &amp; parameters ↓</a>
-  </p>
-  <p style="margin-top:1rem">
-    <a class="badge badge-b" href="https://github.com/martinpaprcka77/martinpaprcka77.github.io">📦 repo</a>
-    <a class="badge badge-g" href="https://martinpaprcka77.github.io">🌐 this page</a>
-    <a class="badge badge-p" href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">📋 gist: install</a>
-    <a class="badge badge-p" href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">📋 gist: cheatsheet</a>
-    <a class="badge badge-p" href="prompts.html">🤖 AI prompts</a>
-  </p>
+
+  <div class="hero-cta">
+    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io" class="btn btn-primary">📦 View Repository</a>
+    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/MANUAL.md" class="btn btn-secondary">📖 Read Docs</a>
+  </div>
+
+  <div class="badges">
+    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io" class="badge badge-b">⭐ Star on GitHub</a>
+    <a href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd" class="badge badge-g">📋 Install Gist</a>
+    <a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467" class="badge badge-o">🎯 Cheatsheet</a>
+    <a href="prompts.html" class="badge badge-p">🤖 AI Prompts</a>
+  </div>
 </div>
 
 <div class="container">
 
-<!-- ═══════════ REPO LAYOUT ═══════════ -->
-<h2 class="section-title">🗺️ One Repo, Two Halves</h2>
-<div class="grid">
-  <div class="card">
-    <h3><span class="icon">📄</span> profile/</h3>
-    <p class="desc">Profile orchestration — modular loading, PS7 detection, host-specific config, secret management, Known-Folder-correct (OneDrive-safe) paths, validated against corrupted registry values.</p>
-    <p><code>~/.config/powershell/profile/</code></p>
-    <div class="links">
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/tree/main/profile">📦 GitHub</a>
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io#readme">📄 README</a>
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ARCHITECTURE.md">🧩 UML</a>
-    </div>
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats">
+  <div class="stat-box">
+    <div class="stat-label">Functions</div>
+    <div class="stat-number">38+</div>
+    <p style="font-size: .85em; color: var(--muted);">Modular, tested</p>
   </div>
-  <div class="card">
-    <h3><span class="icon">🔧</span> toolkit/</h3>
-    <p class="desc">Interactive toolbox — ANSI-only TUI menus with live status detection, diagnostics, Docker &amp; Git helpers, Toolkit (38 functions). PSModulePathManager, PSResourceGet modernization, WSL auto-detection.</p>
-    <p><code>~/.config/powershell/toolkit/</code></p>
-    <div class="links">
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/tree/main/toolkit">📦 GitHub</a>
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io#readme">📄 README</a>
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ARCHITECTURE.md">🧩 UML</a>
-    </div>
+  <div class="stat-box">
+    <div class="stat-label">Test Coverage</div>
+    <div class="stat-number">91+</div>
+    <p style="font-size: .85em; color: var(--muted);">Pester cases</p>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Setup Time</div>
+    <div class="stat-number">&lt;2min</div>
+    <p style="font-size: .85em; color: var(--muted);">One-liner install</p>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Platforms</div>
+    <div class="stat-number">Windows</div>
+    <p style="font-size: .85em; color: var(--muted);">PowerShell 7+</p>
   </div>
 </div>
-<p style="color:var(--muted);font-size:.85em;margin-top:-.6rem">
-  One clone, one <code>$env:DOTFILES_PWSH</code>, <code>$env:DOTFILES_TOOLS</code> always derived
-  from it — previously two repos with two independent env vars that could drift apart.
-</p>
 
-<!-- ═══════════ HOW IT WORKS ═══════════ -->
+<!-- ═══════════ WHAT IS THIS ═══════════ -->
+<h2 class="section-title">🎯 What You Get</h2>
+<div class="grid features-grid">
+  <div class="card">
+    <h3><span class="icon">📋</span> Smart Profiles</h3>
+    <p class="desc">Modular profile loading with PS7 host detection, OneDrive-safe paths, version-specific config, and automatic Known Folder validation — never break on corrupted registry values.</p>
+  </div>
+  <div class="card">
+    <h3><span class="icon">🎯</span> Interactive Menu</h3>
+    <p class="desc">ANSI-only TUI with arrow-key navigation, live status detection, search filtering, and context-aware submenus for Docker, Git, PowerShell, and system tools.</p>
+  </div>
+  <div class="card">
+    <h3><span class="icon">🔧</span> 38 Functions</h3>
+    <p class="desc">Toolkit module with real-world helpers: PSModulePath fixing, Docker shortcuts, Git aliases, system diagnostics, config management, and network health checks.</p>
+  </div>
+  <div class="card">
+    <h3><span class="icon">⚡</span> One-Command Setup</h3>
+    <p class="desc">Remote installer bootstrapper — no dependencies, auto-detects everything, idempotent, recoverable. Works from cmd.exe, bash, or PowerShell.</p>
+  </div>
+  <div class="card">
+    <h3><span class="icon">🧪</span> Production-Ready</h3>
+    <p class="desc">91+ Pester tests, CI/CD validated, PSScriptAnalyzer lint clean. Version-controlled, mergeable, and designed for teams and corporate environments.</p>
+  </div>
+  <div class="card">
+    <h3><span class="icon">📦</span> Monorepo</h3>
+    <p class="desc">Profile orchestration + interactive toolkit in one place. Eliminates cross-repo coupling, keeps environment variables synchronized, single source of truth.</p>
+  </div>
+</div>
+
+<!-- ═══════════ ARCHITECTURE ═══════════ -->
 <h2 class="section-title">🧩 How It Works</h2>
 <div class="flow">
   <span class="step">⚡ irm | iex</span>
@@ -164,175 +377,98 @@ th { background: #ffffff08; font-weight: 600; }
   <span class="arrow">→</span>
   <span class="step">🛠️ install.ps1</span>
   <span class="arrow">→</span>
-  <span class="step">📝 inject $PROFILE bootstrap<br><small style="color:var(--muted)">(Known-Folder-correct, OneDrive-safe)</small></span>
+  <span class="step">📝 inject $PROFILE</span>
 </div>
 <div class="flow">
   <span class="step">🐚 shell starts</span>
   <span class="arrow">→</span>
-  <span class="step">🔍 PS7 + host detection</span>
+  <span class="step">🔍 detect host</span>
   <span class="arrow">→</span>
-  <span class="step">📁 dot-source core/*.ps1</span>
+  <span class="step">📁 dot-source core/</span>
   <span class="arrow">→</span>
-  <span class="step">🎯 version + host profile</span>
+  <span class="step">🎯 version profile</span>
   <span class="arrow">→</span>
   <span class="step">✅ ready</span>
 </div>
-<p style="color:var(--muted);font-size:.85em;margin-top:-.6rem;margin-bottom:1.5rem">
-  Full sequence &amp; component diagrams (Mermaid UML):
-  <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a>
-</p>
 
-<!-- ═══════════ QUICK COMMANDS ═══════════ -->
+<!-- ═══════════ QUICK START ═══════════ -->
 <h2 class="section-title">⌨️ Quick Commands</h2>
 <table>
-<tr><th>Command</th><th>What it does</th><th>Alias</th></tr>
-<tr><td><code>menu</code></td><td>Interactive main menu (Docker · Git · System · Tools)</td><td>—</td></tr>
-<tr><td><code>check</code></td><td>Full system diagnostics (disks, services, network, processes)</td><td>—</td></tr>
-<tr><td><code>update</code></td><td>Git pull latest + reload profile</td><td>—</td></tr>
-<tr><td><code>configure</code></td><td>Interactive setup wizard</td><td>—</td></tr>
+<tr><th>Command</th><th>What it does</th><th>Alternative</th></tr>
+<tr><td><code>menu</code></td><td>Interactive main menu</td><td>Show-MainMenu</td></tr>
+<tr><td><code>check</code></td><td>System diagnostics (20+ checks)</td><td>Show-Status</td></tr>
+<tr><td><code>update</code></td><td>Git pull + reload profile</td><td>—</td></tr>
+<tr><td><code>status</code></td><td>Health dashboard</td><td>Show-Status</td></tr>
 <tr><td><code>ep</code></td><td>Edit profile in editor</td><td>Edit-Profile</td></tr>
-<tr><td><code>rp</code></td><td>Reload profile without restart</td><td>Reload-Profile</td></tr>
-<tr><td><code>g</code> <code>gst</code> <code>gco</code> <code>glo</code></td><td>Git shortcuts (status, checkout, log)</td><td>—</td></tr>
-<tr><td><code>status</code></td><td>Global health dashboard (20+ checks)</td><td>Show-Status</td></tr>
-<tr><td><code>precheck</code></td><td>Pre-install inventory (30+ checks)</td><td>—</td></tr>
-<tr><td><code>dps</code> <code>dcu</code> <code>dcd</code></td><td>Docker shortcuts (ps, compose up/down)</td><td>—</td></tr>
+<tr><td><code>rp</code></td><td>Reload profile</td><td>Reload-Profile</td></tr>
+<tr><td><code>dps</code>, <code>dcu</code>, <code>dcd</code></td><td>Docker shortcuts</td><td>—</td></tr>
+<tr><td><code>g</code>, <code>gst</code>, <code>gco</code></td><td>Git shortcuts</td><td>—</td></tr>
 </table>
 
-<!-- ═══════════ DOCS ═══════════ -->
-<h2 class="section-title">📚 Documentation</h2>
+<!-- ═══════════ CTA ═══════════ -->
+<div class="cta-box">
+  <h3>Ready to level up your PowerShell?</h3>
+  <p>Get started in under 2 minutes with one command. Modular, version-controlled, and ready for production.</p>
+  <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io#-quick-install" class="btn btn-primary">Get Started Now →</a>
+</div>
+
+<!-- ═══════════ DOCUMENTATION ═══════════ -->
+<h2 class="section-title">📚 Resources</h2>
 <div class="grid">
   <div class="card">
-    <h3><span class="icon">📄</span> Repo &amp; agents</h3>
-    <div class="links" style="flex-direction:column;align-items:flex-start">
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io#readme">📄 README — overview, install, layout</a>
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/AGENTS.md">🤖 AGENTS.md — full AI guide</a>
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/CLAUDE.md">🧠 CLAUDE.md — memory file</a>
+    <h3><span class="icon">📖</span> Documentation</h3>
+    <p class="desc">Complete guides for installation, architecture, design decisions, and troubleshooting.</p>
+    <div class="links" style="flex-direction: column; align-items: flex-start;">
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/MANUAL.md">📖 User Manual</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ARCHITECTURE.md">🧩 Architecture & Diagrams</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ROADMAP.md">🗺️ Roadmap & Issues</a>
     </div>
   </div>
   <div class="card">
-    <h3><span class="icon">🧩</span> docs/</h3>
-    <div class="links" style="flex-direction:column;align-items:flex-start">
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ARCHITECTURE.md">🧩 ARCHITECTURE — Mermaid UML diagrams</a>
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/PURPOSE.md">🎯 PURPOSE — design rationale &amp; decisions</a>
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/MANUAL.md">📖 MANUAL — full user guide</a>
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ROADMAP.md">🗺️ ROADMAP — phases, known issues</a>
-      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/PROMPT.md">📝 PROMPT — original AI prompts</a>
+    <h3><span class="icon">🤖</span> For AI Agents</h3>
+    <p class="desc">Full guides for AI coding agents, memory files, and regeneration prompts.</p>
+    <div class="links" style="flex-direction: column; align-items: flex-start;">
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/AGENTS.md">🤖 AI Agent Guide</a>
+      <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/CLAUDE.md">🧠 Memory Files</a>
+      <a href="prompts.html">📝 Master Prompts</a>
+    </div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">📊</span> Extras</h3>
+    <p class="desc">Gists, cheatsheets, and reference materials.</p>
+    <div class="links" style="flex-direction: column; align-items: flex-start;">
+      <a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">📋 Cheatsheet</a>
+      <a href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">📥 Install Gist</a>
+      <a href="charts.html">📊 Charts Dashboard</a>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ ROADMAP ═══════════ -->
-<h2 class="section-title">🗺️ Roadmap</h2>
+<!-- ═══════════ ROADMAP PREVIEW ═══════════ -->
+<h2 class="section-title">🗺️ Project Status</h2>
 <table>
-<tr><th>Phase</th><th>Status</th><th>What's included</th></tr>
-<tr><td><strong>1. Foundation</strong></td><td><span class="done">✅ Done</span></td><td>Modular profile (PS7-only, Windows-only), idempotent install, Toolkit (38 functions), ANSI TUI menu + scroll mode, one-command remote bootstrapper, Known-Folder-correct paths, 76 Pester tests</td></tr>
-<tr><td><strong>2. 2026 upgrades</strong></td><td><span class="done">✅ Done</span></td><td>winget deps installer, Windows defaults tuning, WT JSON fragment profiles, shell integration, VS Code integration, config wizard</td></tr>
-<tr><td><strong>3. Extensions</strong></td><td><span class="soon">🟡 Planned</span></td><td>Live CPU/RAM/disk dashboard, network diagnostics, PSResourceGet full migration</td></tr>
-<tr><td><strong>4. Integrations</strong></td><td><span class="done">✅ Done</span></td><td>WSL profile auto-detection in WT fragment, git hooks, CI/CD (Pester + JSON validation), git/ + chezmoi/ absorbed into monorepo</td></tr>
-<tr><td><strong>5. Ecosystem</strong></td><td><span class="done">✅ Merged into one repo</span></td><td>Windows clean-install setup script, docs site, gitless (ZIP) install path — planned; <strong>monorepo merge</strong> — done, see below</td></tr>
-</table>
-<p style="margin-top:.3rem"><a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/ROADMAP.md">→ Full roadmap with known issues &amp; contribution guide</a></p>
-
-<div class="card" style="margin-top:1.2rem">
-  <h3><span class="icon">🧭</span> Done: merged into one repo</h3>
-  <p class="desc">
-    Two repos (<code>dotfiles-powershell</code>, <code>dotfiles-tools</code>) used to exist for
-    independent release cycles, but that created real cross-repo coupling — menu items calling
-    functions that only existed in the other repo, guarded by <code>Invoke-IfAvailable</code>, and
-    two independent <code>$env:DOTFILES_TOOLS</code>/<code>$env:DOTFILES_PWSH</code> sources of
-    truth that could drift apart. Merged into this repo (<code>profile/</code> +
-    <code>toolkit/</code> subfolders) instead of a new repo, so the portal keeps the root
-    <code>martinpaprcka77.github.io</code> URL — no subpath tradeoff. The old repos remain on
-    GitHub with a README pointer here (no repo-archive tooling was available to do more than that).
-    A future split back into 2 repos remains a documented option in the roadmap, not a plan.
-  </p>
-  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;font-size:.85em;margin-top:.6rem">
-    <span class="badge badge-b" style="opacity:.6">📄 dotfiles-powershell</span>
-    <span style="color:var(--muted)">+</span>
-    <span class="badge badge-o" style="opacity:.6">🔧 dotfiles-tools</span>
-    <span style="color:var(--muted)">→</span>
-    <span class="badge badge-g">📦 this repo</span>
-  </div>
-</div>
-
-<!-- ═══════════ GIST PORTAL ═══════════ -->
-<h2 class="section-title">📋 Gist Portal</h2>
-<div class="grid">
-  <div class="card">
-    <h3><span class="icon">📥</span> Install</h3>
-    <p class="desc">Minimal one-liner bootstrapper — clone the repo, inject <code>$PROFILE</code>, set up PATH. Copy-paste ready.</p>
-    <div style="background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;font-size:.82em;margin-bottom:.6rem"><code>irm https://raw.githubusercontent.com/martinpaprcka77/martinpaprcka77.github.io/main/remote-install.ps1 | iex</code></div>
-    <div class="links">
-      <a href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">📋 View Gist</a>
-      <a href="https://raw.githubusercontent.com/martinpaprcka77/martinpaprcka77.github.io/main/remote-install.ps1">📄 Raw script</a>
-    </div>
-  </div>
-  <div class="card">
-    <h3><span class="icon">📋</span> Cheatsheet</h3>
-    <p class="desc">Quick reference for all commands, aliases, and menu functions. Keep it pinned for daily use.</p>
-    <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin:.5rem 0">
-      <code style="font-size:.78em">menu</code> <code style="font-size:.78em">check</code> <code style="font-size:.78em">update</code>
-      <code style="font-size:.78em">ep</code> <code style="font-size:.78em">rp</code> <code style="font-size:.78em">status</code>
-      <code style="font-size:.78em">g/gst/gco/glo</code> <code style="font-size:.78em">dps/dcu/dcd</code>
-    </div>
-    <div class="links">
-      <a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">📋 View Gist</a>
-    </div>
-  </div>
-  <div class="card">
-    <h3><span class="icon">🤖</span> Master Prompt</h3>
-    <p class="desc">The complete project specification prompt — send this to any AI to regenerate the entire ecosystem from scratch.</p>
-    <p style="color:var(--muted);font-size:.82em;margin:.4rem 0">8 models · 12 task types · 120+ lines of spec</p>
-    <div class="links">
-      <a href="https://gist.github.com/martinpaprcka77/1c74223f4e57b46977abd6df06d4e8fd">📋 View Gist</a>
-      <a href="prompts.html">🤖 AI prompts page</a>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════ WEB CHARTS ═══════════ -->
-<div class="card" style="margin-top:.5rem">
-  <h3><span class="icon">📊</span> Charts &amp; Metrics</h3>
-  <p class="desc">Live Canvas-based charts showing test trends, module counts, and profile load benchmarks.</p>
-  <div class="links">
-    <a href="charts.html">📊 Open Charts Dashboard</a>
-  </div>
-</div>
-
-<!-- ═══════════ AI AGENTS ═══════════ -->
-<h2 class="section-title">🤖 For AI Agents</h2>
-<p style="color:var(--muted);margin-bottom:1rem">This repo includes <code>AGENTS.md</code> and <code>CLAUDE.md</code> at the root — full guides for AI coding agents (Claude, DeepSeek, GPT-4, Reasonix, Copilot).</p>
-<div class="card">
-  <div class="links" style="flex-direction:column;align-items:flex-start">
-    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/AGENTS.md">🤖 AGENTS.md — full AI guide (directory map, conventions, both halves)</a>
-    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/CLAUDE.md">🧠 CLAUDE.md — memory file</a>
-    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/docs/PROMPT.md">📝 docs/PROMPT.md — original prompts</a>
-  </div>
-</div>
-<p style="margin-top:.5rem"><strong>🔁 Master regeneration prompt:</strong> <a href="https://gist.github.com/martinpaprcka77/1c74223f4e57b46977abd6df06d4e8fd">gist.github.com/…/master-prompt</a> — send this to any AI to rebuild the entire ecosystem.</p>
-
-<!-- ═══════════ LINKS ═══════════ -->
-<h2 class="section-title">🔗 All Links</h2>
-<table>
-<tr><th>Resource</th><th>URL</th></tr>
-<tr><td><strong>Portal (this page)</strong></td><td><a href="https://martinpaprcka77.github.io">martinpaprcka77.github.io</a></td></tr>
-<tr><td><strong>Repo</strong></td><td><a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io">github.com/martinpaprcka77/martinpaprcka77.github.io</a></td></tr>
-<tr><td><strong>🤖 AI Prompts</strong></td><td><a href="prompts.html">martinpaprcka77.github.io/prompts.html</a></td></tr>
-<tr><td><strong>Gist — Install</strong></td><td><a href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">gist.github.com/…/bafc2457</a></td></tr>
-<tr><td><strong>Gist — Cheatsheet</strong></td><td><a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">gist.github.com/…/b30ae16</a></td></tr>
-<tr><td><strong>Gist — Master Prompt</strong></td><td><a href="https://gist.github.com/martinpaprcka77/1c74223f4e57b46977abd6df06d4e8fd">gist.github.com/…/master-prompt</a></td></tr>
-<tr><td><strong>Old repo (archived) — dotfiles-powershell</strong></td><td><a href="https://github.com/martinpaprcka77/dotfiles-powershell">github.com/martinpaprcka77/dotfiles-powershell</a></td></tr>
-<tr><td><strong>Old repo (archived) — dotfiles-tools</strong></td><td><a href="https://github.com/martinpaprcka77/dotfiles-tools">github.com/martinpaprcka77/dotfiles-tools</a></td></tr>
+<tr><th>Phase</th><th>Status</th><th>Features</th></tr>
+<tr><td><strong>1. Foundation</strong></td><td><span class="done">✅ Complete</span></td><td>Modular profile, 38 functions, ANSI menu, 91+ tests</td></tr>
+<tr><td><strong>2. Upgrades (2026)</strong></td><td><span class="done">✅ Complete</span></td><td>winget installer, WT profiles, VS Code integration</td></tr>
+<tr><td><strong>3. Extensions</strong></td><td><span class="done">✅ Complete</span></td><td>Live metrics, network diagnostics, transient prompt</td></tr>
+<tr><td><strong>4. Integrations</strong></td><td><span class="done">✅ Mostly done</span></td><td>WSL detection, Git hooks, CI/CD, PSGallery publishing</td></tr>
+<tr><td><strong>5. Ecosystem</strong></td><td><span class="soon">🟡 In Progress</span></td><td>DevContainer, documentation site, Windows clean-install wizard</td></tr>
 </table>
 
 </div>
 
 <div class="footer">
-  Built with PowerShell · Git · GitHub Pages · Mermaid UML<br>
-  <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io">repo</a> ·
-  <a href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">install</a> ·
-  <a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">cheatsheet</a> ·
-  <a href="prompts.html">AI prompts</a>
+  <p>🚀 Built with PowerShell, Git, and GitHub Pages</p>
+  <p style="margin-top: 1rem;">
+    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io">Repository</a> ·
+    <a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io#-quick-install">Quick Install</a> ·
+    <a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">Cheatsheet</a> ·
+    <a href="prompts.html">AI Prompts</a> ·
+    <a href="https://gist.github.com/martinpaprcka77/1c74223f4e57b46977abd6df06d4e8fd">Master Prompt</a>
+  </p>
+  <p style="margin-top: 1rem; font-size: .8em; color: #8b949e;">
+    MIT License · Made with ❤️ for PowerShell developers
+  </p>
 </div>
 
 </body>
