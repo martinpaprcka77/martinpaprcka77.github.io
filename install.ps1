@@ -84,6 +84,42 @@ if (-not $NoUpdates) {
     Write-Skip "Skipping update (--NoUpdates): $dotfilesPath"
 }
 
+# ── Directory junctions (git, chezmoi) ─────────────────────────
+Write-Step "Deploying directory junctions..."
+$junctions = @(
+    @{ Name = 'git';     Target = Join-Path $dotfilesPath 'git' }
+    @{ Name = 'chezmoi'; Target = Join-Path $dotfilesPath 'chezmoi' }
+)
+$junctionParent = Split-Path $dotfilesPath -Parent
+foreach ($j in $junctions) {
+    $linkPath = Join-Path $junctionParent $j.Name
+    $targetPath = $j.Target
+    if (-not (Test-Path $targetPath)) {
+        Write-Skip "Source missing (skip): $targetPath"
+        continue
+    }
+    if (Test-Path $linkPath) {
+        $item = Get-Item $linkPath -Force
+        $isCorrect = ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -and
+                     ((Get-Item $linkPath -Force).Target -eq $targetPath) 2>$null
+        if ($isCorrect) {
+            Write-Skip "Already deployed: $linkPath → $targetPath"
+            continue
+        }
+        # Exists but isn't our junction — block
+        Write-Fail "Path exists and is not our junction: $linkPath — move it aside or remove it, then re-run"
+        continue
+    }
+    if ($PSCmdlet.ShouldProcess($linkPath, "Create junction → $targetPath")) {
+        try {
+            New-Item -ItemType Junction -Path $linkPath -Target $targetPath -Force | Out-Null
+            Write-Ok "Junction: $linkPath → $targetPath"
+        } catch {
+            Write-Fail "Junction failed: $linkPath → $targetPath — $_"
+        }
+    }
+}
+
 # ── Bootstrap profiles ────────────────────────────────────────
 Write-Step "Injecting bootstrap into PowerShell profiles..."
 if ($PSCmdlet.ShouldProcess('$PROFILE targets', 'Inject/repair bootstrap')) {
