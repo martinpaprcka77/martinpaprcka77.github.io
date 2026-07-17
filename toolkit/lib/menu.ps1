@@ -63,7 +63,10 @@ function Show-Menu {
             }
         }
     }
-    $keys = @($normalized.Keys | Sort-Object)
+    # Preserve the caller's insertion order (they pass an [ordered] hashtable
+    # precisely so items stay 1,2,3,…). Sorting the keys lexically reordered
+    # 10+ item menus to 1,10,11,2,3,… and floated no-number rows to the top.
+    $keys = @($normalized.Keys)
     if ($keys.Count -eq 0) { throw "Show-Menu: Items collection is empty — at least one menu item is required" }
 
     # ── Load color config ──────────────────────────────────────
@@ -122,7 +125,11 @@ function Show-Menu {
     $prevBufferWidth = [Console]::WindowWidth
     $prevSelected = -1  # Track previous selection for partial redraw
     $footer = '↑↓ navigate  ↵ select  Home/End ⇱⇲  Page↑↓  / search  Esc/q exit'
-    $dirty = $true      # Full redraw needed on first render
+    # The pre-loop draw below renders the first frame, so the loop starts NOT
+    # dirty — $dirty only turns on for a resize or search toggle. (Starting
+    # dirty made the loop's full-redraw path repaint the whole frame on top of
+    # the pre-loop draw, doubling it on first render.)
+    $dirty = $false
 
     # ── Cleanup function used by all exits ───────────────────
     function Leave-Menu {
@@ -177,7 +184,11 @@ function Show-Menu {
         if ($d) { $detectorCache[$k] = try { & $d } catch { @{ Icon = '❌'; Text = 'detection failed' } } }
     }
 
-    $startTop = [Console]::CursorTop - 1  # Row of header
+    # Two header lines were just written ("╭─ Title" then "│"), so the cursor is
+    # two rows below the header — anchor $startTop on the actual header row so the
+    # full-redraw path (SetCursorPosition 0,$startTop) repaints it in place rather
+    # than one row low.
+    $startTop = [Console]::CursorTop - 2  # Row of header
     for ($i = 0; $i -lt $keys.Count; $i++) {
         Redraw-Item -Index $i -Keys $keys -Normalized $normalized -DetectorCache $detectorCache `
             -Selected 0 -MaxLabelWidth $maxLabelWidth -MaxDescWidth $maxDescWidth `
@@ -204,6 +215,13 @@ function Show-Menu {
             # Resize or search — full redraw
             $boxWidth = [Math]::Min($naturalWidth, [Math]::Max(20, [Console]::WindowWidth - 6))
             $extraBudget = [Math]::Max(0, $boxWidth - $maxLabelWidth - 2)
+            # Refresh detector status on every full redraw so the live column
+            # reflects current state (function-local cache, never $script:).
+            $detectorCache = @{}
+            foreach ($k in $keys) {
+                $d = $normalized[$k].Detector
+                if ($d) { $detectorCache[$k] = try { & $d } catch { @{ Icon = '❌'; Text = 'detection failed' } } }
+            }
             [Console]::SetCursorPosition(0, $startTop)
             Write-Host "  ╭─ $Title " -ForegroundColor $accent -NoNewline
             Write-Host ('─' * [Math]::Max(0, $boxWidth - $Title.Length - 1)) -ForegroundColor DarkGray
@@ -213,6 +231,15 @@ function Show-Menu {
                     -Selected $selected -MaxLabelWidth $maxLabelWidth -MaxDescWidth $maxDescWidth `
                     -ExtraBudget $extraBudget -Accent $accent | Out-Null
             }
+            # Search prompt row (only while filtering) lives inside the full
+            # redraw — entering/exiting search and each keystroke set $dirty, so
+            # it repaints here instead of being appended every loop iteration
+            # (which duplicated the footer and drifted the box downward).
+            if ($searchMode) {
+                Write-Host "  │  🔍 Search: $searchQuery" -ForegroundColor Yellow -NoNewline
+                Write-Host (' ' * [Math]::Max(0, $boxWidth - $searchQuery.Length - 10)) -NoNewline
+                Write-Host '│' -ForegroundColor DarkGray
+            }
             Write-Host '  ╰' -ForegroundColor DarkGray -NoNewline
             Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray -NoNewline
             Write-Host '╯' -ForegroundColor DarkGray
@@ -221,21 +248,6 @@ function Show-Menu {
             Write-Host ''
             $dirty = $false
         }
-
-        # ── Footer ─────────────────────────────────────────────
-        Write-Host '  │' -ForegroundColor DarkGray
-        if ($searchMode) {
-            Write-Host "  │  🔍 Search: $searchQuery" -ForegroundColor Yellow -NoNewline
-            Write-Host (' ' * [Math]::Max(0, $boxWidth - $searchQuery.Length - 10)) -NoNewline
-            Write-Host '│' -ForegroundColor DarkGray
-        }
-        Write-Host '  ╰' -ForegroundColor DarkGray -NoNewline
-        Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray -NoNewline
-        Write-Host '╯' -ForegroundColor DarkGray
-        Write-Host ''
-        Write-Host "  $footer" -ForegroundColor DarkGray
-        Write-Host ''
-        $dirty = $false  # Full redraw done
 
         # ── Clear below (handle shrunken renders) ──────────────
         $endTop = [Console]::CursorTop
@@ -259,20 +271,26 @@ function Show-Menu {
             $extraBudget = [Math]::Max(0, $boxWidth - $maxLabelWidth - 2)
         }
         
-        # Search mode: capture alphanumeric input
+        # Search mode: capture alphanumeric input. Every change sets $dirty so
+        # the full-redraw path repaints the search row + updated selection.
+        # $hits (not the automatic $Matches, which -match populates) holds the
+        # matching row indexes; the query is regex-escaped so a typed '.' or '('
+        # can't throw.
         if ($searchMode) {
-            if ($keyInfo.Key -eq 'Escape') { $searchMode = $false; $searchQuery = '' }
-            elseif ($keyInfo.Key -eq 'Backspace' -and $searchQuery.Length -gt 0) {
-                $searchQuery = $searchQuery.Substring(0, $searchQuery.Length - 1)
-                # Find next matching item
-                $matches = 0..($keys.Count-1) | Where-Object { $keys[$_] -match $searchQuery }
-                if ($matches -and $matches.Count -gt 0) { $selected = $matches[0] }
-                elseif ($matches) { $selected = 0 }
-            }
-            elseif ($keyInfo.KeyChar -ne 0 -and -not [Char]::IsControl($keyInfo.KeyChar)) {
-                $searchQuery += $keyInfo.KeyChar
-                $matches = 0..($keys.Count-1) | Where-Object { $keys[$_] -match $searchQuery }
-                if ($matches -and $matches.Count -gt 0) { $selected = $matches[0] }
+            if ($keyInfo.Key -eq 'Escape') { $searchMode = $false; $searchQuery = ''; $dirty = $true }
+            elseif ($keyInfo.Key -eq 'Enter') { $searchMode = $false; $dirty = $true }
+            else {
+                if ($keyInfo.Key -eq 'Backspace') {
+                    if ($searchQuery.Length -gt 0) { $searchQuery = $searchQuery.Substring(0, $searchQuery.Length - 1) }
+                } elseif ($keyInfo.KeyChar -ne 0 -and -not [Char]::IsControl($keyInfo.KeyChar)) {
+                    $searchQuery += $keyInfo.KeyChar
+                } else {
+                    continue
+                }
+                $pattern = [regex]::Escape($searchQuery)
+                $hits = @(0..($keys.Count - 1) | Where-Object { $keys[$_] -match $pattern })
+                if ($hits.Count -gt 0) { $selected = $hits[0] }
+                $dirty = $true
             }
             continue
         }
@@ -342,7 +360,6 @@ function Show-Menu {
                         } else {
                             & $item.Action
                             Leave-Menu; return
-                            return
                         }
                     }
                 }
@@ -350,7 +367,9 @@ function Show-Menu {
         }
         # ── Partial redraw: only update affected rows on nav ──
         if ($prevSelected -ne $selected -and -not $dirty -and -not $searchMode) {
-            $rowBase = $startTop + 1  # Row right below header
+            # $startTop is the header row, +1 is the "│" spacer, so items start
+            # at +2. (Kept in sync with the -2 header anchor above.)
+            $rowBase = $startTop + 2
             [Console]::SetCursorPosition(0, $rowBase + $prevSelected)
             Redraw-Item -Index $prevSelected -Keys $keys -Normalized $normalized -DetectorCache $detectorCache `
                 -Selected $selected -MaxLabelWidth $maxLabelWidth -MaxDescWidth $maxDescWidth `
@@ -363,20 +382,4 @@ function Show-Menu {
         }
         $prevSelected = $selected
     } while ($true)
-}
-
-<#
-.SYNOPSIS
-    Self-invocation guard for menu scripts. Dot-sources the Toolkit module
-    if this script was invoked directly (not dot-sourced into a module).
-.PARAMETER MenuFunction
-    Name of the Show-*Menu function to call after module is loaded.
-.EXAMPLE
-    if ($MyInvocation.InvocationName -ne '.') { Initialize-MenuMenu 'Show-DockerMenu' }
-#>
-function Initialize-MenuMenu {
-    param([Parameter(Mandatory)][string]$MenuFunction)
-    $modulePath = Join-Path $PSScriptRoot '..\Toolkit\Toolkit.psd1'
-    if (Test-Path $modulePath) { Import-Module $modulePath -Force }
-    & $MenuFunction
 }

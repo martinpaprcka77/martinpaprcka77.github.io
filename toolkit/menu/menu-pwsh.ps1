@@ -76,4 +76,10 @@ function Show-PwshMenu {
     Show-Menu -Title 'POWERSHELL' -Items $items
 }
 
-if ($MyInvocation.InvocationName -ne '.') { Initialize-MenuMenu 'Show-PwshMenu' }
+# Direct launch (e.g. the Windows Terminal "Menu" profile runs this file
+# directly, not via the module): the Toolkit module isn't loaded yet, so import
+# it — which dot-sources this file's Show-* function — then invoke it.
+if ($MyInvocation.InvocationName -ne '.') {
+    Import-Module (Join-Path $PSScriptRoot '..\Toolkit\Toolkit.psd1') -Force
+    Show-PwshMenu
+}
