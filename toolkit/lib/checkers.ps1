@@ -70,6 +70,50 @@ function Get-TopProcesses {
 
 <#
 .SYNOPSIS
+    Tests connectivity to key network endpoints (DNS, GitHub, Google).
+.OUTPUTS
+    Hashtable with keys: GitHub (bool), DNS (bool), Internet (bool), Failed (int)
+#>
+function Test-NetworkHealth {
+    [CmdletBinding()]
+    param([int]$TimeoutMs = 3000)
+
+    $endpoints = @{
+        'DNS'     = '8.8.8.8'       # Google Public DNS
+        'GitHub'  = 'github.com'
+        'Internet' = 'google.com'
+    }
+
+    $results = @{}
+    $failCount = 0
+
+    foreach ($name in $endpoints.Keys) {
+        try {
+            $testParams = @{
+                ComputerName = $endpoints[$name]
+                Count = 1
+                Quiet = $true
+                TimeoutSeconds = ($TimeoutMs / 1000)
+                ErrorAction = 'Stop'
+            }
+            if (Test-Connection @testParams) {
+                $results[$name] = $true
+            } else {
+                $results[$name] = $false
+                $failCount++
+            }
+        } catch {
+            $results[$name] = $false
+            $failCount++
+        }
+    }
+
+    $results['Failed'] = $failCount
+    return $results
+}
+
+<#
+.SYNOPSIS
     Spustí kompletní diagnostiku systému.
 #>
 function Invoke-SystemCheck {

@@ -36,6 +36,7 @@
         'Get-ServiceStatus',
         'Get-NetworkInfo',
         'Get-TopProcesses',
+        'Test-NetworkHealth',
         'Invoke-SystemCheck',
         'Get-ToolkitConfig',
         'Save-ToolkitConfig',

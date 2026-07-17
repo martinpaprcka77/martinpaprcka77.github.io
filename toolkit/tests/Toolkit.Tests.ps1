@@ -44,6 +44,7 @@ Describe 'Toolkit Module' {
             'Show-Menu', 'Start-MainMenu', 'Show-DockerMenu', 'Show-GitMenu',
             'Show-TerminalMenu', 'Show-TerminalTroubleshootingMenu', 'Show-DotfilesMenu', 'Show-PwshMenu', 'Show-VSCodeMenu',
             'Get-DiskStatus', 'Get-ServiceStatus', 'Get-NetworkInfo', 'Get-TopProcesses',
+            'Test-NetworkHealth',
             'Invoke-SystemCheck',
             'Get-ToolkitConfig', 'Save-ToolkitConfig', 'Merge-Hashtable',
             'Get-PSModulePath', 'Add-PSModulePath', 'Remove-PSModulePath',
@@ -208,6 +209,17 @@ Describe 'Toolkit Module' {
 
         It 'Get-TopProcesses does not throw' {
             { Get-TopProcesses -ErrorAction SilentlyContinue } | Should -Not -Throw
+        }
+
+        It 'Test-NetworkHealth returns a hashtable' {
+            $result = Test-NetworkHealth -TimeoutMs 500 -ErrorAction SilentlyContinue
+            $result | Should -BeOfType ([hashtable])
+        }
+
+        It 'Test-NetworkHealth hashtable contains expected keys' {
+            $result = Test-NetworkHealth -TimeoutMs 500 -ErrorAction SilentlyContinue
+            $result.Keys | Should -Contain 'Failed'
+            $result.Keys | Should -Contain 'DNS'
         }
     }
 
