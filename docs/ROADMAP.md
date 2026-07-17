@@ -59,8 +59,6 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 
 ## Fáze 3: Rozšíření (🟡 rozšiřováno)
 
-- [ ] **Linux podpora** — otestovat cesty pro Linux (`~/.config/`, `/home/`)
-- [ ] **macOS podpora** — otestovat s PowerShell 7 na macOS
 - [ ] **Live dashboard** — real-time CPU/RAM/Disk monitoring
 - [ ] **Síťová diagnostika** — `Test-NetConnection` na klíčové endpointy
 - [ ] **Více Docker příkazů** — `docker compose`, network management

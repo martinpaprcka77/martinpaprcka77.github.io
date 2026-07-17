@@ -23,13 +23,7 @@ param(
     [switch]$Force
 )
 
-# Cross-platform guard
-if ($PSVersionTable.PSVersion.Major -ge 6 -and ($IsLinux -or $IsMacOS)) {
-    Write-Error "Add-WTProfiles.ps1 requires Windows. This is a Linux/macOS system."
-    exit 1
-}
-
-$ErrorActionPreference = 'Stop'
+# Cross-platform guard$ErrorActionPreference = 'Stop'
 
 $fragmentDir = "$env:LOCALAPPDATA\Microsoft\Windows Terminal\Fragments\dotfiles"
 $fragmentPath = Join-Path $fragmentDir 'dotfiles.json'
@@ -143,8 +137,7 @@ $baseProfiles = @(
 $schemesFile = Join-Path $toolsRoot 'configs\wt-schemes.json'
 $schemes = if (Test-Path $schemesFile) {
     try {
-        # PS5.1 compat: ConvertFrom-Json -AsHashtable is PS6.2+, use PSCustomObject directly
-        (Get-Content $schemesFile -Raw | ConvertFrom-Json).schemes
+                (Get-Content $schemesFile -Raw | ConvertFrom-Json).schemes
     } catch {
         Write-Warning "Could not parse $schemesFile ($_) — using a minimal built-in fallback."
         $null

@@ -48,7 +48,7 @@ function Get-ToolkitConfig {
     if (Test-Path $configFile) {
         try {
             $fileConfig = Get-Content $configFile -Raw | ConvertFrom-Json
-            # PS5.1 compat: ConvertFrom-Json -AsHashtable is PS6.2+, so recurse PSCustomObject → hashtable
+            # Recurse PSCustomObject to hashtable for full config merge
             function ConvertTo-HashtableDeep($o) {
                 if ($o -is [PSCustomObject]) { $ht = @{}; $o.PSObject.Properties | ForEach-Object { $ht[$_.Name] = ConvertTo-HashtableDeep $_.Value }; $ht }
                 elseif ($o -is [System.Collections.IList]) { ,@($o | ForEach-Object { ConvertTo-HashtableDeep $_ }) }

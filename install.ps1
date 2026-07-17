@@ -52,11 +52,7 @@ $script:restartNeeded = $false
 # reliably the repo root. No separate default-fallback path is needed here.
 $dotfilesPath = $PSScriptRoot
 
-# $PSVersionTable.OS exists in PS5.1+ and PS7, correctly reports non-Windows
-# even on PS5.1 under Wine. PS5.0 lacks .OS — fall back to PSVersion check.
-# Use instead of raw $IsWindows anywhere below.
-try { $isWindowsHost = $PSVersionTable.OS -match 'Windows' }
-catch { $isWindowsHost = $PSVersionTable.PSVersion.Major -lt 6 }
+$isWindowsHost = $true
 
 # ── Preflight ──────────────────────────────────────────────────
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -134,12 +130,10 @@ Write-Step "Setting user PATH..."
 
 $toolsBin = Join-Path $dotfilesPath 'toolkit\bin'
 try {
-    $currentUserPath = if ($isWindowsHost) { [Environment]::GetEnvironmentVariable('PATH', 'User') } else { $env:PATH }
+    $currentUserPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
     if ($toolsBin -notin ($currentUserPath -split [IO.Path]::PathSeparator)) {
         if ($PSCmdlet.ShouldProcess('User PATH', "Add $toolsBin")) {
-            if ($isWindowsHost) {
-                [Environment]::SetEnvironmentVariable('PATH', "$toolsBin$([IO.Path]::PathSeparator)$currentUserPath", 'User')
-            }
+            [Environment]::SetEnvironmentVariable('PATH', "$toolsBin$([IO.Path]::PathSeparator)$currentUserPath", 'User')
             $env:PATH = "$toolsBin$([IO.Path]::PathSeparator)$env:PATH"
             Write-Ok "Added to PATH: $toolsBin"
             $script:restartNeeded = $true
@@ -153,7 +147,7 @@ try {
 # ── Windows Terminal ───────────────────────────────────────────
 if (-not $NoTerminal) {
     $wtScript = Join-Path $dotfilesPath 'toolkit\scripts\Add-WTProfiles.ps1'
-    if ($isWindowsHost -and (Test-Path $wtScript)) {
+    if (Test-Path $wtScript) {
         # Read-Host crashes in non-interactive mode (CI, pipeline); this is
         # a soft prompt that can be skipped, so fall back to 'n' if prompt
         # isn't available (try/catch covers all edge cases).
@@ -166,9 +160,7 @@ if (-not $NoTerminal) {
             }
         }
     }
-    elseif (-not $isWindowsHost) {
-        Write-Skip "Windows Terminal setup skipped (non-Windows OS)"
-    } # else: Windows but script missing — silently skip (user may have partial repo)
+    else { # Windows but script missing — silently skip (user may have partial repo)
 }
 
 # ── Summary ────────────────────────────────────────────────────

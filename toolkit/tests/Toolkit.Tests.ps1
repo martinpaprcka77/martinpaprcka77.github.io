@@ -222,10 +222,8 @@ Describe 'Toolkit Module' {
             # Windows, a colon-free POSIX-style path everywhere else — the
             # functions under test only care about the separator, not the
             # path format, so this doesn't weaken what's being verified.
-            # $IsWindows doesn't exist on PS5.1 (PS6+ automatic variable) — same
-            # guard used repo-wide (install.ps1, profile.ps1, wtprofile.ps1).
-            $script:isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
-            $modPrefix = if ($script:isWindowsHost) { 'C:\Mods\' } else { '/Mods/' }
+            $script:isWindowsHost = $true
+            $modPrefix = 'C:\Mods\'
             $script:modA, $script:modB, $script:modNew, $script:modOther =
                 'A', 'B', 'New', 'Other' | ForEach-Object { "$modPrefix$_" }
         }

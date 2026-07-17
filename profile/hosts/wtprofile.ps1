@@ -20,11 +20,8 @@ if (-not $env:WT_SESSION) { return }
 # Windows-only (registry write via the User environment-variable store; throws
 # PlatformNotSupportedException on Linux/macOS). Check-before-write so this
 # doesn't touch the registry on every single session start.
-# Uses PSVersion check first (short-circuits on PS5.1 before evaluating $IsWindows,
-# which is a PS6+ automatic variable — important under Set-StrictMode).
-$isWindowsHost = $PSVersionTable.PSVersion.Major -lt 6 -or $IsWindows
-if ($isWindowsHost) {
-    if ([System.Environment]::GetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', 'User') -ne '1') {
+# Windows-only: telemetry opt-out
+if ([System.Environment]::GetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', 'User') -ne '1') {
         [System.Environment]::SetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', '1', 'User')
     }
 }
@@ -103,11 +100,7 @@ function touch {
 function trash {
     [CmdletBinding()]
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Path)
-    if ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows) {
-        Write-Warning "trash is Windows-only (uses Recycle Bin). Use Remove-Item instead."
-        return
-    }
-    if (-not (Test-Path $Path)) { Write-Warning "Not found: $Path"; return }
+        if (-not (Test-Path $Path)) { Write-Warning "Not found: $Path"; return }
     if (Test-Path $Path -PathType Container) {
         [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($Path, 'OnlyErrorDialogs', 'SendToRecycleBin')
     } else {
@@ -157,11 +150,7 @@ function sed {
 function head {
     [CmdletBinding()]
     param([string]$Path, [int]$Lines = 10)
-    if ($PSVersionTable.PSVersion.Major -ge 7) {
-        Get-Content $Path -Head $Lines
-    } else {
-        Get-Content $Path | Select-Object -First $Lines
-    }
+    Get-Content $Path -Head $Lines
 }
 
 <#

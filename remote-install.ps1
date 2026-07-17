@@ -72,8 +72,7 @@ if ($env:DOTFILES_FORCE)      { $Force = $true }
 if ($env:DOTFILES_NO_UPDATES) { $NoUpdates = $true }
 if ($env:DOTFILES_NO_TERMINAL) { $NoTerminal = $true }
 
-try { $isWindowsHost = $PSVersionTable.OS -match 'Windows' }
-catch { $isWindowsHost = $PSVersionTable.PSVersion.Major -lt 6 }
+$isWindowsHost = $true
 
 Write-Step "PowerShell Dotfiles Ecosystem — remote bootstrap"
 
@@ -135,13 +134,7 @@ if ($isRepo) {
     Write-Ok "Cloned: $dotfilesPath"
 }
 
-if (-not $isWindowsHost) {
-    Write-Skip "PS5.1-without-pwsh guidance and Windows Terminal setup don't apply off-Windows."
-}
-
-# ── Hand off — install.ps1 does everything else (native $PROFILE bootstrap
-# injection at the real Known-Folder-correct location, PATH setup) exactly
-# once, not duplicated here.
+# ── Hand off — install.ps1 does everything else
 $installScript = Join-Path $dotfilesPath 'install.ps1'
 if (-not (Test-Path $installScript)) {
     Write-Fail "install.ps1 not found at $installScript — clone may have failed."
