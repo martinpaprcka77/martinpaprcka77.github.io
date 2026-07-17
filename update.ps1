@@ -23,11 +23,12 @@ $restartNeeded = $false
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-. (Join-Path $PSScriptRoot 'profile\lib\output.ps1')
-. (Join-Path $PSScriptRoot 'profile\lib\paths.ps1')
-. (Join-Path $PSScriptRoot 'profile\lib\bootstrap.ps1')
-. (Join-Path $PSScriptRoot 'profile\lib\encoding.ps1')
-. (Join-Path $PSScriptRoot 'profile\lib\repair.ps1')
+$profileLib = Join-Path (Join-Path $PSScriptRoot 'profile') 'lib'
+. (Join-Path $profileLib 'output.ps1')
+. (Join-Path $profileLib 'paths.ps1')
+. (Join-Path $profileLib 'bootstrap.ps1')
+. (Join-Path $profileLib 'encoding.ps1')
+. (Join-Path $profileLib 'repair.ps1')
 
 if (-not (Test-Path (Join-Path $dotfilesPath '.git'))) {
     Write-Fail "Not a git repo at $dotfilesPath. Run install.ps1 first."
@@ -87,7 +88,7 @@ if ($PSCmdlet.ShouldProcess($dotfilesPath, 'Invoke-DotfilesRepair')) {
 if ($updateNeeded) {
     Write-Step "Changes pulled — reloading profile..."
 
-    $mainProfile = Join-Path $dotfilesPath 'profile\profile.ps1'
+    $mainProfile = Join-Path (Join-Path $dotfilesPath 'profile') 'profile.ps1'
     if (Test-Path $mainProfile) {
         if ($PSCmdlet.ShouldProcess($mainProfile, 'Reload profile')) {
             try {

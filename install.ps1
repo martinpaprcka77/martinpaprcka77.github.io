@@ -32,11 +32,12 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-. (Join-Path $PSScriptRoot 'profile\lib\output.ps1')
-. (Join-Path $PSScriptRoot 'profile\lib\paths.ps1')
-. (Join-Path $PSScriptRoot 'profile\lib\bootstrap.ps1')
-. (Join-Path $PSScriptRoot 'profile\lib\encoding.ps1')
-. (Join-Path $PSScriptRoot 'profile\lib\repair.ps1')
+$profileLib = Join-Path (Join-Path $PSScriptRoot 'profile') 'lib'
+. (Join-Path $profileLib 'output.ps1')
+. (Join-Path $profileLib 'paths.ps1')
+. (Join-Path $profileLib 'bootstrap.ps1')
+. (Join-Path $profileLib 'encoding.ps1')
+. (Join-Path $profileLib 'repair.ps1')
 
 $script:Summary = [System.Collections.Generic.List[string]]::new()
 
@@ -104,7 +105,7 @@ if ($PSCmdlet.ShouldProcess($dotfilesPath, 'Invoke-DotfilesRepair')) {
 # ($env:PATH) still works everywhere; only the persistent part is Windows-only.
 Write-Step "Setting user PATH..."
 
-$toolsBin = Join-Path $dotfilesPath 'toolkit\bin'
+$toolsBin = Join-Path (Join-Path $dotfilesPath 'toolkit') 'bin'
 try {
     $currentUserPath = if ($isWindowsHost) { [Environment]::GetEnvironmentVariable('PATH', 'User') } else { $env:PATH }
     if ($toolsBin -notin ($currentUserPath -split [IO.Path]::PathSeparator)) {
@@ -124,7 +125,7 @@ try {
 
 # ── Windows Terminal ───────────────────────────────────────────
 if (-not $NoTerminal) {
-    $wtScript = Join-Path $dotfilesPath 'toolkit\scripts\Add-WTProfiles.ps1'
+    $wtScript = Join-Path (Join-Path (Join-Path $dotfilesPath 'toolkit') 'scripts') 'Add-WTProfiles.ps1'
     if ($isWindowsHost -and (Test-Path $wtScript)) {
         # Read-Host crashes in non-interactive mode (CI, pipeline); this is
         # a soft prompt that can be skipped, so fall back to 'n' if prompt

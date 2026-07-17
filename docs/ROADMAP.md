@@ -137,6 +137,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 | Přímé spuštění `menu-*.ps1` (WT profil „Menu") padalo — `Initialize-MenuMenu` bylo definované uvnitř modulu, který ještě nebyl načtený | ✅ Vyřešeno (audit) | Guard v každém `menu-*.ps1` inline `Import-Module` + volání; `Initialize-MenuMenu` odstraněna (export 38 → 37) |
 | `Repair-FileEncoding` chyběl jako runtime pojistka (BOM se opravoval jen ručně) | ✅ Vyřešeno (audit) | `profile/lib/encoding.ps1` — idempotentní, volaný z `install.ps1` i `update.ps1` |
 | ~~`config.ps1` četl `configs\settings.json` → na Linuxu/macOS literální jméno souboru~~ — **korekce**: empiricky ověřeno, že `Join-Path` normalizuje `\` na platformní oddělovač i na Linuxu/macOS, takže původní tvar nebyl rozbitý; nešlo o skutečný bug | N/A (falešný nález) | Vnořený `Join-Path (Join-Path $toolsRoot 'configs') 'settings.json'` zůstal — odpovídá stylu zbytku repa, ale je to kosmetika, ne oprava |
+| `Test-PathHealth` (`core/status.ps1`) — chybějící `if ($isWindowsHost) {` způsobovala parse error celého souboru (nesouhlas počtu závorek), takže `Show-Status` se nikdy nenačetl a menu trvale hlásilo „not loaded" i po správné instalaci | ✅ Vyřešeno (audit) | Chybějící `if` blok obnoven kolem User/Machine PATH overlap kontroly |
 | Cesty s diakritikou nejsou testovány | Netestováno | Přidat testy |
 | PS5 nepodporuje `&&` a `||` | Omezení PS5 | Používat `;` nebo `if` |
 
