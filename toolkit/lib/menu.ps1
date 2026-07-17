@@ -114,7 +114,10 @@ function Show-Menu {
     $prevCursor = [Console]::CursorVisible
     [Console]::CursorVisible = $false
     $selected = 0
-    $footer = '↑↓ navigate  ↵ select  Esc/q exit'
+    $searchMode = $false
+    $searchQuery = ''
+    $prevBufferWidth = [Console]::WindowWidth
+    $footer = '↑↓ navigate  ↵ select  Home/End ⇱⇲  Page↑↓  / search  Esc/q exit'
 
     # Fixed redraw anchor — every frame redraws over the SAME rows, so pure
     # navigation (arrow keys, no action run) never moves the list. Previously
@@ -134,10 +137,10 @@ function Show-Menu {
         [Console]::SetCursorPosition(0, $menuTop)
         $startTop = $menuTop
 
-        # ── Header — plain title + thin accent underline, no box ───
-        Write-Host ''
-        Write-Host "  $Title" -ForegroundColor $accent
-        Write-Host "  $('─' * $boxWidth)" -ForegroundColor DarkGray
+        # ── Header — boxed title + thin underline ──────────────────
+        Write-Host "  ╭─ $Title " -ForegroundColor $accent -NoNewline
+        Write-Host ('─' * [Math]::Max(0, $boxWidth - $Title.Length - 1)) -ForegroundColor DarkGray
+        Write-Host "  │" -ForegroundColor DarkGray
 
         # ── Detector cache — fresh every render frame (every keypress), so
         # displayed status never goes stale mid-session. Function-local, not
@@ -181,6 +184,7 @@ function Show-Menu {
             } else {
                 $prefix = '    '; $keyColor = 'Gray'; $descColor = 'DarkGray'; $detColor = 'DarkGray'
             }
+            Write-Host '  │' -ForegroundColor DarkGray -NoNewline
             Write-Host $prefix -ForegroundColor $keyColor -NoNewline
             Write-Host $key.PadRight($maxLabelWidth) -ForegroundColor $keyColor -NoNewline
             if ($desc) {
@@ -197,8 +201,18 @@ function Show-Menu {
         }
 
         # ── Footer ─────────────────────────────────────────────
+        Write-Host '  │' -ForegroundColor DarkGray
+        if ($searchMode) {
+            Write-Host "  │  🔍 Search: $searchQuery" -ForegroundColor Yellow -NoNewline
+            Write-Host (' ' * [Math]::Max(0, $boxWidth - $searchQuery.Length - 10)) -NoNewline
+            Write-Host '│' -ForegroundColor DarkGray
+        }
+        Write-Host '  ╰' -ForegroundColor DarkGray -NoNewline
+        Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray -NoNewline
+        Write-Host '╯' -ForegroundColor DarkGray
         Write-Host ''
         Write-Host "  $footer" -ForegroundColor DarkGray
+        Write-Host ''
 
         # ── Clear below (handle shrunken renders) ──────────────
         $endTop = [Console]::CursorTop
@@ -211,9 +225,42 @@ function Show-Menu {
 
         # ── Read key ───────────────────────────────────────────
         $keyInfo = [Console]::ReadKey($true)
+        
+        # Handle terminal resize — redraw immediately
+        if ([Console]::WindowWidth -ne $prevBufferWidth) {
+            $prevBufferWidth = [Console]::WindowWidth
+            $boxWidth = [Math]::Min($naturalWidth, [Math]::Max(20, [Console]::WindowWidth - 6))
+            $extraBudget = [Math]::Max(0, $boxWidth - $maxLabelWidth - 2)
+        }
+        
+        # Search mode: capture alphanumeric input
+        if ($searchMode) {
+            if ($keyInfo.Key -eq 'Escape') { $searchMode = $false; $searchQuery = '' }
+            elseif ($keyInfo.Key -eq 'Backspace' -and $searchQuery.Length -gt 0) {
+                $searchQuery = $searchQuery.Substring(0, $searchQuery.Length - 1)
+                # Find next matching item
+                $matches = 0..($keys.Count-1) | Where-Object { $keys[$_] -match $searchQuery }
+                if ($matches -and $matches.Count -gt 0) { $selected = $matches[0] }
+                elseif ($matches) { $selected = 0 }
+            }
+            elseif ($keyInfo.KeyChar -ne 0 -and -not [Char]::IsControl($keyInfo.KeyChar)) {
+                $searchQuery += $keyInfo.KeyChar
+                $matches = 0..($keys.Count-1) | Where-Object { $keys[$_] -match $searchQuery }
+                if ($matches -and $matches.Count -gt 0) { $selected = $matches[0] }
+            }
+            continue
+        }
+        
         switch ($keyInfo.Key) {
             'UpArrow'    { $selected = if ($selected -gt 0) { $selected - 1 } else { $keys.Count - 1 } }
             'DownArrow'  { $selected = if ($selected -lt $keys.Count - 1) { $selected + 1 } else { 0 } }
+            'Home'       { $selected = 0 }
+            'End'        { $selected = $keys.Count - 1 }
+            'PageUp'     { $selected = [Math]::Max(0, $selected - 10) }
+            'PageDown'   { $selected = [Math]::Min($keys.Count - 1, $selected + 10) }
+            'OemQuestion' { # / key
+                $searchMode = $true; $searchQuery = ''
+            }
             'Enter'      {
                 $chosenKey = $keys[$selected]
                 $item = $normalized[$chosenKey]
@@ -248,6 +295,14 @@ function Show-Menu {
                 [Console]::CursorVisible = $prevCursor
                 if (-not $Inline) { Clear-Host }
                 return
+            }
+            'C'          {
+                # Ctrl+C — also exit
+                if ($keyInfo.Modifiers -band [ConsoleModifiers]::Control) {
+                    [Console]::CursorVisible = $prevCursor
+                    if (-not $Inline) { Clear-Host }
+                    return
+                }
             }
             default {
                 # Number key shortcut
