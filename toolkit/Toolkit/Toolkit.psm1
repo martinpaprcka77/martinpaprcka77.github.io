@@ -50,6 +50,7 @@ Export-ModuleMember -Function @(
     'Get-ServiceStatus',
     'Get-NetworkInfo',
     'Get-TopProcesses',
+    'Test-NetworkHealth',
     'Invoke-SystemCheck',
 
     # Config
@@ -73,5 +74,12 @@ Export-ModuleMember -Function @(
     'Get-DotfilesCompanionStatus',
     'Get-ModulePathStatus',
     'Initialize-MenuMenu',
-    'Invoke-IfAvailable'
+    'Invoke-IfAvailable',
+
+    # Hints (one-time user onboarding)
+    'Show-Hint',
+    'Test-HintShown',
+    'Get-HintsConfig',
+    'Save-HintsConfig',
+    'Reset-Hints'
 )

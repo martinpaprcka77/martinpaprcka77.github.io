@@ -30,6 +30,7 @@
         'Get-ServiceStatus',
         'Get-NetworkInfo',
         'Get-TopProcesses',
+        'Test-NetworkHealth',
         'Invoke-SystemCheck',
         'Get-ToolkitConfig',
         'Save-ToolkitConfig',
@@ -47,7 +48,12 @@
         'Get-DotfilesCompanionStatus',
         'Get-ModulePathStatus',
         'Initialize-MenuMenu',
-        'Invoke-IfAvailable'
+        'Invoke-IfAvailable',
+        'Show-Hint',
+        'Test-HintShown',
+        'Get-HintsConfig',
+        'Save-HintsConfig',
+        'Reset-Hints'
     )
 
     CmdletsToExport   = @()

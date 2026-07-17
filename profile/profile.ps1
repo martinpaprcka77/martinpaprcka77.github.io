@@ -40,6 +40,10 @@ $profileStart = if ($env:PROFILE_BENCHMARK -eq 'true') { [Diagnostics.Stopwatch]
 . (Join-Path $env:DOTFILES_PWSH 'lib\paths.ps1')
 #endregion
 
+#region Hints system (one-time user onboarding)
+. (Join-Path $env:DOTFILES_TOOLS 'lib\hints.ps1')
+#endregion
+
 #region Core modules
 $coreDir = Join-Path $env:DOTFILES_PWSH "core"
 if (Test-Path $coreDir) {

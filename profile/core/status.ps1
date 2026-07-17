@@ -44,6 +44,21 @@ function Test-PathHealth {
 function Show-Status {
     [CmdletBinding()]
     param()
+
+    if (-not (Test-HintShown 'health_check_first_run')) {
+        Show-Hint 'health_check_first_run' 'System Health Check' @(
+            'This dashboard shows if everything is set up correctly.',
+            '',
+            '✓ Green (✅) = All good, no action needed',
+            '⚠️  Yellow (⚠️) = Warning, might need attention',
+            '✗ Red (❌) = Error, something is broken'
+        ) @(
+            'Fix red items by running: install.ps1',
+            'Yellow items might be optional — see precheck.ps1 for details',
+            'Run "check" anytime to verify your setup again'
+        )
+    }
+
     Write-Host "   $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor DarkGray
     Write-Host "   $(('─' * 55))" -ForegroundColor DarkGray
 
