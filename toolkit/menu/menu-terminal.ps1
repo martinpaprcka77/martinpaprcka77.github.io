@@ -5,6 +5,51 @@
     Cesta: ~/.config/powershell/toolkit/menu/menu-terminal.ps1
 #>
 
+function Show-TerminalTroubleshootingMenu {
+    $items = [ordered]@{
+        '1. 🔎 Check VS Code terminal settings' = @{ Action = {
+            Write-Host "`n  Review these settings in VS Code:" -ForegroundColor Cyan
+            @(
+                'terminal.integrated.defaultProfile.windows',
+                'terminal.integrated.profiles.windows',
+                'terminal.integrated.cwd',
+                'terminal.integrated.env.windows',
+                'terminal.integrated.inheritEnv',
+                'terminal.integrated.automationProfile.windows',
+                'terminal.integrated.splitCwd',
+                'terminal.integrated.windowsEnableConpty'
+            ) | ForEach-Object { Write-Host "    - $_" -ForegroundColor White }
+            Write-Host "`n  Open Settings JSON with: Preferences: Open User Settings (JSON)" -ForegroundColor Yellow
+            Read-Host "`nStiskni Enter..."
+        }; Desc = 'Review the VS Code terminal settings that affect launch' }
+        '2. 🧪 Test shell outside VS Code' = @{ Action = {
+            Write-Host "`n  Try launching your shell directly from an external terminal:" -ForegroundColor Cyan
+            Write-Host "    - PowerShell: pwsh" -ForegroundColor White
+            Write-Host "    - Windows Terminal: wt" -ForegroundColor White
+            Write-Host "    - WSL: wsl -d <distro>" -ForegroundColor White
+            Write-Host "`n  If it fails, the issue is likely with the shell installation rather than VS Code." -ForegroundColor Yellow
+            Read-Host "`nStiskni Enter..."
+        }; Desc = 'Validate whether the shell works outside VS Code' }
+        '3. 🧰 Check VS Code and shell versions' = @{ Action = {
+            Write-Host "`n  Recommended checks:" -ForegroundColor Cyan
+            Write-Host "    - VS Code: Help > About" -ForegroundColor White
+            Write-Host "    - Shell: update PowerShell/WSL/Windows Terminal to the latest version" -ForegroundColor White
+            Write-Host "    - OS: install the latest Windows updates if available" -ForegroundColor White
+            Read-Host "`nStiskni Enter..."
+        }; Desc = 'Verify recent versions of VS Code, shell, and OS' }
+        '4. 📝 Enable trace logging' = @{ Action = {
+            Write-Host "`n  To capture terminal launch diagnostics:" -ForegroundColor Cyan
+            Write-Host "    1. Enable trace logging in VS Code" -ForegroundColor White
+            Write-Host "    2. Reproduce the terminal launch failure" -ForegroundColor White
+            Write-Host "    3. Review the log for shell path, args, and env issues" -ForegroundColor White
+            Write-Host "`n  This often reveals bad shell names, arguments, or environment variables." -ForegroundColor Yellow
+            Read-Host "`nStiskni Enter..."
+        }; Desc = 'Collect trace logs for terminal launch failures' }
+        '5. ↩️  Back' = @{ Action = { return }; Desc = 'Return to terminal menu' }
+    }
+    Show-Menu -Title 'TERMINAL TROUBLESHOOTING' -Items $items
+}
+
 function Show-TerminalMenu {
     $fragPath = "$env:LOCALAPPDATA\Microsoft\Windows Terminal\Fragments\dotfiles\dotfiles.json"
     # scripts/Add-WTProfiles.ps1 lives inside THIS repo — $env:DOTFILES_TOOLS is only ever set by
@@ -81,7 +126,8 @@ function Show-TerminalMenu {
             } else { Write-Host "`n  WSL not installed. Install: wsl --install" -ForegroundColor Yellow }
             Read-Host "`nStiskni Enter..."
         }; Desc = 'Auto-detected WSL distros for WT profiles' }
-        '9. ↩️  Back'            = @{ Action = { return }; Desc = 'Return to main menu' }
+        '9. 🛠️  Troubleshooting' = @{ Action = { Show-TerminalTroubleshootingMenu }; Desc = 'VS Code terminal launch troubleshooting checklist' }
+        '10. ↩️  Back'            = @{ Action = { return }; Desc = 'Return to main menu' }
     }
     Show-Menu -Title 'TERMINAL' -Items $items
 }

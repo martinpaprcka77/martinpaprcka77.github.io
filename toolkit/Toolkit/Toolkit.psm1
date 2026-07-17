@@ -40,6 +40,7 @@ Export-ModuleMember -Function @(
     'Show-DockerMenu',
     'Show-GitMenu',
     'Show-TerminalMenu',
+    'Show-TerminalTroubleshootingMenu',
     'Show-DotfilesMenu',
     'Show-PwshMenu',
     'Show-VSCodeMenu',

@@ -42,7 +42,7 @@ Describe 'Toolkit Module' {
             'Test-Admin', 'Get-ScriptDirectory',
             'Write-Info', 'Write-Success', 'Write-Warn', 'Write-Err', 'Confirm-Action',
             'Show-Menu', 'Start-MainMenu', 'Show-DockerMenu', 'Show-GitMenu',
-            'Show-TerminalMenu', 'Show-DotfilesMenu', 'Show-PwshMenu', 'Show-VSCodeMenu',
+            'Show-TerminalMenu', 'Show-TerminalTroubleshootingMenu', 'Show-DotfilesMenu', 'Show-PwshMenu', 'Show-VSCodeMenu',
             'Get-DiskStatus', 'Get-ServiceStatus', 'Get-NetworkInfo', 'Get-TopProcesses',
             'Invoke-SystemCheck',
             'Get-ToolkitConfig', 'Save-ToolkitConfig', 'Merge-Hashtable',
@@ -163,6 +163,11 @@ Describe 'Toolkit Module' {
         It 'Show-TerminalMenu runs without errors (mocked menu)' {
             Mock Show-Menu { } -ModuleName Toolkit
             { Show-TerminalMenu } | Should -Not -Throw
+        }
+
+        It 'Show-TerminalTroubleshootingMenu runs without errors (mocked menu)' {
+            Mock Show-Menu { } -ModuleName Toolkit
+            { Show-TerminalTroubleshootingMenu } | Should -Not -Throw
         }
 
         It 'Show-DotfilesMenu runs without errors (mocked menu)' {
