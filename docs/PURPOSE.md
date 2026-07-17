@@ -61,7 +61,6 @@ fallback místo spoléhání na env proměnnou.
 
 ### Proč `~/.config/powershell/` a ne `$PROFILE`?
 
-- Konvence XDG (`~/.config/`) je standard na Linuxu a čím dál častější i na Windows.
 - Je to mimo OneDrive.
 - Umožňuje verzovat celý adresář, ne jen jeden soubor.
 - Beze změny i po sloučení do jednoho repa — `profile/` a `toolkit/` jsou teď jen podadresáře
