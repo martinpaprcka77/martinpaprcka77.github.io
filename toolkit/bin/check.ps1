@@ -6,6 +6,7 @@
 .NOTES
     Cesta: ~/.config/powershell/toolkit/bin/check.ps1
 #>
+#Requires -Version 5.1
 
 param(
     [Parameter(ValueFromRemainingArguments)]

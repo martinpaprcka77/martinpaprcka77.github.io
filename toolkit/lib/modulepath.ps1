@@ -17,11 +17,11 @@
 #>
 function Get-PSModulePath {
     $entries = $env:PSModulePath -split [IO.Path]::PathSeparator | Where-Object { $_ }
-    Write-Host "`n PSModulePath entries ($($entries.Count)):" -ForegroundColor Cyan
+    Write-Host "`n📂 PSModulePath entries ($($entries.Count)):" -ForegroundColor Cyan
     for ($i = 0; $i -lt $entries.Count; $i++) {
         $e = $entries[$i]
         $exists = Test-Path $e
-        $icon = if ($exists) { '[OK]' } else { '[X]' }
+        $icon = if ($exists) { '✅' } else { '❌' }
         $color = if ($exists) { 'White' } else { 'Red' }
         $label = if ($i -eq 0) { ' (primary)' } else { '' }
         Write-Host "  $icon [$i]$label $e" -ForegroundColor $color
@@ -78,6 +78,7 @@ function Add-PSModulePath {
     Remove-PSModulePath -Index 3
 #>
 function Remove-PSModulePath {
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [string]$Path,
         [int]$Index = -1
@@ -86,16 +87,20 @@ function Remove-PSModulePath {
 
     if ($Index -ge 0 -and $Index -lt $entries.Count) {
         $removed = $entries[$Index]
-        $entries.RemoveAt($Index)
-        $env:PSModulePath = $entries -join [IO.Path]::PathSeparator
-        Write-Host "  [+] Removed [$Index]: $removed" -ForegroundColor Green
+        if ($PSCmdlet.ShouldProcess('$env:PSModulePath', "Remove entry [$Index]: $removed")) {
+            $entries.RemoveAt($Index)
+            $env:PSModulePath = $entries -join [IO.Path]::PathSeparator
+            Write-Host "  [+] Removed [$Index]: $removed" -ForegroundColor Green
+        }
         return
     }
 
     if ($Path -and ($Path -in $entries)) {
-        $entries.Remove($Path)
-        $env:PSModulePath = $entries -join [IO.Path]::PathSeparator
-        Write-Host "  [+] Removed: $Path" -ForegroundColor Green
+        if ($PSCmdlet.ShouldProcess('$env:PSModulePath', "Remove entry: $Path")) {
+            $entries.Remove($Path)
+            $env:PSModulePath = $entries -join [IO.Path]::PathSeparator
+            Write-Host "  [+] Removed: $Path" -ForegroundColor Green
+        }
         return
     }
 
@@ -113,6 +118,8 @@ function Remove-PSModulePath {
     Reset-PSModulePath
 #>
 function Reset-PSModulePath {
+    [CmdletBinding(SupportsShouldProcess)]
+    param()
     # $env:USERPROFILE\Documents\... was here previously — exactly the
     # OneDrive-affected path this function's own OneDrive-pollution check
     # (Test-PSModulePath) warns about. LOCALAPPDATA is never a Known-Folder
@@ -121,7 +128,8 @@ function Reset-PSModulePath {
         "$env:ProgramFiles\PowerShell\7\Modules",
         "$env:LOCALAPPDATA\PowerShell\Modules"
     )
-    Write-Host "`n Resetting PSModulePath to modern baseline..." -ForegroundColor Magenta
+    if (-not $PSCmdlet.ShouldProcess('$env:PSModulePath', 'Reset to modern baseline')) { return }
+    Write-Host "`n🔄 Resetting PSModulePath to modern baseline..." -ForegroundColor Magenta
     foreach ($p in $modern) {
         if (-not (Test-Path $p)) {
             New-Item -ItemType Directory -Path $p -Force | Out-Null
@@ -184,7 +192,7 @@ function Import-PSModulePath {
     try {
         $import = Get-Content $InputPath -Raw | ConvertFrom-Json
         $entries = @($import.Entries)
-        Write-Host "`n Importing $($entries.Count) paths from: $InputPath" -ForegroundColor Cyan
+        Write-Host "`n📥 Importing $($entries.Count) paths from: $InputPath" -ForegroundColor Cyan
         Write-Host "   Exported: $($import.ExportedAt) | PS $($import.PSVersion)" -ForegroundColor DarkGray
 
         if ($Merge) {
@@ -194,9 +202,9 @@ function Import-PSModulePath {
 
         foreach ($e in $entries) {
             if (Test-Path $e) {
-                Write-Host "  [OK] $e" -ForegroundColor Green
+                Write-Host "  ✅ $e" -ForegroundColor Green
             } else {
-                Write-Host "  [X] $e (not found, still adding)" -ForegroundColor Red
+                Write-Host "  ❌ $e (not found, still adding)" -ForegroundColor Red
             }
         }
         $env:PSModulePath = $entries -join [IO.Path]::PathSeparator
@@ -220,56 +228,56 @@ function Test-PSModulePath {
     $entries = @($env:PSModulePath -split [IO.Path]::PathSeparator | Where-Object { $_ })
     $issues = 0
 
-    Write-Host "`n PSModulePath VALIDATION" -ForegroundColor Magenta
-    Write-Host "   $(('-' * 55))" -ForegroundColor DarkGray
+    Write-Host "`n🔍 PSModulePath VALIDATION" -ForegroundColor Magenta
+    Write-Host "   $(('─' * 55))" -ForegroundColor DarkGray
 
     # Check duplicates
     $dupes = $entries | Group-Object | Where-Object { $_.Count -gt 1 }
     if ($dupes) {
         foreach ($d in $dupes) {
-            Write-Host "  [!]  Duplicate ($($d.Count)x): $($d.Name)" -ForegroundColor Yellow
+            Write-Host "  ⚠️  Duplicate ($($d.Count)x): $($d.Name)" -ForegroundColor Yellow
             $issues++
         }
     } else {
-        Write-Host "  [OK] No duplicates" -ForegroundColor Green
+        Write-Host "  ✅ No duplicates" -ForegroundColor Green
     }
 
     # Check missing directories
     $missing = $entries | Where-Object { -not (Test-Path $_) }
     foreach ($m in $missing) {
-        Write-Host "  [X] Missing: $m" -ForegroundColor Red
+        Write-Host "  ❌ Missing: $m" -ForegroundColor Red
         $issues++
     }
     if (-not $missing) {
-        Write-Host "  [OK] All paths exist" -ForegroundColor Green
+        Write-Host "  ✅ All paths exist" -ForegroundColor Green
     }
 
     # Check OneDrive pollution
     $oneDrive = $entries | Where-Object { $_ -match 'OneDrive' }
     if ($oneDrive) {
         foreach ($o in $oneDrive) {
-            Write-Host "  [!]  OneDrive path (may cause slowdowns): $o" -ForegroundColor Yellow
+            Write-Host "  ⚠️  OneDrive path (may cause slowdowns): $o" -ForegroundColor Yellow
             $issues++
         }
     } else {
-        Write-Host "  [OK] No OneDrive paths" -ForegroundColor Green
+        Write-Host "  ✅ No OneDrive paths" -ForegroundColor Green
     }
 
     # Check priority
     $ps7Path = "$env:ProgramFiles\PowerShell\7\Modules"
     if ($entries[0] -eq $ps7Path) {
-        Write-Host "  [OK] PS7 modules have priority" -ForegroundColor Green
+        Write-Host "  ✅ PS7 modules have priority" -ForegroundColor Green
     } else {
-        Write-Host "  [!]  PS7 modules NOT first — current: $($entries[0])" -ForegroundColor Yellow
+        Write-Host "  ⚠️  PS7 modules NOT first — current: $($entries[0])" -ForegroundColor Yellow
         $issues++
     }
 
     # Summary
-    Write-Host "   $(('-' * 55))" -ForegroundColor DarkGray
+    Write-Host "   $(('─' * 55))" -ForegroundColor DarkGray
     if ($issues -eq 0) {
-        Write-Host "  [OK] All checks passed." -ForegroundColor Green
+        Write-Host "  ✅ All checks passed." -ForegroundColor Green
     } else {
-        Write-Host "  [!]  $issues issue(s) found. Run Reset-PSModulePath to fix." -ForegroundColor Yellow
+        Write-Host "  ⚠️  $issues issue(s) found. Run Reset-PSModulePath to fix." -ForegroundColor Yellow
     }
     return ($issues -eq 0)
 }

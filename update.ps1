@@ -12,6 +12,7 @@
 .NOTES
     Cesta: ~/.config/powershell/update.ps1
 #>
+#Requires -Version 5.1
 [CmdletBinding(SupportsShouldProcess)]
 param()
 
@@ -25,6 +26,8 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'profile\lib\output.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\paths.ps1')
 . (Join-Path $PSScriptRoot 'profile\lib\bootstrap.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\encoding.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\repair.ps1')
 
 if (-not (Test-Path (Join-Path $dotfilesPath '.git'))) {
     Write-Fail "Not a git repo at $dotfilesPath. Run install.ps1 first."
@@ -68,14 +71,16 @@ if ($PSCmdlet.ShouldProcess($dotfilesPath, 'git fetch && git status')) {
     }
 }
 
-# ── Self-heal bootstrap ────────────────────────────────────────
-# Runs every time, not just when $updateNeeded — repairs a stale bootstrap
-# snippet (e.g. still pointing at a pre-restructure path) even if this repo
-# was already at the latest commit, so update.ps1 alone is enough to recover
-# without needing to know to re-run install.ps1.
-Write-Step "Checking bootstrap..."
-if ($PSCmdlet.ShouldProcess('$PROFILE targets', 'Repair bootstrap if stale')) {
-    $restartNeeded = (Invoke-BootstrapInjection) -or $restartNeeded
+# ── Self-heal ────────────────────────────────────────────────
+# Runs every time, not just when $updateNeeded — a stale bootstrap snippet, a
+# BOM-less file, or a drifted PSModulePath can all exist even when this repo
+# is already at the latest commit, so update.ps1 alone is enough to recover
+# from any of them without needing to know to re-run install.ps1. See
+# profile/lib/repair.ps1.
+Write-Step "Running self-heal (bootstrap, encoding, PSModulePath)..."
+if ($PSCmdlet.ShouldProcess($dotfilesPath, 'Invoke-DotfilesRepair')) {
+    $repairResult = Invoke-DotfilesRepair -Path $dotfilesPath
+    $restartNeeded = $repairResult.RestartNeeded -or $restartNeeded
 }
 
 # ── If anything updated, rebootstrap ──────────────────────────
