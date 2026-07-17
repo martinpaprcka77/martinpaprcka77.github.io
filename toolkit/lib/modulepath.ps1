@@ -202,7 +202,7 @@ function Import-PSModulePath {
         $env:PSModulePath = $entries -join [IO.Path]::PathSeparator
         Write-Host "  [+] PSModulePath imported." -ForegroundColor Green
     } catch {
-        Write-Err "Import failed: $_"
+        throw "Import failed: $_"
     }
 }
 

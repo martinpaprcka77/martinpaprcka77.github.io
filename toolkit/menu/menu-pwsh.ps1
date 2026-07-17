@@ -66,7 +66,7 @@ function Show-PwshMenu {
                 '4. Add Path'         = @{ Action = { $p = Read-Host 'Path'; Add-PSModulePath -Path $p }; Desc = 'Add a directory (no duplicates)' }
                 '5. Remove Path'      = @{ Action = { Get-PSModulePath | Out-Null; $i = Read-Host 'Index to remove'; if ($i -match '^\d+$') { Remove-PSModulePath -Index ([int]$i) } }; Desc = 'Remove by index number' }
                 '6. Export Config'    = @{ Action = { Export-PSModulePath }; Desc = 'Save to psmodulepath.json' }
-                '7. Import Config'    = @{ Action = { Import-PSModulePath }; Desc = 'Restore from psmodulepath.json' }
+                '7. Import Config'    = @{ Action = { try { Import-PSModulePath } catch { Write-Err "$_" } }; Desc = 'Restore from psmodulepath.json' }
                 '8. ↩️  Back'          = @{ Action = { return } }
             }
             Show-Menu -Title 'MODULE PATH' -Items $sub
