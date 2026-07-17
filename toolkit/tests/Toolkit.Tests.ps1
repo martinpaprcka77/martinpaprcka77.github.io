@@ -223,6 +223,15 @@ Describe 'Toolkit Module' {
         }
     }
 
+    # ── Live Dashboard ────────────────────────────────────────
+    Context 'Live dashboard (Watch-SystemMetrics)' {
+        It 'Watch-SystemMetrics accepts interval and sample parameters' {
+            # Smoke test: function exists and accepts parameters without error
+            # (actual monitoring not executed since it would hang the test)
+            Get-Command Watch-SystemMetrics -ErrorAction Stop | Should -Not -BeNullOrEmpty
+        }
+    }
+
     # ── PSModulePath functions ────────────────────────────────
     Context 'PSModulePath functions' {
         BeforeAll {

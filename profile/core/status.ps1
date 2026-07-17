@@ -41,6 +41,104 @@ function Test-PathHealth {
     return $result
 }
 
+<#
+.SYNOPSIS
+    Live dashboard: real-time CPU, RAM, and Disk monitoring.
+.DESCRIPTION
+    Displays refreshing metrics every N milliseconds for a duration.
+    Windows: uses WMI for disk; all platforms: Get-Process for CPU.
+    Press Ctrl+C to stop.
+.PARAMETER IntervalMs
+    Milliseconds between refreshes (default 2000).
+.PARAMETER SampleCount
+    Number of samples to collect; 0 = infinite (default 0).
+.EXAMPLE
+    Watch-SystemMetrics -IntervalMs 1000 -SampleCount 30
+    # 30 samples, refresh every 1 second
+#>
+function Watch-SystemMetrics {
+    [CmdletBinding()]
+    param(
+        [int]$IntervalMs = 2000,
+        [int]$SampleCount = 0
+    )
+
+    if ($IntervalMs -lt 100) { $IntervalMs = 100 }
+    if ($SampleCount -lt 0) { $SampleCount = 0 }
+
+    $count = 0
+    $lastCPUTime = @{}
+
+    while ($SampleCount -eq 0 -or $count -lt $SampleCount) {
+        Clear-Host
+        Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+        Write-Host "║         LIVE SYSTEM METRICS (Ctrl+C to exit)           ║" -ForegroundColor Cyan
+        Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss.fff')" -ForegroundColor Gray
+        Write-Host ""
+
+        # CPU Usage (top 5 processes)
+        Write-Host "CPU (Top 5 processes):" -ForegroundColor Yellow
+        try {
+            Get-Process | Sort-Object CPU -Descending | Select-Object -First 5 |
+                ForEach-Object {
+                    $cpu = [math]::Round($_.CPU, 1)
+                    Write-Host "  $($_.Name.PadRight(20)) $($cpu.ToString().PadLeft(8))s"
+                }
+        } catch { Write-Host "  (error reading CPU)" -ForegroundColor Red }
+
+        Write-Host ""
+
+        # RAM Usage
+        Write-Host "Memory (RAM):" -ForegroundColor Yellow
+        try {
+            $memObj = Get-WmiObject -Class Win32_OperatingSystem -ErrorAction SilentlyContinue
+            if ($memObj) {
+                $usedMB = [math]::Round(($memObj.TotalVisibleMemorySize - $memObj.FreePhysicalMemory) / 1024, 1)
+                $totalMB = [math]::Round($memObj.TotalVisibleMemorySize / 1024, 1)
+                $usedPct = [math]::Round(($memObj.TotalVisibleMemorySize - $memObj.FreePhysicalMemory) / $memObj.TotalVisibleMemorySize * 100, 1)
+                Write-Host "  Used: $usedMB MB / $totalMB MB ($usedPct%)" -ForegroundColor $(if ($usedPct -gt 80) { 'Red' } else { 'Green' })
+            } else {
+                Write-Host "  (WMI not available)" -ForegroundColor Gray
+            }
+        } catch { Write-Host "  (error reading memory)" -ForegroundColor Red }
+
+        Write-Host ""
+
+        # Disk Usage (Windows only, all drives)
+        Write-Host "Disk Usage:" -ForegroundColor Yellow
+        try {
+            $disks = Get-WmiObject -Class Win32_LogicalDisk -Filter "DriveType=3" -ErrorAction SilentlyContinue
+            if ($disks) {
+                foreach ($disk in $disks) {
+                    $usedGB = [math]::Round(($disk.Size - $disk.FreeSpace) / 1GB, 1)
+                    $totalGB = [math]::Round($disk.Size / 1GB, 1)
+                    $usedPct = [math]::Round(($disk.Size - $disk.FreeSpace) / $disk.Size * 100, 1)
+                    $color = if ($usedPct -gt 90) { 'Red' } elseif ($usedPct -gt 75) { 'Yellow' } else { 'Green' }
+                    Write-Host "  $($disk.DeviceID) $usedGB GB / $totalGB GB ($usedPct%)" -ForegroundColor $color
+                }
+            } else {
+                Write-Host "  (WMI not available)" -ForegroundColor Gray
+            }
+        } catch { Write-Host "  (error reading disk)" -ForegroundColor Red }
+
+        Write-Host ""
+        Write-Host "╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+        if ($SampleCount -gt 0) {
+            Write-Host "║  Sample $($count + 1)/$SampleCount  [Interval: ${IntervalMs}ms]" -ForegroundColor Cyan
+        } else {
+            Write-Host "║  Sample $($count + 1)  [Interval: ${IntervalMs}ms]" -ForegroundColor Cyan
+        }
+        Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+        $count++
+        if ($SampleCount -eq 0 -or $count -lt $SampleCount) {
+            Start-Sleep -Milliseconds $IntervalMs
+        }
+    }
+}
+
 function Show-Status {
     [CmdletBinding()]
     param()
