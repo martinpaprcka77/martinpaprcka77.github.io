@@ -231,10 +231,13 @@ function Show-Menu {
 
         # ── Clear below (handle shrunken renders) ──────────────
         $endTop = [Console]::CursorTop
-        $maxRow = [Console]::BufferHeight - 1
-        for ($r = $endTop; $r -le $startTop + $keys.Count + 8 -and $r -le $maxRow; $r++) {
-            [Console]::SetCursorPosition(0, $r)
-            Write-Host (' ' * ($boxWidth + 6)) -NoNewline
+        # Only clear if we shrunk — avoid scroll-inducing loop
+        $remaining = $startTop + $keys.Count + 6 - $endTop
+        if ($remaining -gt 1) {
+            for ($r = $endTop; $r -lt $endTop + $remaining -and $r -lt [Console]::BufferHeight - 1; $r++) {
+                [Console]::SetCursorPosition(0, $r)
+                Write-Host (' ' * ($boxWidth + 6)) -NoNewline
+            }
         }
         [Console]::SetCursorPosition(0, $endTop)
 
@@ -281,18 +284,16 @@ function Show-Menu {
                 $item = $normalized[$chosenKey]
                 [Console]::CursorVisible = $prevCursor
                 if ($Inline) {
-                    # Inline mode: clear just the menu area, run action, then redraw
-                    for ($r = $startTop; $r -le $endTop -and $r -le [Console]::BufferHeight - 1; $r++) {
+                    # Inline mode: clear menu area minimally, run action
+                    $clearTo = [Math]::Min($endTop, [Console]::BufferHeight - 1)
+                    for ($r = $startTop; $r -le $clearTo; $r++) {
                         [Console]::SetCursorPosition(0, $r)
-                        Write-Host (' ' * ($boxWidth + 10)) -NoNewline
+                        Write-Host (' ' * ($boxWidth + 6)) -NoNewline
                     }
                     [Console]::SetCursorPosition(0, $startTop)
-                    Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray
                     & $item.Action
-                    Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray
                     Write-Host ''
-                    # Continue the loop — menu redraws below the action's output
-                    # (intentional advance, unlike the fixed anchor used for pure navigation)
+                    # Menu redraws below the action's output
                     [Console]::CursorVisible = $false
                     $menuTop = [Console]::CursorTop
                 } else {
@@ -333,14 +334,13 @@ function Show-Menu {
                         $item = $normalized[$match]
                         [Console]::CursorVisible = $prevCursor
                         if ($Inline) {
-                            for ($r = $startTop; $r -le $endTop -and $r -le [Console]::BufferHeight - 1; $r++) {
+                            $clearTo = [Math]::Min($endTop, [Console]::BufferHeight - 1)
+                            for ($r = $startTop; $r -le $clearTo; $r++) {
                                 [Console]::SetCursorPosition(0, $r)
-                                Write-Host (' ' * ($boxWidth + 10)) -NoNewline
+                                Write-Host (' ' * ($boxWidth + 6)) -NoNewline
                             }
                             [Console]::SetCursorPosition(0, $startTop)
-                            Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray
                             & $item.Action
-                            Write-Host ('─' * $boxWidth) -ForegroundColor DarkGray
                             Write-Host ''
                             [Console]::CursorVisible = $false
                             $menuTop = [Console]::CursorTop
