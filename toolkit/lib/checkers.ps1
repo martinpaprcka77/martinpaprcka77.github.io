@@ -56,6 +56,66 @@ function Get-NetworkInfo {
 
 <#
 .SYNOPSIS
+    Testuje připojení na klíčové síťové endpointy.
+.DESCRIPTION
+    Ověří konektivitu ke DNS, GitHub API, a Google Services.
+    Vrací hashtable s statusem každého endpointu a počtem selhání.
+.PARAMETER Timeout
+    Timeout pro Test-NetConnection (výchozí 5 sekund).
+#>
+function Test-NetworkHealth {
+    [CmdletBinding()]
+    param([int]$Timeout = 5)
+
+    if (-not (Test-HintShown 'network_health_first_run')) {
+        Show-Hint 'network_health_first_run' 'Network Connectivity Check' @(
+            'This tool verifies your internet connection to key services.',
+            '',
+            '✓ DNS (8.8.8.8) — Can you resolve names?',
+            '✓ GitHub — Can you reach the main repository?',
+            '✓ Google — General internet connectivity check'
+        ) @(
+            'If any endpoint fails, check your internet connection',
+            'Firewalls may block some endpoints — that''s OK',
+            'Run "check" to see network health in the full dashboard'
+        )
+    }
+
+    $endpoints = @{
+        'DNS (8.8.8.8)'     = '8.8.8.8'
+        'GitHub API'        = 'api.github.com'
+        'Google'            = 'google.com'
+    }
+
+    $results = @{}
+    $fails = 0
+
+    foreach ($name in $endpoints.Keys) {
+        $target = $endpoints[$name]
+        try {
+            $result = Test-NetConnection -ComputerName $target -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+            if ($result.PingSucceeded) {
+                $results[$name] = '✅'
+            } else {
+                $results[$name] = '⚠️'
+                $fails++
+            }
+        } catch {
+            $results[$name] = '❌'
+            $fails++
+        }
+    }
+
+    return @{
+        Results      = $results
+        FailCount    = $fails
+        CheckedAt    = Get-Date
+        IsHealthy    = $fails -eq 0
+    }
+}
+
+<#
+.SYNOPSIS
     Zobrazí top 10 procesů podle využití CPU.
 #>
 function Get-TopProcesses {

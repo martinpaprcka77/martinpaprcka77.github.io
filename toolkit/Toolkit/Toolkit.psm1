@@ -73,5 +73,4 @@ Export-ModuleMember -Function @(
     'Get-ModuleStackStatus',
     'Get-DotfilesCompanionStatus',
     'Get-ModulePathStatus',
-    'Invoke-IfAvailable'
 )
