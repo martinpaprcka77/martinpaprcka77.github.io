@@ -13,5 +13,5 @@
 #>
 
 # Bootstrap: dotfiles-powershell
-$dotfilesProfile = Join-Path $HOME '.config\powershell\profile\profile.ps1'
+$dotfilesProfile = Join-Path (Join-Path (Join-Path (Join-Path $HOME '.config') 'powershell') 'profile') 'profile.ps1'
 if (Test-Path $dotfilesProfile) { . $dotfilesProfile }

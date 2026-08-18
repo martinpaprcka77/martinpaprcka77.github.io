@@ -23,13 +23,13 @@ function Invoke-BootstrapInjection {
 
     # Hardcoded intentionally, same reasoning as bootstrap.ps1: this snippet
     # runs before profile.ps1 ever executes, so $env:DOTFILES_PWSH doesn't
-    # exist yet.
-    $bootstrapCode = @'
-
-# Bootstrap: dotfiles-powershell
-$dotfilesProfile = Join-Path $HOME '.config\powershell\profile\profile.ps1'
-if (Test-Path $dotfilesProfile) { . $dotfilesProfile }
-'@
+    # exist yet. Nested Join-Path (not a single '.config\powershell\...'
+    # string) because this snippet runs on the user's own machine, which may
+    # not be Windows — an embedded backslash isn't a path separator to
+    # Join-Path off-Windows, so a single-segment ChildPath would silently
+    # resolve to a bogus filename there.
+    $dotfilesProfileAssignLine = "`$dotfilesProfile = Join-Path (Join-Path (Join-Path (Join-Path `$HOME '.config') 'powershell') 'profile') 'profile.ps1'"
+    $bootstrapCode = "`n# Bootstrap: dotfiles-powershell`n$dotfilesProfileAssignLine`nif (Test-Path `$dotfilesProfile) { . `$dotfilesProfile }"
 
     # Matches any prior version of this block (old flat-path pre-monorepo
     # format included) so it can be replaced wholesale, not just the current
@@ -51,7 +51,7 @@ if (Test-Path $dotfilesProfile) { . $dotfilesProfile }
         if (Test-Path $profilePath) {
             $existing = Get-Content -Path $profilePath -Raw -ErrorAction SilentlyContinue
             $alreadyBootstrapped = $existing -and ($existing -match [regex]::Escape('# Bootstrap: dotfiles-powershell'))
-            $upToDate = $alreadyBootstrapped -and ($existing -match [regex]::Escape('profile\profile.ps1'))
+            $upToDate = $alreadyBootstrapped -and ($existing -match [regex]::Escape($dotfilesProfileAssignLine))
 
             if ($upToDate -and -not $Force) {
                 Write-Skip "Already bootstrapped: $profilePath"

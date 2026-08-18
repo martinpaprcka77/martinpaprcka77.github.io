@@ -153,11 +153,17 @@ success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
 vicmd_symbol = "[❮](bold green)"
 
-# ponytail: transient_prompt not supported by stock Starship, triggers [WARN] unknown key
-# [transient_prompt]
-# enabled = true
-# newline = false
-# format = "[❯](bold green) "
+# Transient prompt — collapses after command execution (Starship 1.8+)
+# Requires: starship.rs 1.8 or later
+# Older versions: safely ignored (no error, just standard prompt shown)
+[line_break]
+disabled = false
+
+[transient_prompt]
+command_timeout = 500
+success_symbol = "[❯](bold green) "
+error_symbol = "[❯](bold red) "
+format = "$symbol "
 
 [nodejs]
 format = "via [🐍 $version](bold green) "

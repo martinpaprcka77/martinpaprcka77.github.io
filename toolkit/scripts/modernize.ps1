@@ -30,6 +30,9 @@ $ErrorActionPreference = 'Continue'
 
 # Dot-source shared output helpers from profile/lib/output.ps1
 . (Join-Path $PSScriptRoot '..\..\profile\lib\output.ps1')
+# Dot-source detectors for the shared legacy-module path list, so this script's
+# cleanup and the menu's live-status icon read the exact same source of truth.
+. (Join-Path $PSScriptRoot '..\lib\detectors.ps1')
 
 Write-Host "`n🧹 POWERSHELL MODULE STACK MODERNIZATION" -ForegroundColor Magenta
 Write-Host "   Target: PowerShell 7.6+ ready, PSResourceGet primary`n"
@@ -40,35 +43,21 @@ Write-Host "   Target: PowerShell 7.6+ ready, PSResourceGet primary`n"
 if (-not $SkipCleanup -and -not $SecurityOnly) {
     Write-Step "Removing legacy modules..."
 
-    # Keep in sync with lib/detectors.ps1's Test-LegacyPowerShellGetPresent —
-    # that function checks the SAME paths/modules to decide the menu's live
-    # status icon; a mismatch here would mean the menu and this script could
-    # disagree about whether legacy modules are present.
-    $modulePaths = @(
-        "$env:ProgramFiles\PowerShell\7\Modules",
-        "$env:ProgramFiles\WindowsPowerShell\Modules"
-    )
-
-    $legacyModules = @(
-        'PowerShellGet\1.0.0.1',
-        'PackageManagement\1.0.0.1'
-    )
-
-    foreach ($mp in $modulePaths) {
-        foreach ($lm in $legacyModules) {
-            $full = Join-Path $mp $lm
-            if (Test-Path $full) {
-                if ($PSCmdlet.ShouldProcess($full, 'Remove legacy module')) {
-                    try {
-                        Remove-Item $full -Recurse -Force -ErrorAction Stop
-                        Write-Ok "Removed: $full"
-                    } catch {
-                        Write-Warn "Cannot remove $full — may need admin rights"
-                    }
+    # Get-LegacyModulePath (lib/detectors.ps1) is the single source of truth for
+    # WHICH legacy-module locations exist — the same list Test-LegacyPowerShellGetPresent
+    # uses for the menu's live status icon, so the two can never disagree.
+    foreach ($full in Get-LegacyModulePath) {
+        if (Test-Path $full) {
+            if ($PSCmdlet.ShouldProcess($full, 'Remove legacy module')) {
+                try {
+                    Remove-Item $full -Recurse -Force -ErrorAction Stop
+                    Write-Ok "Removed: $full"
+                } catch {
+                    Write-Warn "Cannot remove $full — may need admin rights"
                 }
-            } else {
-                Write-Skip "Already clean: $lm"
             }
+        } else {
+            Write-Skip "Already clean: $(Split-Path $full -Leaf)"
         }
     }
 }

@@ -73,13 +73,4 @@ Export-ModuleMember -Function @(
     'Get-ModuleStackStatus',
     'Get-DotfilesCompanionStatus',
     'Get-ModulePathStatus',
-    'Initialize-MenuMenu',
-    'Invoke-IfAvailable',
-
-    # Hints (one-time user onboarding)
-    'Show-Hint',
-    'Test-HintShown',
-    'Get-HintsConfig',
-    'Save-HintsConfig',
-    'Reset-Hints'
 )
