@@ -49,6 +49,20 @@ function Show-Menu {
         [switch]$Inline
     )
 
+    if ($Title -eq 'DOTFILES MENU' -and -not (Test-HintShown 'menu_first_run')) {
+        Show-Hint 'menu_first_run' 'Welcome to Dotfiles Toolkit!' @(
+            'This menu gives you one-command access to all your tools.',
+            '',
+            '✓ Use arrow keys to navigate, Enter to select, / to search',
+            '✓ Live status icons show if tools are ready ([OK]/[!]/[X])',
+            '✓ Descriptions show what each item does'
+        ) @(
+            'Press Enter on any menu item to run it',
+            'Try "Docker" or "PowerShell" to explore sub-menus',
+            'Type "menu" anytime to return here'
+        )
+    }
+
     # ── Normalize items to uniform structure ───────────────────
     $normalized = [ordered]@{}
     foreach ($k in $Items.Keys) {

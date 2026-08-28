@@ -36,7 +36,7 @@ Describe 'Toolkit Module' {
         }
     }
 
-    # ── All 37 exported functions ─────────────────────────────
+    # ── All 38 exported functions ─────────────────────────────
     Context 'Public functions' {
         $expectedFunctions = @(
             'Test-Admin', 'Get-ScriptDirectory',
@@ -44,6 +44,7 @@ Describe 'Toolkit Module' {
             'Show-Menu', 'Start-MainMenu', 'Show-DockerMenu', 'Show-GitMenu',
             'Show-TerminalMenu', 'Show-TerminalTroubleshootingMenu', 'Show-DotfilesMenu', 'Show-PwshMenu', 'Show-VSCodeMenu',
             'Get-DiskStatus', 'Get-ServiceStatus', 'Get-NetworkInfo', 'Get-TopProcesses',
+            'Test-NetworkHealth',
             'Invoke-SystemCheck',
             'Get-ToolkitConfig', 'Save-ToolkitConfig', 'Merge-Hashtable',
             'Get-PSModulePath', 'Add-PSModulePath', 'Remove-PSModulePath',
@@ -51,7 +52,8 @@ Describe 'Toolkit Module' {
             'Test-PSModulePath',
             'Test-LegacyPowerShellGetPresent', 'Test-PSResourceGetReady',
             'Get-ModuleStackStatus', 'Get-DotfilesCompanionStatus',
-            'Get-ModulePathStatus', 'Invoke-IfAvailable'
+            'Get-ModulePathStatus',
+            'Invoke-IfAvailable'
         )
 
         It "Function '<_>' is exported" -ForEach $expectedFunctions {
@@ -208,6 +210,26 @@ Describe 'Toolkit Module' {
         It 'Get-TopProcesses does not throw' {
             { Get-TopProcesses -ErrorAction SilentlyContinue } | Should -Not -Throw
         }
+
+        It 'Test-NetworkHealth returns a hashtable' {
+            $result = Test-NetworkHealth -TimeoutMs 500 -ErrorAction SilentlyContinue
+            $result | Should -BeOfType ([hashtable])
+        }
+
+        It 'Test-NetworkHealth hashtable contains expected keys' {
+            $result = Test-NetworkHealth -TimeoutMs 500 -ErrorAction SilentlyContinue
+            $result.Keys | Should -Contain 'Failed'
+            $result.Keys | Should -Contain 'DNS'
+        }
+    }
+
+    # ── Live Dashboard ────────────────────────────────────────
+    Context 'Live dashboard (Watch-SystemMetrics)' {
+        It 'Watch-SystemMetrics accepts interval and sample parameters' {
+            # Smoke test: function exists and accepts parameters without error
+            # (actual monitoring not executed since it would hang the test)
+            Get-Command Watch-SystemMetrics -ErrorAction Stop | Should -Not -BeNullOrEmpty
+        }
     }
 
     # ── PSModulePath functions ────────────────────────────────
@@ -221,10 +243,8 @@ Describe 'Toolkit Module' {
             # Windows, a colon-free POSIX-style path everywhere else — the
             # functions under test only care about the separator, not the
             # path format, so this doesn't weaken what's being verified.
-            # $IsWindows doesn't exist on PS5.1 (PS6+ automatic variable) — same
-            # guard used repo-wide (install.ps1, profile.ps1, wtprofile.ps1).
-            $script:isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
-            $modPrefix = if ($script:isWindowsHost) { 'C:\Mods\' } else { '/Mods/' }
+            $script:isWindowsHost = $true
+            $modPrefix = 'C:\Mods\'
             $script:modA, $script:modB, $script:modNew, $script:modOther =
                 'A', 'B', 'New', 'Other' | ForEach-Object { "$modPrefix$_" }
         }

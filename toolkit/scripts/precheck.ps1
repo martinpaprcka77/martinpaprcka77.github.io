@@ -46,18 +46,13 @@ $psed = $PSVersionTable.PSEdition
 $psOK = ($psv.Major -ge 7)
 Check 'PowerShell version'    $(if ($psOK) { 'OK' } else { 'WARN' }) "v$psv ($psed)"
 
-if ($psv.Major -ge 7) {
-    $modPath = $env:PSModulePath -split [IO.Path]::PathSeparator
+$modPath = $env:PSModulePath -split [IO.Path]::PathSeparator
     $localMod = "$env:LOCALAPPDATA\PowerShell\Modules"
     if ($localMod -in $modPath) {
         Check 'PSModulePath (LOCALAPPDATA first)' 'OK' "$localMod"
     } else {
         Check 'PSModulePath (LOCALAPPDATA missing)' 'WARN' 'Will be fixed by profile.ps1'
     }
-}
-
-if ($psv.Major -lt 6) {
-    Check 'PS5 — PSReadLine available'    $(if (Get-Module -ListAvailable PSReadLine) { 'OK' } else { 'WARN' })
 }
 
 # ── Windows Terminal ───────────────────────────────────────────
@@ -113,9 +108,7 @@ Section "Dotfiles Profile"
 $profilePaths = @(
     @{ N='PS7'; P="$HOME\Documents\PowerShell\Microsoft.PowerShell_profile.ps1" },
     @{ N='PS7-VSCode'; P="$HOME\Documents\PowerShell\Microsoft.VSCode_profile.ps1" },
-    @{ N='PS5'; P="$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1" },
-    @{ N='PS5-VSCode'; P="$HOME\Documents\WindowsPowerShell\Microsoft.VSCode_profile.ps1" }
-)
+        )
 $bootstrapped = 0
 foreach ($p in $profilePaths) {
     if (Test-Path $p.P) {

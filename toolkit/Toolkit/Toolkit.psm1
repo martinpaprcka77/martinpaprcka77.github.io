@@ -50,6 +50,7 @@ Export-ModuleMember -Function @(
     'Get-ServiceStatus',
     'Get-NetworkInfo',
     'Get-TopProcesses',
+    'Test-NetworkHealth',
     'Invoke-SystemCheck',
 
     # Config

@@ -24,13 +24,7 @@ param(
     [switch]$RemoveBloatware
 )
 
-# Cross-platform guard — registry and AppX are Windows-only
-if ($IsLinux -or $IsMacOS) {
-    Write-Error "windows.ps1 requires Windows (registry + AppX). This is a Linux/macOS system."
-    exit 1
-}
-
-# Dot-source shared output helpers from profile/lib/output.ps1
+# Cross-platform guard — registry and AppX are Windows-only# Dot-source shared output helpers from profile/lib/output.ps1
 . (Join-Path $PSScriptRoot '..\..\profile\lib\output.ps1')
 
 # ── Explorer settings ──────────────────────────────────────────

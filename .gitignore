@@ -35,6 +35,10 @@ toolkit/scripts/profiles-fragment.json
 toolkit/icons/*.png
 *.log
 
+# PowerShell Gallery
+*.nupkg
+.psgallery/
+
 # Tooling metadata
 .reasonix/
 reasonix.toml

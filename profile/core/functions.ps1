@@ -85,10 +85,6 @@ function Get-SecretKey {
 function Test-Admin {
     [CmdletBinding()]
     param()
-    if ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows) {
-        Write-Warning "Test-Admin is Windows-only."
-        return $false
-    }
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = [Security.Principal.WindowsPrincipal]$identity
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)

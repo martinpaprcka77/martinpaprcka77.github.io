@@ -18,10 +18,6 @@
     for profile startup before the module loads).
 #>
 function Test-Admin {
-    if ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows) {
-        Write-Warning "Test-Admin is Windows-only."
-        return $false
-    }
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = [Security.Principal.WindowsPrincipal]$identity
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)

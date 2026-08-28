@@ -22,13 +22,7 @@ param(
     [switch]$Minimal
 )
 
-# Cross-platform guard — winget is Windows-only
-if ($PSVersionTable.PSVersion.Major -ge 6 -and ($IsLinux -or $IsMacOS)) {
-    Write-Error "deps.ps1 requires Windows (winget). This is a Linux/macOS system."
-    exit 1
-}
-
-$ErrorActionPreference = 'Continue'
+# Cross-platform guard — winget is Windows-only$ErrorActionPreference = 'Continue'
 $script:installed = 0; $script:skipped = 0; $script:failed = 0
 
 function Write-Step { param([string]$M) Write-Host "==> $M" -ForegroundColor Cyan }

@@ -1,0 +1,28 @@
+{
+  "name": "PowerShell Dotfiles Dev Environment",
+  "image": "mcr.microsoft.com/powershell:latest",
+  "forwardPorts": [8000, 8080],
+  "postCreateCommand": "pwsh -Command 'git clone https://github.com/martinpaprcka77/martinpaprcka77.github.io.git /root/.config/powershell && /root/.config/powershell/install.ps1 -NoTerminal -NoUpdates'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.powershell",
+        "ms-vscode-remote.remote-containers",
+        "DarylBayliss.yla",
+        "ms-dotnettools.csharp"
+      ],
+      "settings": {
+        "powershell.codeFormatting.useCorrectCasing": true,
+        "powershell.integratedConsole": true,
+        "[powershell]": {
+          "editor.defaultFormatter": "ms-vscode.powershell",
+          "editor.formatOnSave": true
+        }
+      }
+    }
+  },
+  "remoteUser": "root",
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,readonly"
+  ]
+}

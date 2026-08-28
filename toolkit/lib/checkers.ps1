@@ -14,10 +14,6 @@
     Windows-only (Win32_LogicalDisk CIM class).
 #>
 function Get-DiskStatus {
-    if ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows) {
-        Write-Warning "Get-DiskStatus is Windows-only (CIM/WMI)."
-        return
-    }
     Write-Info "Kontrola disků..."
 
     Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DriveType=3" |
@@ -35,10 +31,6 @@ function Get-DiskStatus {
     Windows-only (Get-Service targets the Windows Service Control Manager).
 #>
 function Get-ServiceStatus {
-    if ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows) {
-        Write-Warning "Get-ServiceStatus is Windows-only."
-        return
-    }
     Write-Info "Kontrola služeb..."
 
     $services = @('WinRM', 'W3SVC', 'Docker', 'Spooler', 'WSearch')
@@ -54,16 +46,72 @@ function Get-ServiceStatus {
     Windows-only (Get-NetIPAddress requires the NetTCPIP module, Windows-only).
 #>
 function Get-NetworkInfo {
-    if ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows) {
-        Write-Warning "Get-NetworkInfo is Windows-only."
-        return
-    }
     Write-Info "Síťové informace..."
 
     Get-NetIPAddress -AddressFamily IPv4 |
         Where-Object { $_.InterfaceAlias -notmatch 'Loopback' } |
         Select-Object InterfaceAlias, IPAddress, PrefixLength |
         Format-Table -AutoSize
+}
+
+<#
+.SYNOPSIS
+    Testuje připojení na klíčové síťové endpointy.
+.DESCRIPTION
+    Ověří konektivitu ke DNS, GitHub API, a Google Services.
+    Vrací hashtable s statusem každého endpointu a počtem selhání.
+.PARAMETER Timeout
+    Timeout pro Test-NetConnection (výchozí 5 sekund).
+#>
+function Test-NetworkHealth {
+    [CmdletBinding()]
+    param([int]$Timeout = 5)
+
+    if (-not (Test-HintShown 'network_health_first_run')) {
+        Show-Hint 'network_health_first_run' 'Network Connectivity Check' @(
+            'This tool verifies your internet connection to key services.',
+            '',
+            '✓ DNS (8.8.8.8) — Can you resolve names?',
+            '✓ GitHub — Can you reach the main repository?',
+            '✓ Google — General internet connectivity check'
+        ) @(
+            'If any endpoint fails, check your internet connection',
+            'Firewalls may block some endpoints — that''s OK',
+            'Run "check" to see network health in the full dashboard'
+        )
+    }
+
+    $endpoints = @{
+        'DNS (8.8.8.8)'     = '8.8.8.8'
+        'GitHub API'        = 'api.github.com'
+        'Google'            = 'google.com'
+    }
+
+    $results = @{}
+    $fails = 0
+
+    foreach ($name in $endpoints.Keys) {
+        $target = $endpoints[$name]
+        try {
+            $result = Test-NetConnection -ComputerName $target -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+            if ($result.PingSucceeded) {
+                $results[$name] = '✅'
+            } else {
+                $results[$name] = '⚠️'
+                $fails++
+            }
+        } catch {
+            $results[$name] = '❌'
+            $fails++
+        }
+    }
+
+    return @{
+        Results      = $results
+        FailCount    = $fails
+        CheckedAt    = Get-Date
+        IsHealthy    = $fails -eq 0
+    }
 }
 
 <#
@@ -78,6 +126,50 @@ function Get-TopProcesses {
             @{N='CPU(s)';E={[math]::Round($_.CPU,1)}},
             @{N='RAM(MB)';E={[math]::Round($_.WorkingSet64/1MB,1)}} |
         Format-Table -AutoSize
+}
+
+<#
+.SYNOPSIS
+    Tests connectivity to key network endpoints (DNS, GitHub, Google).
+.OUTPUTS
+    Hashtable with keys: GitHub (bool), DNS (bool), Internet (bool), Failed (int)
+#>
+function Test-NetworkHealth {
+    [CmdletBinding()]
+    param([int]$TimeoutMs = 3000)
+
+    $endpoints = @{
+        'DNS'     = '8.8.8.8'       # Google Public DNS
+        'GitHub'  = 'github.com'
+        'Internet' = 'google.com'
+    }
+
+    $results = @{}
+    $failCount = 0
+
+    foreach ($name in $endpoints.Keys) {
+        try {
+            $testParams = @{
+                ComputerName = $endpoints[$name]
+                Count = 1
+                Quiet = $true
+                TimeoutSeconds = ($TimeoutMs / 1000)
+                ErrorAction = 'Stop'
+            }
+            if (Test-Connection @testParams) {
+                $results[$name] = $true
+            } else {
+                $results[$name] = $false
+                $failCount++
+            }
+        } catch {
+            $results[$name] = $false
+            $failCount++
+        }
+    }
+
+    $results['Failed'] = $failCount
+    return $results
 }
 
 <#

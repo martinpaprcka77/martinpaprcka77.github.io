@@ -18,13 +18,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# Cross-platform guard — System.Drawing is Windows-only
-if ($PSVersionTable.PSVersion.Major -ge 6 -and ($IsLinux -or $IsMacOS)) {
-    Write-Error "Generate-Icons.ps1 vyžaduje Windows (System.Drawing). Nelze spustit na Linux/macOS."
-    exit 1
-}
-
-if (-not (New-Object System.Drawing.Bitmap 1,1)) {
+# Cross-platform guard — System.Drawing is Windows-onlyif (-not (New-Object System.Drawing.Bitmap 1,1)) {
     Write-Error "System.Drawing není dostupné. Spusťte na Windows s .NET Framework."
     exit 1
 }

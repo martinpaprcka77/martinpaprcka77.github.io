@@ -87,7 +87,7 @@ if ($PSCmdlet.ShouldProcess($dotfilesPath, 'Invoke-DotfilesRepair')) {
 if ($updateNeeded) {
     Write-Step "Changes pulled — reloading profile..."
 
-    $mainProfile = Join-Path $dotfilesPath 'profile\profile.ps1'
+    $mainProfile = Join-Path (Join-Path $dotfilesPath 'profile') 'profile.ps1'
     if (Test-Path $mainProfile) {
         if ($PSCmdlet.ShouldProcess($mainProfile, 'Reload profile')) {
             try {

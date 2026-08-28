@@ -9,7 +9,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 - ✅ Modulární PowerShell profil (`profile/`)
 - ✅ Idempotentní instalátor (`install.ps1` — WhatIf, Force, backup, summary)
 - ✅ Update mechanism (`update.ps1` — git fetch + reload + bootstrap self-heal)
-- ✅ Toolkit modul — **37 exportovaných funkcí**
+- ✅ Toolkit modul — **38 exportovaných funkcí**
 - ✅ Interaktivní menu — 6 submenus (Dotfiles, Docker, Git, Terminal, PowerShell, VS Code) + přímá systémová diagnostika
 - ✅ Moderní menu engine — šipky ↑↓, zvýraznění, popisky, inline režim, ořez na šířku konzole
 - ✅ Arrow-key menu s popisky u každé položky
@@ -59,8 +59,6 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 
 ## Fáze 3: Rozšíření (🟡 rozšiřováno)
 
-- [ ] **Linux podpora** — otestovat cesty pro Linux (`~/.config/`, `/home/`)
-- [ ] **macOS podpora** — otestovat s PowerShell 7 na macOS
 - [ ] **Live dashboard** — real-time CPU/RAM/Disk monitoring
 - [ ] **Síťová diagnostika** — `Test-NetConnection` na klíčové endpointy
 - [ ] **Více Docker příkazů** — `docker compose`, network management
@@ -102,6 +100,10 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
   Staré repozitáře (`dotfiles-powershell`, `dotfiles-tools`) zůstávají na GitHubu s README
   odkazem na nové umístění — žádný nástroj na archivaci repa nebyl v tomto prostředí k dispozici,
   takže "archivace" znamená jen odkaz, ne skutečné uzamčení repozitáře.
+- ✅ **Unifikace ostatních dotfiles** — `git/` (globální gitignore + Claude nastavení) a `chezmoi/`
+  (`chezmoi.toml`) absorbovány do monorepa jako `git/` a `chezmoi/` podadresáře. `install.ps1`
+  vytváří directory junctions na `~/.config/git` a `~/.config/chezmoi`, takže nástroje (git,
+  chezmoi) nadále nacházejí své konfigurace na původních cestách.
 - [ ] **Instalační skript pro Windows** — kompletní setup z čisté instalace
 - [ ] **Dokumentační web** — statický web generovaný z Markdown dokumentace
 - [ ] **Možné budoucí rozdělení zpět na 2 repa** — pokud ekosystém naroste natolik, že si zaslouží
@@ -135,6 +137,10 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 | Přímé spuštění `menu-*.ps1` (WT profil „Menu") padalo — `Initialize-MenuMenu` bylo definované uvnitř modulu, který ještě nebyl načtený | ✅ Vyřešeno (audit) | Guard v každém `menu-*.ps1` inline `Import-Module` + volání; `Initialize-MenuMenu` odstraněna (export 38 → 37) |
 | `Repair-FileEncoding` chyběl jako runtime pojistka (BOM se opravoval jen ručně) | ✅ Vyřešeno (audit) | `profile/lib/encoding.ps1` — idempotentní, volaný z `install.ps1` i `update.ps1` |
 | ~~`config.ps1` četl `configs\settings.json` → na Linuxu/macOS literální jméno souboru~~ — **korekce**: empiricky ověřeno, že `Join-Path` normalizuje `\` na platformní oddělovač i na Linuxu/macOS, takže původní tvar nebyl rozbitý; nešlo o skutečný bug | N/A (falešný nález) | Vnořený `Join-Path (Join-Path $toolsRoot 'configs') 'settings.json'` zůstal — odpovídá stylu zbytku repa, ale je to kosmetika, ne oprava |
+<<<<<<< HEAD
+=======
+| `Test-PathHealth` (`core/status.ps1`) — chybějící `if ($isWindowsHost) {` způsobovala parse error celého souboru (nesouhlas počtu závorek), takže `Show-Status` se nikdy nenačetl a menu trvale hlásilo „not loaded" i po správné instalaci | ✅ Vyřešeno (audit) | Chybějící `if` blok obnoven kolem User/Machine PATH overlap kontroly |
+>>>>>>> origin/main
 | Cesty s diakritikou nejsou testovány | Netestováno | Přidat testy |
 | PS5 nepodporuje `&&` a `||` | Omezení PS5 | Používat `;` nebo `if` |
 

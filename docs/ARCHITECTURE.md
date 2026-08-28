@@ -16,6 +16,8 @@ graph TB
     ROOT --> CI[".github/workflows/"]
     ROOT --> PROFILE["profile/"]
     ROOT --> TOOLKIT["toolkit/"]
+    ROOT --> GITDIR["git/<br/>(global gitignore + Claude config)"]
+    ROOT --> CHEZMOI["chezmoi/<br/>(chezmoi.toml)"]
 
     PROFILE --> P1["profile.ps1 (orchestrátor)"]
     PROFILE --> P2["core/ · ps5/ · ps7/ · hosts/ · lib/"]
@@ -24,6 +26,11 @@ graph TB
     TOOLKIT --> T2["scripts/ · configs/ · tests/"]
 
     PROFILE -.->|"$env:DOTFILES_TOOLS<br/>(sibling dir)"| TOOLKIT
+
+    subgraph "Junction deployment (install.ps1)"
+        J1["~/.config/git → powershell/git/"]
+        J2["~/.config/chezmoi → powershell/chezmoi/"]
+    end
 ```
 
 `$env:DOTFILES_PWSH` (nastaveno `profile.ps1`) ukazuje na `profile/`; `$env:DOTFILES_TOOLS`
@@ -134,7 +141,7 @@ graph TB
 
     subgraph "Toolkit Module"
         PSM1["Toolkit.psm1<br/>(dot-sources lib/)"]
-        PSD1["Toolkit.psd1<br/>(manifest, 37 funkcí)"]
+        PSD1["Toolkit.psd1<br/>(manifest, 38 funkcí)"]
     end
 
     subgraph "toolkit/lib/ (source functions)"
@@ -275,7 +282,7 @@ toolkit/bin/menu.ps1          toolkit/bin/check.ps1
     ▼                           ▼
 ┌─────────────────────────────────────────┐
 │           Toolkit.psd1 (manifest)       │
-│  FunctionsToExport: 37 functions         │
+│  FunctionsToExport: 38 functions         │
 └─────────────────────────────────────────┘
     │
     │ RootModule
