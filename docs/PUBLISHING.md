@@ -95,3 +95,24 @@ Bump in `Toolkit.psd1` `ModuleVersion` before tagging.
 
 - [Toolkit.psd1](../toolkit/Toolkit/Toolkit.psd1) — module manifest
 - [.github/workflows/publish.yml](../.github/workflows/publish.yml) — CI/CD workflow
+
+## Updating the public Gists
+
+The repository maintains three public Gists in place:
+
+- Install: `bafc2457fd9d93daf1b1b69c348e0cfd`
+- Cheatsheet: `b30ae161dfb693431a438e309f236467`
+- Master Prompt: `1c74223f4e57b46977abd6df06d4e8fd`
+
+After authenticating the GitHub CLI with the `gist` scope, preview and apply updates:
+
+```powershell
+gh auth login -s gist
+.\tools\Update-Gists.ps1 -WhatIf
+.\tools\Update-Gists.ps1
+```
+
+The updater derives the Install Gist from `remote-install.ps1`, the Master Prompt from
+the current section of `docs/PROMPT.md`, and the Cheatsheet from its canonical inline
+source. It is idempotent and does not delete extra remote files unless `-Prune` is
+explicitly supplied.

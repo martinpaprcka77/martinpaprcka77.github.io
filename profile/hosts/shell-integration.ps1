@@ -32,7 +32,10 @@ function Global:__Terminal-Get-LastExitCode {
     $lastError = if ($Error.Count -gt 0) { $Error[0] } else { $null }
     $IsPowerShellError = $lastError -and $HistoryEntry -and ($lastError.InvocationInfo.HistoryId -eq $HistoryEntry.Id)
     if ($IsPowerShellError) { return -1 }
-    return $LastExitCode
+    if (Test-Path variable:global:LASTEXITCODE) {
+        return $global:LASTEXITCODE
+    }
+    return 0
 }
 
 # ── Save original prompt function (set by oh-my-posh or PSReadLine) ──
