@@ -92,7 +92,12 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 }
 
 $dotfilesUrl = 'https://github.com/martinpaprcka77/martinpaprcka77.github.io.git'
-$dotfilesPath = Join-Path (Join-Path $HOME '.config') 'powershell'
+$homeRoot = if ($HOME) { $HOME } else { $env:USERPROFILE }
+if (-not $homeRoot) {
+    Write-Fail 'Could not determine the user home directory ($HOME or USERPROFILE).'
+    exit 1
+}
+$dotfilesPath = Join-Path (Join-Path $homeRoot '.config') 'powershell'
 
 $isRepo = Test-Path (Join-Path $dotfilesPath '.git')
 if ($isRepo) {

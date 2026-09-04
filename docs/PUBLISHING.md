@@ -104,15 +104,21 @@ The repository maintains three public Gists in place:
 - Cheatsheet: `b30ae161dfb693431a438e309f236467`
 - Master Prompt: `1c74223f4e57b46977abd6df06d4e8fd`
 
+It also maintains the private Modular Profile Gist
+`49b12adb210724e2378c8a4f5249cebd` in place.
+
 After authenticating the GitHub CLI with the `gist` scope, preview and apply updates:
 
 ```powershell
 gh auth login -s gist
 .\tools\Update-Gists.ps1 -WhatIf
 .\tools\Update-Gists.ps1
+# Include the private modular-profile Gist when refreshing it:
+.\tools\Update-Gists.ps1 -Gist ModularProfile
 ```
 
 The updater derives the Install Gist from `remote-install.ps1`, the Master Prompt from
-the current section of `docs/PROMPT.md`, and the Cheatsheet from its canonical inline
-source. It is idempotent and does not delete extra remote files unless `-Prune` is
-explicitly supplied.
+the current section of `docs/PROMPT.md`, the Cheatsheet from its canonical inline
+source, and the Modular Profile Gist from the current profile loader/core files.
+It is idempotent and does not delete extra remote files unless `-Prune` is explicitly
+supplied.

@@ -19,7 +19,7 @@
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [switch]$Prune,
-    [ValidateSet('Install', 'Cheatsheet', 'MasterPrompt')]
+    [ValidateSet('Install', 'Cheatsheet', 'MasterPrompt', 'ModularProfile')]
     [string[]]$Gist
 )
 
@@ -40,6 +40,10 @@ function Get-CanonicalGists {
     }
 
     $remoteInstallPath = Join-Path $repoRoot 'remote-install.ps1'
+    $profileRoot = Join-Path $repoRoot 'profile'
+    $aliasesPath = Join-Path (Join-Path $profileRoot 'core') 'aliases.ps1'
+    $envPath = Join-Path (Join-Path $profileRoot 'core') 'env.ps1'
+    $profileLoaderPath = Join-Path $profileRoot 'profile.ps1'
     $cheatsheet = @'
 # PowerShell Dotfiles — Cheat Sheet
 
@@ -97,6 +101,16 @@ function Get-CanonicalGists {
             Description = 'Master Prompt — Regenerate PowerShell Dotfiles Ecosystem'
             Files = [ordered]@{
                 'master-prompt.md' = $currentPrompt.Groups['content'].Value.Trim() + "`n"
+            }
+        }
+        [ordered]@{
+            Name = 'ModularProfile'
+            Id = '49b12adb210724e2378c8a4f5249cebd'
+            Description = 'Modular PowerShell Profile — current dotfiles loader'
+            Files = [ordered]@{
+                '00-Core.ps1' = Get-Content -LiteralPath $aliasesPath -Raw
+                '10-Modules.ps1' = Get-Content -LiteralPath $envPath -Raw
+                'ProfileLoader.ps1' = Get-Content -LiteralPath $profileLoaderPath -Raw
             }
         }
     )
