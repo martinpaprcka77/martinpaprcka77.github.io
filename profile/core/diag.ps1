@@ -11,7 +11,11 @@
 #>
 
 # PSDiagnostics is Windows-only.
-# on PS5.1 the guard short-circuits before evaluating them. {
+if ($PSVersionTable.PSVersion.Major -lt 6 -or -not $IsWindows) {
+    return
+}
+
+function Measure-PSCommand {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

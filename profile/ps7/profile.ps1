@@ -18,9 +18,11 @@ if ($null -ne (Get-Module -ListAvailable -Name PSReadLine | Sort-Object Version 
     Set-PSReadLineOption -HistorySearchCursorMovesToEnd
     Set-PSReadLineOption -ShowToolTips
 
-    # Predictive IntelliSense
-    Set-PSReadLineOption -PredictionSource HistoryAndPlugin
-    Set-PSReadLineOption -PredictionViewStyle ListView
+    # Predictive IntelliSense requires an interactive terminal.
+    if (-not [Console]::IsOutputRedirected) {
+        Set-PSReadLineOption -PredictionSource HistoryAndPlugin
+        Set-PSReadLineOption -PredictionViewStyle ListView
+    }
 
     # Better tab completion
     Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
@@ -57,7 +59,7 @@ elseif (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
 #endregion
 
 #region PSFzf (fuzzy finder integration)
-if (Get-Module -ListAvailable -Name PSFzf) {
+if ((Get-Module -ListAvailable -Name PSFzf) -and (Get-Command fzf -ErrorAction SilentlyContinue)) {
     Import-Module PSFzf
     Set-PsFzfOption -PSReadLineChordProvider 'Ctrl+t' -PSReadLineChordReverseHistory 'Ctrl+r'
 }

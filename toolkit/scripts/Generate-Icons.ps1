@@ -18,7 +18,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# Cross-platform guard — System.Drawing is Windows-onlyif (-not (New-Object System.Drawing.Bitmap 1,1)) {
+# Cross-platform guard — System.Drawing is Windows-only
+if (-not (New-Object System.Drawing.Bitmap 1,1)) {
     Write-Error "System.Drawing není dostupné. Spusťte na Windows s .NET Framework."
     exit 1
 }

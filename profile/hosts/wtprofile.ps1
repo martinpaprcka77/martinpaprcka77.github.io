@@ -22,8 +22,7 @@ if (-not $env:WT_SESSION) { return }
 # doesn't touch the registry on every single session start.
 # Windows-only: telemetry opt-out
 if ([System.Environment]::GetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', 'User') -ne '1') {
-        [System.Environment]::SetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', '1', 'User')
-    }
+    [System.Environment]::SetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', '1', 'User')
 }
 
 # ── zoxide — smart directory jumper ────────────────────────────

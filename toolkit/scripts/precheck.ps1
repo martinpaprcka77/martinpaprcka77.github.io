@@ -47,6 +47,7 @@ $psOK = ($psv.Major -ge 7)
 Check 'PowerShell version'    $(if ($psOK) { 'OK' } else { 'WARN' }) "v$psv ($psed)"
 
 $modPath = $env:PSModulePath -split [IO.Path]::PathSeparator
+if ($PSVersionTable.PSVersion.Major -ge 6 -and $IsWindows) {
     $localMod = "$env:LOCALAPPDATA\PowerShell\Modules"
     if ($localMod -in $modPath) {
         Check 'PSModulePath (LOCALAPPDATA first)' 'OK' "$localMod"
@@ -107,8 +108,8 @@ if (Test-Path $vscSettings) {
 Section "Dotfiles Profile"
 $profilePaths = @(
     @{ N='PS7'; P="$HOME\Documents\PowerShell\Microsoft.PowerShell_profile.ps1" },
-    @{ N='PS7-VSCode'; P="$HOME\Documents\PowerShell\Microsoft.VSCode_profile.ps1" },
-        )
+    @{ N='PS7-VSCode'; P="$HOME\Documents\PowerShell\Microsoft.VSCode_profile.ps1" }
+)
 $bootstrapped = 0
 foreach ($p in $profilePaths) {
     if (Test-Path $p.P) {
