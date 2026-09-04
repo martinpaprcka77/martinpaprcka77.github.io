@@ -132,7 +132,7 @@ function Install-Dependencies {
                     winget install --id $pkgId --exact --silent
                     Write-Ok "$name installed"
                 } catch {
-                    Write-Fail "Failed to install $name: $_"
+                    Write-Fail ("Failed to install {0}: {1}" -f $name, $_)
                 }
             }
         }
