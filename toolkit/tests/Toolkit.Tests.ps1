@@ -52,7 +52,7 @@ Describe 'Toolkit Module' {
             'Test-PSModulePath',
             'Test-LegacyPowerShellGetPresent', 'Test-PSResourceGetReady',
             'Get-ModuleStackStatus', 'Get-DotfilesCompanionStatus',
-            'Get-ModulePathStatus', 'Initialize-MenuMenu',
+            'Get-ModulePathStatus',
             'Invoke-IfAvailable'
         )
 

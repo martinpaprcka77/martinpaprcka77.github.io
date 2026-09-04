@@ -53,7 +53,7 @@
         'Get-ModuleStackStatus',
         'Get-DotfilesCompanionStatus',
         'Get-ModulePathStatus',
-
+        'Invoke-IfAvailable'
     )
 
     CmdletsToExport   = @()

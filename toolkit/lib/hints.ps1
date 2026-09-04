@@ -9,13 +9,14 @@
     Cesta: ~/.config/powershell/toolkit/lib/hints.ps1
 #>
 
-$HintsConfigPath = Join-Path $env:DOTFILES_TOOLS 'config' 'hints.json'
+$script:ToolsRoot = if ($env:DOTFILES_TOOLS) { $env:DOTFILES_TOOLS } else { Split-Path $PSScriptRoot -Parent }
+$script:HintsConfigPath = Join-Path (Join-Path $script:ToolsRoot 'configs') 'hints.json'
 
 function Get-HintsConfig {
     [CmdletBinding()]
     param()
-    if (Test-Path $HintsConfigPath) {
-        return Get-Content $HintsConfigPath -Raw | ConvertFrom-Json -AsHashtable
+    if (Test-Path $script:HintsConfigPath) {
+        return Get-Content $script:HintsConfigPath -Raw | ConvertFrom-Json -AsHashtable
     }
     return @{}
 }
@@ -23,11 +24,11 @@ function Get-HintsConfig {
 function Save-HintsConfig {
     [CmdletBinding()]
     param([hashtable]$Config)
-    $dir = Split-Path $HintsConfigPath -Parent
+    $dir = Split-Path $script:HintsConfigPath -Parent
     if (-not (Test-Path $dir)) {
         $null = New-Item -ItemType Directory -Path $dir -Force
     }
-    $Config | ConvertTo-Json | Set-Content $HintsConfigPath -Force
+    $Config | ConvertTo-Json | Set-Content $script:HintsConfigPath -Force
 }
 
 function Show-Hint {

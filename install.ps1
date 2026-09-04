@@ -32,12 +32,11 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$profileLib = Join-Path (Join-Path $PSScriptRoot 'profile') 'lib'
-. (Join-Path $profileLib 'output.ps1')
-. (Join-Path $profileLib 'paths.ps1')
-. (Join-Path $profileLib 'bootstrap.ps1')
-. (Join-Path $profileLib 'encoding.ps1')
-. (Join-Path $profileLib 'repair.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\output.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\paths.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\bootstrap.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\encoding.ps1')
+. (Join-Path $PSScriptRoot 'profile\lib\repair.ps1')
 
 $script:Summary = [System.Collections.Generic.List[string]]::new()
 

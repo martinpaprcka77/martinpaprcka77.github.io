@@ -1,4 +1,21 @@
 {
+<<<<<<< HEAD
+    "menu": {
+        "theme": "default",
+        "showHeader": true,
+        "colorScheme": "cyan"
+    },
+    "docker": {
+        "defaultCommand": "ps",
+        "autoRefresh": false
+    },
+    "system": {
+        "checkDisks": true,
+        "checkServices": true,
+        "checkNetwork": true,
+        "checkProcesses": true
+    }
+=======
   "system": {
     "checkServices": true,
     "checkNetwork": true,
@@ -14,4 +31,5 @@
     "autoRefresh": false,
     "defaultCommand": "ps"
   }
+>>>>>>> origin/main
 }
