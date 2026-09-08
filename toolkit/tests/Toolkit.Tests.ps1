@@ -225,6 +225,14 @@ Describe 'Toolkit Module' {
 
     # ── Live Dashboard ────────────────────────────────────────
     Context 'Live dashboard (Watch-SystemMetrics)' {
+        BeforeAll {
+            # Watch-SystemMetrics is a profile-level function
+            # (profile/core/status.ps1), not part of the Toolkit module's
+            # exported set. Dot-source it the same way this file handles other
+            # external profile functions (see paths.ps1 / repair.ps1 above).
+            $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..')
+            . (Join-Path $repoRoot 'profile\core\status.ps1')
+        }
         It 'Watch-SystemMetrics accepts interval and sample parameters' {
             # Smoke test: function exists and accepts parameters without error
             # (actual monitoring not executed since it would hang the test)
