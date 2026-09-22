@@ -1,0 +1,25 @@
+# Secrets and environment
+config/secrets.*
+*.secret
+.env
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/agent-instructions.md
+.idea/
+*.sublime-*
+
+# Generated
+ops/profiles-fragment.json
+icons/*.png
+pwsh-health.json

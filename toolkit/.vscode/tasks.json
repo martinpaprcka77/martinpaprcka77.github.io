@@ -1,0 +1,53 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Pester Tests",
+            "type": "shell",
+            "command": "pwsh",
+            "args": ["-NoProfile", "-Command", "Invoke-Pester ${workspaceFolder}/tests/Toolkit.Tests.ps1"],
+            "group": "test",
+            "presentation": { "reveal": "always", "panel": "dedicated" }
+        },
+        {
+            "label": "Verify Module (build/Test.ps1)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": ["-NoProfile", "-File", "${workspaceFolder}/build/Test.ps1"],
+            "group": "test",
+            "presentation": { "reveal": "always", "panel": "dedicated" }
+        },
+        {
+            "label": "Install / Update Dotfiles",
+            "type": "shell",
+            "command": "pwsh",
+            "args": ["-NoProfile", "-File", "${userHome}/.config/powershell/install.ps1"],
+            "group": "none",
+            "presentation": { "reveal": "always" }
+        },
+        {
+            "label": "Update Dotfiles (git pull)",
+            "type": "shell",
+            "command": "pwsh",
+            "args": ["-NoProfile", "-File", "${userHome}/.config/powershell/update.ps1"],
+            "group": "none",
+            "presentation": { "reveal": "always" }
+        },
+        {
+            "label": "Generate WT Fragment",
+            "type": "shell",
+            "command": "pwsh",
+            "args": ["-NoProfile", "-File", "${workspaceFolder}/ops/Add-WTProfiles.ps1"],
+            "group": "none",
+            "presentation": { "reveal": "always" }
+        },
+        {
+            "label": "Install Dependencies",
+            "type": "shell",
+            "command": "pwsh",
+            "args": ["-NoProfile", "-File", "${workspaceFolder}/ops/deps.ps1"],
+            "group": "none",
+            "presentation": { "reveal": "always" }
+        }
+    ]
+}

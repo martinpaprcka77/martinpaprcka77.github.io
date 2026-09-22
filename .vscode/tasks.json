@@ -1,0 +1,79 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Pester Tests",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "& { Import-Module Pester -Force -MinimumVersion 5.0; Invoke-Pester .\\toolkit\\tests\\Toolkit.Tests.ps1 -Output Detailed }"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "presentation": {
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "${workspaceFolder}\\install.ps1"
+            ],
+            "group": "none",
+            "presentation": {
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Update",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "${workspaceFolder}\\update.ps1"
+            ],
+            "group": "none",
+            "presentation": {
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Generate WT Profiles",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "${workspaceFolder}\\toolkit\\scripts\\Add-WTProfiles.ps1"
+            ],
+            "group": "none",
+            "presentation": {
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Check Dependencies",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-NoProfile",
+                "-File",
+                "${workspaceFolder}\\toolkit\\scripts\\deps.ps1"
+            ],
+            "group": "none",
+            "presentation": {
+                "panel": "dedicated"
+            }
+        }
+    ]
+}

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dotfiles-tools — PowerShell Toolbox</title>
+<style>
+:root{--bg:#0d1117;--fg:#c9d1d9;--accent:#58a6ff;--border:#30363d;--card:#161b22;--muted:#8b949e;--green:#3fb950;--orange:#d2991d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;max-width:960px;margin:0 auto;padding:2rem 1rem}
+h1{font-size:2rem;border-bottom:1px solid var(--border);padding-bottom:.5rem}
+h2{font-size:1.3rem;margin:2rem 0 .5rem;border-bottom:1px solid var(--border);padding-bottom:.3rem}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+code{background:#ffffff15;padding:.15em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--border);padding:1rem;border-radius:8px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;margin:.5rem 0 1rem;font-size:.9em}
+th,td{border:1px solid var(--border);padding:.5rem .75rem;text-align:left}
+th{background:#ffffff08}
+.badge{display:inline-block;padding:.15em .6em;border-radius:12px;font-size:.75em;font-weight:600;margin:.2em}
+.badge-b{border:1px solid #1f6feb44;color:#58a6ff;background:#1f6feb15}
+.badge-g{border:1px solid #23863644;color:#3fb950;background:#23863615}
+.badge-o{border:1px solid #9e6a0344;color:#d2991d;background:#9e6a0315}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem}
+.card h3{margin-top:0;font-size:1rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem}
+.links a{display:inline-block;padding:.2em .6em;border-radius:5px;font-size:.82em;border:1px solid var(--border)}
+.links a:hover{border-color:var(--accent);background:#58a6ff10;text-decoration:none}
+@media(max-width:700px){.summary{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<h1>🔧 dotfiles-tools</h1>
+<p style="color:var(--muted);font-size:1.1rem">PowerShell toolbox — interactive menus, system diagnostics, Git helpers, Toolkit module (36 functions).</p>
+<p>
+  <a class="badge badge-b" href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/tree/main/toolkit">📦 GitHub</a>
+  <a class="badge badge-o" href="https://github.com/martinpaprcka77/dotfiles-powershell">📦 powershell</a>
+  <a class="badge badge-g" href="https://martinpaprcka77.github.io">🌐 Portal</a>
+</p>
+
+<h2>🚀 Quick Start</h2>
+<pre><code>git clone https://github.com/martinpaprcka77/martinpaprcka77.github.io.git ~/Projects/tools
+# Requires dotfiles-powershell installed first!
+
+menu          # interactive main menu
+check         # system diagnostics</code></pre>
+
+<h2>📊 Summary</h2>
+<div class="summary">
+<div class="card"><h3>📍 Location</h3><code>~/Projects/tools/</code></div>
+<div class="card"><h3>🧩 Module</h3>Toolkit — 36 exported functions</div>
+<div class="card"><h3>📁 Files</h3>44 files across 7 directories</div>
+<div class="card"><h3>🧪 Tests</h3>69 Pester cases, 7 contexts</div>
+</div>
+
+<h2>📦 Toolkit Module — 36 Functions</h2>
+<table>
+<tr><th>Category</th><th>Functions</th></tr>
+<tr><td><strong>Menu</strong></td><td><code>Start-MainMenu</code> · <code>Show-GitMenu</code> · <code>Show-Menu</code></td></tr>
+<tr><td><strong>Diagnostics</strong></td><td><code>Invoke-SystemCheck</code> · <code>Get-DiskStatus</code> · <code>Get-ServiceStatus</code> · <code>Get-NetworkInfo</code> · <code>Get-TopProcesses</code></td></tr>
+<tr><td><strong>Utility</strong></td><td><code>Confirm-Action</code></td></tr>
+<tr><td><strong>Logging</strong></td><td><code>Write-Info</code> · <code>Write-Success</code> · <code>Write-Warn</code> · <code>Write-Err</code></td></tr>
+<tr><td><strong>Config</strong></td><td><code>Get-ToolkitConfig</code> · <code>Save-ToolkitConfig</code> · <code>Merge-Hashtable</code></td></tr>
+</table>
+
+<h2>📂 Directory</h2>
+<pre>~/Projects/tools/
+├── bin/          (menu.ps1, check.ps1)
+├── Toolkit/      (module: .psd1/.psm1 + Public/ + Private/, incl. Public/Menu/)
+├── ops/      (Add-WTProfiles, Generate-Icons, configure, deps, windows, modernize, precheck)
+├── tests/        (69 Pester test cases)
+├── config/       (settings.json)
+├── docs/         (00-bootstrap, 10-architecture, 20-reference, 30-manual, 40-roadmap, 90-prompt)
+└── icons/</pre>
+
+<h2>📚 Docs</h2>
+<div class="links" style="flex-direction:column;align-items:flex-start">
+<a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/tree/main/toolkit#readme">📄 README — overview, 36 functions, 2 UML diagrams</a>
+<a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/toolkit/docs/00-bootstrap.md">🛠️ BOOTSTRAP — PS7 startup stages 1–7 + edge cases</a>
+<a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/toolkit/PowerShell-Startup-Map.html">🩺 STARTUP MAP — interactive green/yellow/red health</a>
+<a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/toolkit/docs/10-architecture.md">🧩 ARCHITECTURE — Mermaid diagrams</a>
+<a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/toolkit/docs/20-reference.md">📑 REFERENCE — generated API inventory</a>
+<a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/toolkit/docs/30-manual.md">📖 MANUAL — user guide with examples</a>
+<a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/toolkit/docs/40-roadmap.md">🗺️ ROADMAP — phases, known issues</a>
+<a href="https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/main/toolkit/docs/90-prompt.md">📝 PROMPT — original AI prompt</a>
+</div>
+
+<h2>🔗 Quick Links</h2>
+<table>
+<tr><td><a href="https://martinpaprcka77.github.io">🌐 Portal</a></td><td>Master landing page</td></tr>
+<tr><td><a href="https://github.com/martinpaprcka77/dotfiles-powershell">📦 dotfiles-powershell</a></td><td>Companion repo</td></tr>
+<tr><td><a href="https://gist.github.com/martinpaprcka77/bafc2457fd9d93daf1b1b69c348e0cfd">📋 Gist: Install</a></td><td>One-liner bootstrap</td></tr>
+<tr><td><a href="https://gist.github.com/martinpaprcka77/b30ae161dfb693431a438e309f236467">📋 Gist: Cheatsheet</a></td><td>All commands &amp; aliases</td></tr>
+</table>
+
+</body>
+</html>

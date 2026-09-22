@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PowerShell 7 Startup Architecture Map — dotfiles-tools</title>
+<style>
+:root{
+  --bg:#0D1117; --panel:#161B22; --border:#30363D; --text:#E6EDF3; --muted:#8B949E;
+  --launch:#1E88E5; --runtime:#00897B; --session:#8E24AA; --profile:#FB8C00; --shell:#43A047;
+  --green:#2EA043; --yellow:#D29922; --red:#DA3633; --gray:#484F58; --accent:#58A6FF;
+}
+*{box-sizing:border-box}
+html,body{position:relative}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",Arial,sans-serif;line-height:1.5}
+a{color:var(--accent)}
+header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center}
+h1{margin:0;font-size:26px}
+.subtitle{opacity:.8;margin-top:6px;font-size:14px}
+.score{font-size:36px;font-weight:700;text-align:right}
+.score small{display:block;font-size:12px;font-weight:400;opacity:.7}
+
+.legend{display:flex;gap:12px;padding:14px 24px;flex-wrap:wrap}
+.legend div{padding:6px 12px;border-radius:6px;color:#fff;font-size:13px;font-weight:600}
+.l1{background:var(--launch)} .l2{background:var(--runtime)} .l3{background:var(--session)} .l4{background:var(--profile)} .l5{background:var(--shell)}
+
+.main{padding:0 20px 40px;max-width:1400px;margin:0 auto}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0 14px}
+button{background:var(--accent);color:#04121f;border:0;border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+input[type=file]{color:var(--muted);font-size:12px}
+textarea{width:100%;min-height:84px;background:#0B0F14;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:Consolas,monospace;font-size:12px}
+
+.lanes{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;align-items:start}
+@media(max-width:1100px){.lanes{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.lanes{grid-template-columns:1fr}}
+.lane{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;border-top:4px solid var(--gray)}
+.lane[data-status=healthy]{border-top-color:var(--green)}
+.lane[data-status=warning]{border-top-color:var(--yellow)}
+.lane[data-status=failed]{border-top-color:var(--red)}
+.lane-header{color:#fff;font-weight:700;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{background:#0b0f1455;border-radius:10px;padding:2px 8px;font-size:12px}
+.launch{background:var(--launch)} .runtime{background:var(--runtime)} .session{background:var(--session)} .profile{background:var(--profile)} .shell{background:var(--shell)}
+
+.phase{padding:8px 10px;border-bottom:1px solid var(--border)}
+.phase:last-child{border-bottom:0}
+.phase button.pill{width:100%;text-align:left;background:#21262D;color:#fff;border:0;border-radius:8px;padding:10px;font-size:14px}
+.phase button.pill:hover{background:#2D333B}
+.content{display:none;padding:10px 2px 2px;font-size:13.5px}
+.content.active{display:block}
+.sec{color:var(--accent);font-weight:700;margin-top:12px;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+pre{background:#010409;padding:10px;border-radius:8px;overflow:auto;color:#79C0FF;font-size:12px;margin:6px 0}
+.failure{color:#ff7b72} .fix{color:#7ee787}
+.statusline{display:flex;align-items:center;gap:8px;margin:6px 0;font-family:Consolas,monospace;font-size:12px}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--gray);flex:0 0 auto}
+.dot.healthy{background:var(--green)} .dot.warning{background:var(--yellow)} .dot.failed{background:var(--red)}
+
+table.checks{width:100%;border-collapse:collapse;margin-top:18px;font-size:13px}
+table.checks th,table.checks td{border:1px solid var(--border);padding:6px 9px;text-align:left}
+table.checks th{background:#0B0F14;color:var(--muted);font-weight:600}
+.mono{font-family:Consolas,monospace}
+
+.symptoms{margin-top:24px}
+select{background:#0B0F14;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px}
+.result{margin-top:10px;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);font-size:13px}
+.muted{color:var(--muted)}
+
+/* SVG symptom → lane connectors */
+#connectors{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;overflow:visible}
+.bundle{margin-top:24px}
+#bundleOut{background:#010409;border:1px solid var(--border);border-radius:8px;padding:10px;font-family:Consolas,monospace;font-size:12px;white-space:pre;overflow:auto;max-height:260px}
+footer{padding:24px;border-top:1px solid var(--border);color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<svg id="connectors" aria-hidden="true"></svg>
+
+<header>
+  <div>
+    <h1>PowerShell 7 Startup Architecture Map</h1>
+    <div class="subtitle">Launcher → Loader &amp; Host → Engine &amp; Session → Profiles &amp; Modules → Interactive Shell ·
+      stages from <a href="docs/00-bootstrap.md">docs/00-bootstrap.md</a></div>
+  </div>
+  <div class="score"><span id="healthScore">—</span><small>Overall startup health</small></div>
+</header>
+
+<div class="legend">
+  <div class="l1">Launcher</div>
+  <div class="l2">Loader &amp; Host</div>
+  <div class="l3">Engine &amp; Session State</div>
+  <div class="l4">Profiles &amp; Modules</div>
+  <div class="l5">Interactive Shell</div>
+</div>
+
+<div class="main">
+  <div class="toolbar">
+    <button class="ghost" onclick="loadSample()">Load sample</button>
+    <button onclick="loadDiagnostics()">Load pasted JSON</button>
+    <input type="file" id="jsonUpload" accept=".json" onchange="loadFile(event)">
+    <span class="muted">Generate: <span class="mono">pwsh -File ops/Get-PowerShellStartupHealth.ps1 -Path pwsh-health.json</span></span>
+  </div>
+
+  <textarea id="diagInput" placeholder="Paste JSON from ops/Get-PowerShellStartupHealth.ps1 here..."></textarea>
+
+  <div class="lanes" id="lanes"></div>
+
+  <h3>Checks</h3>
+  <table class="checks" id="checksTable">
+    <thead><tr><th>Check</th><th>Status</th><th>Value</th></tr></thead>
+    <tbody><tr><td colspan="3" class="muted">No diagnostics loaded.</td></tr></tbody>
+  </table>
+
+  <h3>Environment</h3>
+  <table class="checks" id="envTable">
+    <thead><tr><th>Item</th><th>Value</th></tr></thead>
+    <tbody><tr><td colspan="2" class="muted">No shell info loaded.</td></tr></tbody>
+  </table>
+
+  <div class="symptoms">
+    <h3>Root-cause explorer</h3>
+    <select id="symptomSelect" onchange="showSymptom()">
+      <option value="">Select a symptom...</option>
+    </select>
+    <div class="result muted" id="symptomResults">Pick a symptom to trace it to its startup lane.</div>
+  </div>
+
+  <div class="bundle">
+    <h3>Generate Support Bundle</h3>
+    <div class="toolbar">
+      <button onclick="buildBundle()">Build commands</button>
+      <button class="ghost" onclick="copyBundle()">Copy</button>
+      <button class="ghost" onclick="downloadReport()">Download report (JSON)</button>
+    </div>
+    <div id="bundleOut" class="muted">Click “Build commands” to generate the recommended local diagnostic commands.</div>
+  </div>
+</div>
+
+<footer>
+  <strong>Rule of thumb:</strong> if a checkpoint exists, the previous stage completed. If it is
+  missing, the failure is at or before that stage. Diagnostics are <strong>local-only</strong>.
+</footer>
+
+<script>
+// ---- Phase metadata (ids match ops/Get-PowerShellStartupHealth.ps1) ----
+const PHASE_META = {
+  launcher: {
+    label: "pwsh.exe Startup", purpose: "Start pwsh.exe and parse arguments.",
+    checkpoint: "$PID", lane: "launch",
+    sources: ["pwsh.exe", "Windows Terminal profile", "PATH environment variable", "VS Code host"],
+    verify: ["Get-Process -Id $PID", "(Get-Command pwsh).Source"],
+    failures: ["-NoProfile specified", "Wrong pwsh.exe on PATH", "AV / EDR termination"],
+    fix: ["Verify PATH order", "Pin explicit pwsh.exe path", "Check security logs"],
+    learn: "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_powershell_exe"
+  },
+  loader: {
+    label: "Runtime Initialization", purpose: "Bind PowerShell to .NET and load assemblies.",
+    checkpoint: "$PSVersionTable / $PSHOME", lane: "runtime",
+    sources: ["hostfxr.dll", "System.Management.Automation.dll", ".NET Runtime", "$PSHOME"],
+    verify: ["$PSHOME", "$PSVersionTable"],
+    failures: ["Missing .NET Runtime", "Side-by-side installations", "Corrupt runtime files"],
+    fix: ["Reinstall .NET Desktop Runtime", "Reinstall PowerShell 7", "Fix PATH order"],
+    learn: "https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-windows"
+  },
+  engine: {
+    label: "Session Initialization", purpose: "Create SessionState; apply policy and language mode.",
+    checkpoint: "$ExecutionContext", lane: "session",
+    sources: ["powershell.config.json", "Group Policy", "WDAC Policy", "AppLocker Policy"],
+    verify: ["Get-PSProvider", "$ExecutionContext.SessionState.LanguageMode", "Get-ExecutionPolicy -List"],
+    failures: ["ConstrainedLanguage", "Policy Override", "Malformed Config"],
+    fix: ["Check LanguageMode", "Review WDAC/AppLocker with admin"],
+    learn: "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_language_modes"
+  },
+  modules: {
+    label: "Module Bootstrap", purpose: "Build the module discovery graph.",
+    checkpoint: "$env:PSModulePath", lane: "profile",
+    sources: ["$HOME\\Documents\\PowerShell\\Modules", "Program Files\\PowerShell\\Modules", "$PSHOME\\Modules"],
+    verify: ["$env:PSModulePath -split ';'", "Get-Module -ListAvailable"],
+    failures: ["OneDrive Files-On-Demand", "UNC path delays", "Missing path"],
+    fix: ["Reset-PSModulePath", "Remove OneDrive/UNC paths"],
+    learn: "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_psmodulepath"
+  },
+  profiles: {
+    label: "Profile Bootstrap", purpose: "Resolve and load $PROFILE tiers.",
+    checkpoint: "$PROFILE", lane: "profile",
+    sources: ["AllUsersAllHosts", "AllUsersCurrentHost", "CurrentUserAllHosts", "CurrentUserCurrentHost"],
+    verify: ["Test-Path $PROFILE", "Get-Item $PROFILE", "Get-ExecutionPolicy -List"],
+    failures: ["Profile errors", "Execution policy blocking", "Mark-of-the-Web", "OneDrive/UNC stub"],
+    fix: ["Set-ExecutionPolicy -Scope CurrentUser RemoteSigned", "Unblock-File $PROFILE"],
+    learn: "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_profiles"
+  },
+  shell: {
+    label: "Ready State", purpose: "Session usable: prompt, aliases, autoload.",
+    checkpoint: "Get-Command", lane: "shell",
+    sources: ["ConsoleHost", "Windows Terminal", "VS Code host", "PSReadLine"],
+    verify: ["Get-Alias", "Get-Module", "$Host.Name", "$PROFILE"],
+    failures: ["PSModuleAutoLoadingPreference = 'None'", "VS Code differs from console"],
+    fix: ["Remove auto-load override", "Import-Module explicitly", "Mirror VSCode profile"],
+    learn: "https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_profiles"
+  }
+};
+
+// ---- 5 poster lanes; a lane's status is the worst of its phases ----
+const LANES = [
+  { id: "launch",  cls: "launch",  title: "1. Launcher",              phases: ["launcher"] },
+  { id: "runtime", cls: "runtime", title: "2. Loader & Host",         phases: ["loader"] },
+  { id: "session", cls: "session", title: "3. Engine & Session State", phases: ["engine"] },
+  { id: "profile", cls: "profile", title: "4. Profiles & Modules",    phases: ["modules", "profiles"] },
+  { id: "shell",   cls: "shell",   title: "5. Interactive Shell",     phases: ["shell"] }
+];
+
+const SYMPTOMS = {
+  "Aliases / functions missing": { lane: "profile", causes: ["Profile missing", "Execution Policy Restricted", "OneDrive / Mark-of-the-Web stub"], fix: ["Test-Path $PROFILE", "Set-ExecutionPolicy -Scope CurrentUser RemoteSigned", "Unblock-File $PROFILE"] },
+  "Modules missing / slow startup": { lane: "profile", causes: ["Bad PSModulePath", "OneDrive path", "UNC path offline"], fix: ["Reset-PSModulePath", "Remove OneDrive/UNC entries", "Connect VPN before launch"] },
+  "Add-Type / .NET blocked": { lane: "session", causes: ["ConstrainedLanguage", "WDAC", "AppLocker"], fix: ["Check $ExecutionContext.SessionState.LanguageMode", "Review policy with admin"] },
+  "Wrong version / features missing": { lane: "runtime", causes: ["Side-by-side installs", "PATH order"], fix: ["Pin full pwsh path", "Fix PATH order"] },
+  "pwsh exits immediately": { lane: "launch", causes: ["AV/EDR kill", "Missing .NET runtime"], fix: ["Event Viewer → Application", "Reinstall .NET Desktop Runtime"] },
+  "Works in console, not VS Code": { lane: "shell", causes: ["Different host profile file"], fix: ["Mirror Microsoft.VSCode_profile.ps1"] }
+};
+
+const ICON  = { healthy: "🟢", warning: "🟡", failed: "🔴", unknown: "⚪" };
+const WEIGHT = { healthy: 100, warning: 50, failed: 0 };
+const RANK = { unknown: 0, healthy: 1, warning: 2, failed: 3 };
+let LAST = { phases: {}, checks: {} };
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const arr = v => Array.isArray(v) && v.length ? v.join(", ") : (Array.isArray(v) ? "—" : v);
+
+function laneStatus(phases) {
+  let worst = "unknown";
+  phases.forEach(p => { const s = (phasesObj()[p] || {}).status || "unknown"; if (RANK[s] > RANK[worst]) worst = s; });
+  return worst;
+}
+function phasesObj(){ return LAST.phases || {}; }
+
+function renderLanes() {
+  const root = document.getElementById("lanes");
+  root.innerHTML = "";
+  LANES.forEach(lane => {
+    const status = laneStatus(lane.phases);
+    const el = document.createElement("div");
+    el.className = "lane"; el.id = "lane-" + lane.id; el.dataset.status = status;
+    const phasesHtml = lane.phases.map(id => {
+      const m = PHASE_META[id];
+      const p = phasesObj()[id] || { status: "unknown", value: "", checkpoint: m.checkpoint };
+      return `
+        <div class="phase">
+          <button class="pill" onclick="toggle(this)">
+            <span class="dot ${p.status || "unknown"}" style="display:inline-block;margin-right:6px"></span>${esc(m.label)}
+          </button>
+          <div class="content">
+            <div class="statusline"><span class="dot ${p.status || "unknown"}"></span>${ICON[p.status] || ICON.unknown} ${esc(p.status || "unknown")} · ${esc(p.value || "no value")}</div>
+            <div class="sec">Checkpoint</div><pre>${esc(p.checkpoint || m.checkpoint)}</pre>
+            <div class="sec">Source files / paths</div><pre>${m.sources.map(esc).join("\\n")}</pre>
+            <div class="sec">Verify</div><pre>${m.verify.map(esc).join("\\n")}</pre>
+            <div class="sec failure">Failure modes</div><ul>${m.failures.map(f => `<li>${esc(f)}</li>`).join("")}</ul>
+            <div class="sec fix">Remediation</div><ul>${m.fix.map(f => `<li>${esc(f)}</li>`).join("")}</ul>
+            <div class="sec">Documentation</div><a href="${m.learn}" target="_blank" rel="noopener">Microsoft Learn ↗</a>
+          </div>
+        </div>`;
+    }).join("");
+    el.innerHTML = `
+      <div class="lane-header ${lane.cls}">${esc(lane.title)}
+        <span class="badge">${ICON[status] || ICON.unknown}</span></div>
+      ${phasesHtml}`;
+    root.appendChild(el);
+  });
+}
+
+function checkStatus(key, v) {
+  switch (key) {
+    case "profileExists":       return v === true ? "healthy" : "failed";
+    case "executionPolicy":     return ["Restricted", "AllSigned"].includes(String(v)) ? "warning" : "healthy";
+    case "languageMode":        return String(v) === "FullLanguage" ? "healthy" : "warning";
+    case "moduleCount":         return Number(v) > 0 ? "healthy" : "failed";
+    case "modulePathCount":     return Number(v) > 0 ? "healthy" : "failed";
+    case "oneDriveModulePath":  return Array.isArray(v) && v.length ? "warning" : "healthy";
+    case "uncModulePath":       return Array.isArray(v) && v.length ? "warning" : "healthy";
+    case "missingModulePath":   return Array.isArray(v) && v.length ? "warning" : "healthy";
+    case "psReadLineLoaded":    return v === true ? "healthy" : "warning";
+    default:                    return "unknown";
+  }
+}
+function renderChecks(checks) {
+  const tbody = document.querySelector("#checksTable tbody");
+  if (!checks || !Object.keys(checks).length) { tbody.innerHTML = '<tr><td colspan="3" class="muted">No diagnostics loaded.</td></tr>'; return; }
+  tbody.innerHTML = Object.keys(checks).map(k => {
+    const s = checkStatus(k, checks[k]);
+    return `<tr><td class="mono">${esc(k)}</td>
+      <td><span class="dot ${s}"></span> ${s}</td>
+      <td class="mono">${esc(arr(checks[k]))}</td></tr>`;
+  }).join("");
+}
+
+function renderShellInfo(si) {
+  const tbody = document.querySelector("#envTable tbody");
+  if (!si) { tbody.innerHTML = '<tr><td colspan="2" class="muted">No shell info loaded.</td></tr>'; return; }
+  const rows = [];
+  const push = (k, v) => rows.push(`<tr><td class="mono">${esc(k)}</td><td class="mono">${esc(arr(v))}</td></tr>`);
+  if (si.Shell) { push("shell.host", si.Shell.Host); push("shell.terminal", si.Shell.Terminal); push("shell.psVersion", si.Shell.PSVersion); push("shell.edition", si.Shell.PSEdition); }
+  if (si.User) { push("user", si.User.Name + "@" + si.User.Machine); push("user.isAdmin", si.User.IsAdmin); }
+  if (si.Path) { push("path.entries", si.Path.Count); push("path.duplicates", si.Path.Duplicates); push("path.missing", si.Path.Missing); }
+  if (si.Env) Object.keys(si.Env).forEach(k => push("env." + k, si.Env[k]));
+  if (si.DotSources) push("dotSources", si.DotSources);
+  if (si.Profiles) Object.keys(si.Profiles).forEach(k => push("profile." + k, si.Profiles[k].Path + " (exists=" + si.Profiles[k].Exists + ")"));
+  tbody.innerHTML = rows.join("");
+}
+
+function normalizePhases(data) {
+  // Accept the flat spec schema (top-level launcher/loader/engine/...) and the
+  // nested { phases: {...} } form; alias legacy 'configuration' -> 'engine'.
+  const src = data.phases || data;
+  const out = {};
+  Object.keys(PHASE_META).forEach(id => {
+    let p = src[id];
+    if (!p && id === "engine" && src.configuration) p = src.configuration;
+    if (p) out[id] = p;
+  });
+  return out;
+}
+
+function apply(data) {
+  LAST = { phases: normalizePhases(data), checks: data.checks || {} };
+  renderLanes();
+  renderChecks(LAST.checks);
+  renderShellInfo(data.shellInfo);
+  let score = data.healthScore;
+  if (score === undefined || score === null) {
+    const vals = Object.keys(PHASE_META).map(id => WEIGHT[phasesObj()[id] ? phasesObj()[id].status : undefined]).filter(v => v !== undefined);
+    score = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+  }
+  document.getElementById("healthScore").textContent = score === null ? "—" : score + "%";
+  clearConnector();
+}
+
+function toggle(btn) { btn.nextElementSibling.classList.toggle("active"); }
+function loadDiagnostics() { try { apply(JSON.parse(document.getElementById("diagInput").value)); } catch (e) { alert("Invalid JSON: " + e.message); } }
+function loadFile(ev) {
+  const f = ev.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { try { apply(JSON.parse(r.result)); } catch (e) { alert("Invalid JSON: " + e.message); } };
+  r.readAsText(f);
+}
+
+// ---- SVG symptom → lane connector ----
+function clearConnector() {
+  const svg = document.getElementById("connectors");
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  svg.style.width = "0"; svg.style.height = "0";
+}
+function drawConnector(laneId, color) {
+  clearConnector();
+  const svg = document.getElementById("connectors");
+  const from = document.getElementById("symptomResults").getBoundingClientRect();
+  const target = document.getElementById("lane-" + laneId);
+  if (!target) return;
+  const to = target.getBoundingClientRect();
+  const sx = window.scrollX, sy = window.scrollY;
+  svg.style.width = document.documentElement.scrollWidth + "px";
+  svg.style.height = document.documentElement.scrollHeight + "px";
+  const x1 = from.left + sx, y1 = from.top + sy;
+  const x2 = to.left + sx + to.width / 2, y2 = to.top + sy;
+  const midY = y1 + (y2 - y1) / 2;
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`);
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", color);
+  path.setAttribute("stroke-width", "2.5");
+  path.setAttribute("stroke-dasharray", "7 5");
+  svg.appendChild(path);
+  const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  dot.setAttribute("cx", x2); dot.setAttribute("cy", y2); dot.setAttribute("r", "6");
+  dot.setAttribute("fill", color);
+  svg.appendChild(dot);
+}
+function showSymptom() {
+  const key = document.getElementById("symptomSelect").value;
+  const box = document.getElementById("symptomResults");
+  if (!key) { box.className = "result muted"; box.textContent = "Pick a symptom to trace it to its startup lane."; clearConnector(); return; }
+  const s = SYMPTOMS[key];
+  const lane = LANES.find(l => l.id === s.lane);
+  box.className = "result";
+  box.innerHTML = `<strong>${esc(key)}</strong><br>Originating lane: <strong>${esc(lane.title)}</strong>
+    <span class="mono">(checkpoint ${esc(PHASE_META[lane.phases[0]].checkpoint)})</span><br>
+    <span class="muted">Likely causes:</span> ${s.causes.map(esc).join(", ")}<br>
+    <span class="muted">Fix:</span><pre>${s.fix.map(esc).join("\\n")}</pre>`;
+  const colors = { launch: getComputedStyle(document.documentElement).getPropertyValue("--launch"), runtime: getComputedStyle(document.documentElement).getPropertyValue("--runtime"), session: getComputedStyle(document.documentElement).getPropertyValue("--session"), profile: getComputedStyle(document.documentElement).getPropertyValue("--profile"), shell: getComputedStyle(document.documentElement).getPropertyValue("--shell") };
+  requestAnimationFrame(() => drawConnector(s.lane, colors[s.lane].trim() || "#58A6FF"));
+}
+window.addEventListener("resize", () => { const k = document.getElementById("symptomSelect").value; if (k) showSymptom(); });
+
+// ---- Support bundle ----
+const BUNDLE = `# PowerShell 7 startup support bundle (local-only)
+$PSVersionTable | Format-List
+"PSHOME      : $PSHOME"
+"Host        : $($Host.Name)"
+"LanguageMode: $($ExecutionContext.SessionState.LanguageMode)"
+"OS          : $([Environment]::OSVersion.VersionString)"
+Get-ExecutionPolicy -List | Format-Table -AutoSize
+"PROFILE     : $PROFILE"
+"ProfileExists: $(Test-Path $PROFILE)"
+$env:PSModulePath -split ';'
+(Get-Module -ListAvailable).Count
+Get-Module | Select-Object Name, Version
+(Get-Alias).Count
+Get-Module PSReadLine -ErrorAction SilentlyContinue
+pwsh -File ./ops/Get-PowerShellStartupHealth.ps1 -Path ./pwsh-health.json`;
+function buildBundle() {
+  const out = document.getElementById("bundleOut");
+  out.classList.remove("muted");
+  out.textContent = BUNDLE;
+}
+function copyBundle() {
+  const out = document.getElementById("bundleOut");
+  if (out.classList.contains("muted")) buildBundle();
+  navigator.clipboard.writeText(document.getElementById("bundleOut").textContent);
+}
+function downloadReport() {
+  const blob = new Blob([JSON.stringify(LAST, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "pwsh-health.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function loadSample() {
+  const sample = {
+    healthScore: null,
+    phases: {
+      launcher: { status: "healthy", value: "12892" },
+      loader: { status: "healthy", value: "7.6.6" },
+      engine: { status: "warning", value: "ConstrainedLanguage" },
+      modules: { status: "warning", value: "3 entries" },
+      profiles: { status: "failed", value: "C:\\Users\\you\\OneDrive\\Documents\\PowerShell\\Microsoft.PowerShell_profile.ps1" },
+      shell: { status: "warning", value: "ConsoleHost" }
+    },
+    checks: {
+      host: "ConsoleHost", psHome: "C:\\Program Files\\PowerShell\\7", psVersion: "7.6.6",
+      languageMode: "ConstrainedLanguage", executionPolicy: "Restricted",
+      profileExists: false, profilePath: "C:\\Users\\you\\Documents\\PowerShell\\Microsoft.PowerShell_profile.ps1",
+      modulePathCount: 4, oneDriveModulePath: ["C:\\Users\\you\\OneDrive\\Documents\\PowerShell\\Modules"],
+      uncModulePath: [], missingModulePath: [], moduleCount: 157, psReadLineLoaded: true
+    }
+  };
+  document.getElementById("diagInput").value = JSON.stringify(sample, null, 2);
+  apply(sample);
+}
+
+document.getElementById("symptomSelect").innerHTML =
+  '<option value="">Select a symptom...</option>' + Object.keys(SYMPTOMS).map(k => `<option>${esc(k)}</option>`).join("");
+
+apply({});
+</script>
+</body>
+</html>

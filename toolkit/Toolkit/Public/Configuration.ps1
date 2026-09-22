@@ -1,0 +1,106 @@
+﻿<#
+.SYNOPSIS
+    Centrální správa konfigurace — merge defaults + JSON + env.
+.DESCRIPTION
+    Načte výchozí hodnoty, přepíše je z config/settings.json
+    a nakonec z $env:TOOLKIT_* proměnných.
+    Výsledek cachuje v $script:Config pro jedno načtení za session.
+.NOTES
+    Cesta: ~/Projects/tools/Toolkit/Public/Configuration.ps1
+#>
+
+$script:Config = $null
+
+<#
+.SYNOPSIS
+    Vrátí konfigurační hashtable (načte jen jednou za session).
+.EXAMPLE
+    $cfg = Get-ToolkitConfig
+    $cfg.menu.theme          # 'default'
+    $cfg.system.checkDisks   # $true
+#>
+function Get-ToolkitConfig {
+    param([switch]$Force)
+    if ($script:Config -and -not $Force) { return $script:Config }
+
+    # ── Defaults ──────────────────────────────────────────────
+    $defaults = @{
+        menu = @{
+            theme       = 'default'
+            showHeader  = $true
+            colorScheme = 'cyan'
+        }
+        system = @{
+            checkDisks     = $true
+            checkServices  = $true
+            checkNetwork   = $true
+            checkProcesses = $true
+        }
+    }
+
+    # ── File overrides ────────────────────────────────────────
+    $toolsRoot = if ($env:DOTFILES_TOOLS) { $env:DOTFILES_TOOLS } else { Split-Path $PSScriptRoot -Parent }
+    $configFile = Join-Path $toolsRoot 'config\settings.json'
+    if (Test-Path $configFile) {
+        try {
+            $fileConfig = Get-Content $configFile -Raw | ConvertFrom-Json -AsHashtable
+            $defaults = Merge-Hashtable -Base $defaults -Override $fileConfig
+        } catch {
+            Write-Debug "Config file parse failed: $_"
+        }
+    }
+
+    # ── Environment overrides (TOOLKIT_*) ─────────────────────
+    foreach ($key in @($defaults.Keys)) {
+        if ($defaults[$key] -isnot [hashtable]) { continue }  # a bad override can replace a section with a scalar
+        foreach ($sub in @($defaults[$key].Keys)) {
+            $envVar = "TOOLKIT_$($key)_$($sub)".ToUpper()
+            $envVal = Get-Item -Path "Env:$envVar" -ErrorAction SilentlyContinue
+            if ($envVal) {
+                $defaults[$key][$sub] = if ($envVal.Value -eq 'true') { $true }
+                                    elseif ($envVal.Value -eq 'false') { $false }
+                                    else { $envVal.Value }
+            }
+        }
+    }
+
+    $script:Config = $defaults
+    return $script:Config
+}
+
+<#
+.SYNOPSIS
+    Rekurzivně merguje dva hashtables (override přepisuje base).
+#>
+function Merge-Hashtable {
+    param([hashtable]$Base, [hashtable]$Override)
+    $result = @{}
+    foreach ($key in $Base.Keys) { $result[$key] = $Base[$key] }
+    foreach ($key in $Override.Keys) {
+        if ($result.ContainsKey($key) -and $result[$key] -is [hashtable] -and $Override[$key] -is [hashtable]) {
+            $result[$key] = Merge-Hashtable -Base $result[$key] -Override $Override[$key]
+        } else {
+            $result[$key] = $Override[$key]
+        }
+    }
+    return $result
+}
+
+<#
+.SYNOPSIS
+    Uloží konfigurační hashtable do config/settings.json.
+#>
+function Save-ToolkitConfig {
+    param([hashtable]$Config)
+    $toolsRoot = if ($env:DOTFILES_TOOLS) { $env:DOTFILES_TOOLS } else { Split-Path $PSScriptRoot -Parent }
+    $configFile = Join-Path $toolsRoot 'config\settings.json'
+    if (Test-Path $configFile) {
+        Copy-Item -Path $configFile -Destination "$configFile.backup" -Force
+    }
+    $json = $Config | ConvertTo-Json -Depth 5
+    Set-Content -Path $configFile -Value $json -Encoding UTF8
+    $script:Config = $Config
+    Write-Host "[+] Config saved to $configFile" -ForegroundColor Green
+}
+
+# Auto-export via MyTools.psm1

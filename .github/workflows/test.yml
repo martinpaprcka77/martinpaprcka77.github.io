@@ -1,0 +1,68 @@
+# GitHub Actions — Pester tests + JSON validation
+# Runs on push to main and pull requests
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+    # Root-level entry points (install.ps1, update.ps1, remote-install.ps1,
+    # bootstrap.ps1) and PSScriptAnalyzerSettings.psd1 previously weren't
+    # covered by this filter — real PowerShell files with zero CI coverage.
+    paths: ['profile/**', 'toolkit/**', '*.ps1', 'PSScriptAnalyzerSettings.psd1', '.github/workflows/test.yml']
+  pull_request:
+    branches: [main]
+    paths: ['profile/**', 'toolkit/**', '*.ps1', 'PSScriptAnalyzerSettings.psd1', '.github/workflows/test.yml']
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Pester Tests
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Invoke-Pester toolkit/tests/Toolkit.Tests.ps1 -Output Detailed -CI
+
+      - name: Lint (PSScriptAnalyzer)
+        shell: pwsh
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck -Scope CurrentUser
+          $results = Invoke-ScriptAnalyzer -Path . -Recurse -Settings ./PSScriptAnalyzerSettings.psd1
+          $errors = @($results | Where-Object Severity -eq 'Error')
+          $warnings = @($results | Where-Object Severity -eq 'Warning')
+          if ($warnings) {
+            Write-Host "⚠️  $($warnings.Count) warning(s) (not blocking):"
+            $warnings | ForEach-Object { Write-Host "  $($_.ScriptName):$($_.Line) [$($_.RuleName)] $($_.Message)" }
+          }
+          if ($errors) {
+            Write-Error "❌ $($errors.Count) error-severity finding(s):"
+            $errors | ForEach-Object { Write-Error "  $($_.ScriptName):$($_.Line) [$($_.RuleName)] $($_.Message)" }
+            exit 1
+          }
+          Write-Host "✅ 0 error-severity findings"
+
+      - name: Validate JSON (config)
+        shell: pwsh
+        run: |
+          # settings.json is repo config; validate the shipped config files.
+          $files = @('toolkit/config/settings.json', 'toolkit/config/wt-schemes.json')
+          foreach ($f in $files) {
+            try {
+              Get-Content $f -Raw | ConvertFrom-Json | Out-Null
+              Write-Host "✅ $f — valid JSON"
+            } catch {
+              Write-Error "❌ $f — INVALID JSON: $_"
+              exit 1
+            }
+          }
+
+

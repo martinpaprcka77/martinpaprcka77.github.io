@@ -1,0 +1,13 @@
+{
+  "menu": {
+    "showHeader": true,
+    "theme": "default",
+    "colorScheme": "cyan"
+  },
+  "system": {
+    "checkProcesses": true,
+    "checkNetwork": true,
+    "checkDisks": true,
+    "checkServices": true
+  }
+}
