@@ -14,6 +14,13 @@ Set-Alias -Name ll  -Value Get-ChildItem -Force
 Set-Alias -Name ep  -Value Edit-Profile -Force
 
 # Reload profile
+# 'rp' is a built-in AllScope alias (Remove-ItemProperty) on Windows PowerShell 5.1 with
+# Options=ReadOnly,AllScope. Set-Alias -Force cannot clear the AllScope option, so on 5.1 it
+# throws "The AllScope option cannot be removed from the alias 'rp'" every time the profile
+# loads (PS 7 does not mark it AllScope, so the same line was silent there — the bug only
+# showed on 5.1). Remove the built-in first, exactly as done for gcm/gps below. This is
+# session-scoped and does not change the system default.
+Remove-Item Alias:rp -Force -ErrorAction SilentlyContinue
 Set-Alias -Name rp  -Value Reload-Profile -Force
 
 # Git shortcuts (if git is available)

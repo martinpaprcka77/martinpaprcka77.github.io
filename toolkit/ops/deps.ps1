@@ -23,7 +23,11 @@ param(
 )
 
 # Cross-platform guard — winget is Windows-only
-if (-not $IsWindows) {
+# $IsWindows is a PS6+ automatic variable: undefined on Windows PowerShell 5.1,
+# where `-not $IsWindows` evaluates the missing $null as $true and so wrongly
+# rejected a valid *Windows* 5.1 session. Version-guard first.
+$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
+if (-not $isWindowsHost) {
     Write-Error "deps.ps1 requires Windows (winget). This is a Linux/macOS system."
     exit 1
 }

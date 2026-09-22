@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Snapshot of the current shell: host, user, environment, PATH, profiles.
 .DESCRIPTION

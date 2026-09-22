@@ -126,7 +126,7 @@ $report['checks'] = [ordered]@{
 
 # Shell/environment snapshot for the map's Environment panel. Uses the module's
 # Get-ShellInfo so there is a single implementation (no duplicated PATH/env logic).
-$moduleManifest = Join-Path (Split-Path $PSScriptRoot -Parent) 'Toolkit' 'Toolkit.psd1'
+$moduleManifest = Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) 'Toolkit') 'Toolkit.psd1'
 $shellInfo = $null
 if (Test-Path -LiteralPath $moduleManifest) {
     try {

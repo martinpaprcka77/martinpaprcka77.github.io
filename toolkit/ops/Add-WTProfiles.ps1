@@ -24,7 +24,12 @@ param(
 )
 
 # Cross-platform guard
-if (-not $IsWindows) {
+# $IsWindows is a PS6+ automatic variable: it is undefined on Windows
+# PowerShell 5.1, where `-not $IsWindows` evaluates the missing $null as $true
+# and so wrongly rejected a valid *Windows* 5.1 session. PS5.1 only ever runs on
+# Windows, so version-guard first (the idiom install.ps1/profile.ps1 use).
+$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
+if (-not $isWindowsHost) {
     Write-Error "Add-WTProfiles.ps1 requires Windows. This is a Linux/macOS system."
     exit 1
 }

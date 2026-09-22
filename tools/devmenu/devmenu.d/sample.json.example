@@ -1,0 +1,8 @@
+{
+  "targets": [
+    { "name": "pi",   "arguments": [] },
+    { "name": "pwsh", "arguments": ["-NoLogo", "-NoProfile"] },
+    { "name": "wt",   "arguments": [] },
+    { "name": "cmd",  "arguments": [] }
+  ]
+}

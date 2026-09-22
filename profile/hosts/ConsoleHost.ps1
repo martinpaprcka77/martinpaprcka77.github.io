@@ -31,12 +31,24 @@ $uptimeBlock = {
 
 $psVer = $PSVersionTable.PSVersion.ToString()
 $userHost = "$($env:USERNAME)@$($env:COMPUTERNAME)"
-$maxLen = [Math]::Max([Math]::Max($psVer.Length, $userHost.Length), 20)
+
+# Build the three cell strings first, then size the box from the longest one.
+# The previous version padded each row to $maxLen and *then* prepended the
+# "PowerShell "/"Uptime: " labels, so the rows came out 37/26/34 characters
+# wide against a 26-character border — the right edge was ragged, and only the
+# user row lined up (it is the one row with no label prefix).
+$cells = @(
+    "PowerShell $psVer"
+    $userHost
+    "Uptime: $(& $uptimeBlock)"
+)
+$maxLen = ($cells | Measure-Object -Property Length -Maximum).Maximum
+if ($maxLen -lt 20) { $maxLen = 20 }
 
 Write-Host "╔$('═' * ($maxLen + 4))╗" -ForegroundColor Cyan
-Write-Host ("║  PowerShell {0}  ║" -f $psVer.PadRight($maxLen)) -ForegroundColor Cyan
-Write-Host ("║  {0}  ║" -f $userHost.PadRight($maxLen)) -ForegroundColor Cyan
-Write-Host ("║  Uptime: {0}  ║" -f (& $uptimeBlock).PadRight($maxLen)) -ForegroundColor Cyan
+Write-Host ("║  {0}  ║" -f $cells[0].PadRight($maxLen)) -ForegroundColor Cyan
+Write-Host ("║  {0}  ║" -f $cells[1].PadRight($maxLen)) -ForegroundColor Cyan
+Write-Host ("║  {0}  ║" -f $cells[2].PadRight($maxLen)) -ForegroundColor Cyan
 Write-Host "╚$('═' * ($maxLen + 4))╝" -ForegroundColor Cyan
 
 # Windows Terminal enhanced profile (zoxide, CTT utils, PSReadLine colors, Show-Help)

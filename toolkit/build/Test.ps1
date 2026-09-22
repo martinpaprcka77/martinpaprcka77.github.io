@@ -31,7 +31,7 @@ Write-Host "`n== 2/3 Pester ==" -ForegroundColor Cyan
 $pester = Get-Module -ListAvailable Pester | Sort-Object Version -Descending | Select-Object -First 1
 if ($pester) {
     $output = if ($Detailed) { 'Detailed' } else { 'None' }
-    $result = Invoke-Pester -Path (Join-Path $root 'tests' 'Toolkit.Tests.ps1') -Output $output -PassThru
+    $result = Invoke-Pester -Path (Join-Path (Join-Path $root 'tests') 'Toolkit.Tests.ps1') -Output $output -PassThru
     Write-Host ("Passed {0} / Failed {1} / Total {2}" -f $result.PassedCount, $result.FailedCount, $result.TotalCount)
     if ($result.FailedCount -gt 0) { $failed = $true }
 } else {

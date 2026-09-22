@@ -58,7 +58,7 @@ param(
     [switch]$Defaults,
     [switch]$VSCode,
     [switch]$All,
-    [string]$ClonePath = (Join-Path $env:USERPROFILE '.config' 'powershell'),
+    [string]$ClonePath = (Join-Path (Join-Path $env:USERPROFILE '.config') 'powershell'),
     [string]$Repository = 'https://github.com/martinpaprcka77/martinpaprcka77.github.io.git',
     [switch]$SkipUpdates
 )
@@ -240,7 +240,7 @@ function Install-VSCodeConfig {
     Write-Step "Configuring VS Code..."
 
     $vscodeSettings = Join-Path $dotfilesPath '.vscode'
-    $vscodeUserDir = Join-Path $env:APPDATA 'Code' 'User'
+    $vscodeUserDir = Join-Path (Join-Path $env:APPDATA 'Code') 'User'
 
     if (-not (Test-Path $vscodeSettings)) {
         Write-Fail ".vscode directory not found in $dotfilesPath"

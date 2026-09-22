@@ -162,8 +162,13 @@ try {
 } catch { }
 
 # Telemetry opt-out for privacy
-[System.Environment]::SetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', '1', 'User')
-Write-Ok "Telemetry: opted out"
+# Gated by ShouldProcess: this writes a *persistent* User-scope environment variable, so
+# `-WhatIf` must not touch it (it previously ran unconditionally and opted the machine out
+# for real even under -WhatIf — the same class of bug ROADMAP records for windows.ps1).
+if ($PSCmdlet.ShouldProcess('POWERSHELL_TELEMETRY_OPTOUT', 'Set User environment variable to 1')) {
+    [System.Environment]::SetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', '1', 'User')
+    Write-Ok "Telemetry: opted out"
+}
 
 # ═══════════════════════════════════════════════════════════════
 # 6. Disable legacy PowerShellGet auto-load

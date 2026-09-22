@@ -51,7 +51,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 - ✅ **core/perf.ps1** — Measure-Profile, Clear-PSCache, Optimize-ModuleLoading, Get-ProfileSize
 - ✅ **core/status.ps1** — globální health dashboard (6 sekcí, 20+ kontrol)
 - ✅ **core/extra.ps1.example** — šablona pro uživatelské přizpůsobení
-- ✅ Konfigurační vrstva — `config.ps1` (defaults → JSON → $env:TOOLKIT_*)
+- ✅ Konfigurační vrstva — `Configuration.ps1` (defaults → JSON → $env:TOOLKIT_*)
 - ✅ **7 barevných WT schémat** z windowsterminalthemes.dev
 
 ---
@@ -98,7 +98,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 | `deps.ps1` + `windows.ps1` — Windows-only | ✅ Vyřešeno | Platform guardy |
 | `windows.ps1 -WhatIf` přesto restartoval Explorer | ✅ Vyřešeno | Prompt respektuje `$WhatIfPreference` |
 | `gcm`/`gps` git zkratky nikdy nefungovaly (tiché stínění vestavěnými PS aliasy) | ✅ Vyřešeno | `Remove-Item Alias:` před definicí funkce |
-| `checkers.ps1`/`common.ps1` bez platform guardu — pád na Linuxu/macOS | ✅ Vyřešeno | `-not $IsWindows` guard |
+| `Diagnostics.ps1`/`Console.ps1` bez platform guardu — pád na Linuxu/macOS | ✅ Vyřešeno | `-not $IsWindows` guard |
 | `Reset-PSModulePath` vracel `Documents\...` — přesně OneDrive-postiženou cestu | ✅ Vyřešeno | `$env:LOCALAPPDATA\PowerShell\Modules` místo Documents |
 | 7 PSModulePath Pester testů selhává na Linuxu/macOS | Známé, netýká se Windows | Testovací fixtures používají `C:\Mods\...` — dvojtečka koliduje s `[IO.Path]::PathSeparator` (`:` na Linuxu/macOS, `;` na Windows); na reálném Windows testy procházejí, jde jen o testovací data, ne o chybu v kódu |
 | Menu skripty (`menu-terminal.ps1`/`menu-dotfiles.ps1`/`menu-vscode.ps1`) padaly na `$null` `$env:DOTFILES_TOOLS`, pokud menu běželo bez načteného companion profilu | ✅ Vyřešeno (field-reported) | Fallback `$toolsRoot = if ($env:DOTFILES_TOOLS) {...} else { Split-Path $PSScriptRoot -Parent }` — stejný vzor jako už měl `Toolkit/Public/Configuration.ps1` |

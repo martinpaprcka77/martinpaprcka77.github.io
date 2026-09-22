@@ -25,7 +25,12 @@ param(
 )
 
 # Cross-platform guard — registry and AppX are Windows-only
-if (-not $IsWindows) {
+# $IsWindows is a PS6+ automatic variable: undefined on Windows PowerShell 5.1,
+# where `-not $IsWindows` evaluates the missing $null as $true and so wrongly
+# rejected a valid *Windows* 5.1 session (which is, ironically, the host where
+# Appx below actually exists). Version-guard first.
+$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
+if (-not $isWindowsHost) {
     Write-Error "windows.ps1 requires Windows (registry + AppX). This is a Linux/macOS system."
     exit 1
 }
@@ -128,7 +133,16 @@ if (-not $SkipPrivacy) {
 }
 
 # ── Bloatware removal ──────────────────────────────────────────
-if ($RemoveBloatware) {
+# Get-/Remove-AppxPackage ship with the Appx module, which exists only in
+# Windows PowerShell — pwsh has no such cmdlet. Guard on availability: without
+# this, a -RemoveBloatware run on PS7 printed a red "not recognized" error per
+# app (27 of them) and then reported every package as "Not installed" (verified).
+$appxAvailable = [bool](Get-Command Get-AppxPackage -ErrorAction SilentlyContinue) -and
+                 [bool](Get-Command Remove-AppxPackage -ErrorAction SilentlyContinue)
+if ($RemoveBloatware -and -not $appxAvailable) {
+    Write-Warn "Bloatware removal needs the Appx module (Windows PowerShell only) - skipped."
+}
+if ($RemoveBloatware -and $appxAvailable) {
     Write-Step "Removing bloatware..."
     $bloatware = @(
         'Microsoft.BingNews', 'Microsoft.BingWeather', 'Microsoft.GetHelp',

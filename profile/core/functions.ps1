@@ -102,3 +102,113 @@ function mkcd {
     New-Item -ItemType Directory -Path $Path -Force | Out-Null
     Set-Location $Path
 }
+
+<#
+.SYNOPSIS
+    Vrátí adresář se značkami už zobrazených nápověd.
+.DESCRIPTION
+    Stav žije MIMO repozitář — zápis do clone by znečistil pracovní strom a
+    rozbil `git pull --ff-only` v update.ps1 (i `git reset --hard` v
+    remote-install.ps1). Windows: %LOCALAPPDATA%\dotfiles-powershell\hints;
+    jinde $HOME/.local/state/dotfiles-powershell/hints.
+.PARAMETER Ensure
+    Vytvoří adresář, pokud chybí (Test-HintShown adresář nevytváří).
+.EXAMPLE
+    Get-HintStateDir -Ensure
+#>
+function Get-HintStateDir {
+    [CmdletBinding()]
+    param(
+        [switch]$Ensure
+    )
+
+    $base = if ($env:LOCALAPPDATA) {
+        Join-Path $env:LOCALAPPDATA 'dotfiles-powershell'
+    }
+    else {
+        # Linux/macOS: $env:LOCALAPPDATA doesn't exist. Nest Join-Path rather
+        # than passing a multi-segment child path — a single '.local/state'
+        # child would be treated as one literal segment off-Windows.
+        Join-Path (Join-Path (Join-Path $HOME '.local') 'state') 'dotfiles-powershell'
+    }
+    $dir = Join-Path $base 'hints'
+
+    if ($Ensure -and -not (Test-Path $dir)) {
+        $null = New-Item -ItemType Directory -Path $dir -Force
+    }
+
+    return $dir
+}
+
+<#
+.SYNOPSIS
+    Zjistí, zda už byla daná nápověda zobrazena.
+.PARAMETER Name
+    Identifikátor nápovědy (např. 'health_check_first_run').
+.EXAMPLE
+    if (-not (Test-HintShown 'health_check_first_run')) { ... }
+.NOTES
+    Read-only: nikdy nevytváří adresář se stavem — na čistém systému prostě
+    vrátí $false.
+#>
+function Test-HintShown {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Name
+    )
+
+    return Test-Path (Join-Path (Get-HintStateDir) "$Name.shown")
+}
+
+<#
+.SYNOPSIS
+    Zobrazí jednorázovou nápovědu a poznamená si, že už byla zobrazena.
+.PARAMETER Name
+    Identifikátor nápovědy — musí odpovídat názvu použitému v Test-HintShown.
+.PARAMETER Title
+    Nadpis nápovědy.
+.PARAMETER Lines
+    Text nápovědy, jeden řádek na prvek.
+.PARAMETER Tips
+    Volitelné tipy ("co dělat dál"), zobrazené pod textem.
+.EXAMPLE
+    Show-Hint 'health_check_first_run' 'System Health Check' @('...') @('...')
+#>
+function Show-Hint {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Name,
+
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Title,
+
+        [string[]]$Lines = @(),
+
+        [string[]]$Tips = @()
+    )
+
+    if ($Title) {
+        Write-Host ''
+        Write-Host "   $Title" -ForegroundColor Cyan
+        Write-Host "   $(('─' * 55))" -ForegroundColor DarkGray
+    }
+    foreach ($line in $Lines) {
+        Write-Host "   $line" -ForegroundColor Gray
+    }
+    if ($Tips.Count) {
+        Write-Host ''
+        Write-Host '   Dalsi kroky:' -ForegroundColor DarkGray
+        foreach ($tip in $Tips) {
+            Write-Host "     - $tip" -ForegroundColor DarkGray
+        }
+    }
+    Write-Host ''
+
+    $dir = Get-HintStateDir -Ensure
+    $null = New-Item -ItemType File -Path (Join-Path $dir "$Name.shown") -Force
+}

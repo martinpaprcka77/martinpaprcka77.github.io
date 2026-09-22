@@ -5,9 +5,9 @@
 | Fact | Value |
 |------|-------|
 | Module | `Toolkit` |
-| Version | 1.5.0 |
+| Version | 1.5.1 |
 | Exported functions | 36 |
-| Pester tests | 69 (68 pass / 1 fail) |
+| Pester tests | 73 (73 pass / 0 fail) |
 
 **Invariants**
 

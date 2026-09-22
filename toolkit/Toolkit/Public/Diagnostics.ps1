@@ -68,6 +68,15 @@ function Get-NetworkInfo {
         Write-Warning "Get-NetworkInfo is Windows-only."
         return
     }
+    # NetTCPIP is a Windows PowerShell-only module: it lives under
+    # %SystemRoot%\System32\WindowsPowerShell\v1.0\Modules, which is not on
+    # PowerShell 7's $env:PSModulePath, so Get-NetIPAddress does not resolve in
+    # pwsh even on Windows and the call below only ever hit its catch block.
+    # Probe first and say why instead.
+    if (-not (Get-Command Get-NetIPAddress -ErrorAction SilentlyContinue)) {
+        Write-Warning "Get-NetworkInfo needs the NetTCPIP module (Windows PowerShell only)."
+        return
+    }
     Write-Info "Síťové informace..."
 
     try {

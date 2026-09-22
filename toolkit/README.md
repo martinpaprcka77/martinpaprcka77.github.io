@@ -208,9 +208,11 @@ Invoke-SystemCheck
 │   ├── Get-PowerShellStartupHealth.ps1 ← local-only startup health JSON (for PowerShell-Startup-Map.html)
 │   └── precheck.ps1          ← 20+ inventory checks
 ├── config/
-│   ├── settings.json         ← default config
+│   ├── settings.example.json ← committed template — copy to settings.json to customise
+│   │                            (settings.json itself is LOCAL + gitignored; Save-ToolkitConfig
+│   │                            and ops/configure.ps1 write it, so the wizard cannot dirty the tree)
 │   └── wt-schemes.json       ← WT color schemes (single source of truth, read by Add-WTProfiles.ps1)
-├── tests/Toolkit.Tests.ps1   ← 69 Pester test cases
+├── tests/Toolkit.Tests.ps1   ← 73 Pester test cases (70 module/behaviour + 3 repo invariants)
 ├── docs/                     ← ordered by the bootstrap lifecycle (00 → 90)
 └── .gitignore
 ```

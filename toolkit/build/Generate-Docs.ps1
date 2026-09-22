@@ -16,14 +16,14 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$OutputPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'docs' '20-reference.md')
+    [string]$OutputPath = (Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) 'docs') '20-reference.md')
 )
 
 $ErrorActionPreference = 'Stop'
 
 $root       = Split-Path $PSScriptRoot -Parent
-$manifest   = Join-Path $root 'Toolkit' 'Toolkit.psd1'
-$testsPath  = Join-Path $root 'tests' 'Toolkit.Tests.ps1'
+$manifest   = Join-Path (Join-Path $root 'Toolkit') 'Toolkit.psd1'
+$testsPath  = Join-Path (Join-Path $root 'tests') 'Toolkit.Tests.ps1'
 
 if (-not (Test-Path -LiteralPath $manifest)) { throw "Manifest not found: $manifest" }
 

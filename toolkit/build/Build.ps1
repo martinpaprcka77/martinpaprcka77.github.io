@@ -29,9 +29,10 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $root       = Split-Path $PSScriptRoot -Parent
-$manifest   = Join-Path $root 'Toolkit' 'Toolkit.psd1'
-$publicDirs = @((Join-Path $root 'Toolkit' 'Public'))
-$privateDir = Join-Path $root 'Toolkit' 'Private'
+$toolkitDir = Join-Path $root 'Toolkit'
+$manifest   = Join-Path $toolkitDir 'Toolkit.psd1'
+$publicDirs = @((Join-Path $toolkitDir 'Public'))
+$privateDir = Join-Path $toolkitDir 'Private'
 
 function Get-TopLevelFunctions {
     param([string[]]$Directories)

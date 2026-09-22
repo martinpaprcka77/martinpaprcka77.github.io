@@ -12,14 +12,24 @@
 .NOTES
     Cesta: ~/Projects/tools/ops/Generate-Icons.ps1
 #>
+[CmdletBinding(SupportsShouldProcess)]
 param(
     [string]$OutputDir = (Join-Path $PSScriptRoot '..\icons')
 )
 
 $ErrorActionPreference = 'Stop'
 
+# $IsWindows is a PS6+ automatic variable — it does NOT exist on Windows
+# PowerShell 5.1 (which also has no $PSVersionTable.OS key), where `-not
+# $IsWindows` evaluates the missing $null as $true. The unguarded check
+# therefore rejected a perfectly valid *Windows* 5.1 session with a bogus
+# "requires Windows" error (verified: powershell.exe -File Generate-Icons.ps1
+# exited 1 on Windows). Guard on the version first, exactly as
+# profile/profile.ps1 and install.ps1 do.
+$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }
+
 # Cross-platform guard — System.Drawing is Windows-only
-if (-not $IsWindows) {
+if (-not $isWindowsHost) {
     Write-Error "Generate-Icons.ps1 vyžaduje Windows (System.Drawing). Nelze spustit na Linux/macOS."
     exit 1
 }
@@ -44,8 +54,17 @@ $icons = @(
     @{ Name = 'pwsh7.png';    Letter = '7'; Bg = 'DarkCyan';   Fg = 'White' }
 )
 
+$generated = 0
 foreach ($icon in $icons) {
     $outputPath = Join-Path $OutputDir $icon.Name
+
+    # State-changing (writes a PNG) -> must honour -WhatIf/-Confirm. Before
+    # [CmdletBinding(SupportsShouldProcess)] was added, `-WhatIf` was not even a
+    # parameter of this script: with only `param(...)` and no CmdletBinding,
+    # `pwsh -File ops\Generate-Icons.ps1 -WhatIf` bound the switch into $args
+    # and rewrote all three PNGs anyway, with exit code 0 and no warning
+    # (verified: file mtimes changed under -WhatIf).
+    if (-not $PSCmdlet.ShouldProcess($outputPath, 'Generate icon')) { continue }
 
     $bitmap = New-Object System.Drawing.Bitmap 32, 32
     $g = [System.Drawing.Graphics]::FromImage($bitmap)
@@ -66,6 +85,7 @@ foreach ($icon in $icons) {
     $g.DrawString($icon.Letter, $font, $fgBrush, $rect, $format)
 
     $bitmap.Save($outputPath, [System.Drawing.Imaging.ImageFormat]::Png)
+    $generated++
     Write-Host "[+] $outputPath" -ForegroundColor Green
 
     $g.Dispose()
@@ -76,4 +96,9 @@ foreach ($icon in $icons) {
     $format.Dispose()
 }
 
-Write-Host "`nVygenerovány 3 ikony do: $OutputDir" -ForegroundColor Green
+if ($generated) {
+    Write-Host "`nVygenerovány $generated ikony do: $OutputDir" -ForegroundColor Green
+} else {
+    # -WhatIf / declined -Confirm: don't claim a write that did not happen.
+    Write-Host "`nŽádné ikony nebyly vygenerovány (-WhatIf)." -ForegroundColor Yellow
+}

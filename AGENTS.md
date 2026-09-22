@@ -15,8 +15,8 @@ interactive toolbox, in one repo, plus the GitHub Pages portal at the repo root.
 | **Location on disk** | `~/.config/powershell/` |
 | **Portal** | [martinpaprcka77.github.io](https://martinpaprcka77.github.io) (this repo's Pages, root URL) |
 | **Language** | PowerShell 5.1 / 7+ |
-| **Module** | `toolkit/Toolkit` — 36 exported functions, v1.5.0 |
-| **Tests** | 69 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` |
+| **Module** | `toolkit/Toolkit` — 36 exported functions, v1.5.1 |
+| **Tests** | 73 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` (70 module/behaviour + 3 repo invariants) |
 | **Dependencies** | Git; PowerShell 7+ (Windows) |
 | **Lint** | `PSScriptAnalyzerSettings.psd1` at repo root; CI fails only on Error severity |
 
@@ -24,6 +24,19 @@ Previously split across two repos (`dotfiles-powershell`, `dotfiles-tools`) — 
 eliminate cross-repo coupling (menu items calling functions that only existed in the other repo)
 and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_TOOLS`. See
 `docs/ROADMAP.md` Fáze 5 for the full rationale.
+
+**Single source of truth (verified 2026-09-22).** This repo is the only place the profile, the
+toolkit and the portal are maintained. Status of the leftovers:
+
+- `martinpaprcka77/dotfiles-tools` on GitHub is **archived** (read-only).
+- `martinpaprcka77/dotfiles-powershell` **no longer exists** on GitHub.
+- A *working copy* of the old `dotfiles-tools` repo may still sit beside a checkout of this one
+  (e.g. `C:\Dev\dotfiles-tools`). It is a stale **subset** of `toolkit/` here: same tree, but no
+  `ShellInfo.ps1`/`Connectivity.ps1`, smaller `Diagnostics.ps1`, an older 11 KB
+  `Toolkit.Tests.ps1` here supersedes, and no `docs/`, `icons/` or `PowerShell-Startup-Map.html`.
+  **Never fix a bug there** — its own `README.md` points here on purpose.
+- `tools/devmenu/` used to live outside version control; it is now a tracked part of this repo
+  (identical code, plus one nested-`Join-Path` fix so it satisfies the repo invariant test).
 
 ---
 
@@ -93,19 +106,29 @@ and the two-sources-of-truth drift between `$env:DOTFILES_PWSH`/`$env:DOTFILES_T
 │       │                       only loads if $env:WT_SESSION is set
 │       └── shell-integration.ps1 ← OSC 133 prompt markers; sourced from ps7/profile.ps1 directly
 │
-└── toolkit/                 ← INTERACTIVE TOOLBOX (self-contained module + ops)
+├── toolkit/                 ← INTERACTIVE TOOLBOX (self-contained module + ops)
     ├── Toolkit/             ← PowerShell module: Toolkit.psd1 (36 FunctionsToExport) + Toolkit.psm1
     │   ├── Private/         ← Get-ToolkitRoot (never exported)
     │   └── Public/          ← Console · Configuration · Diagnostics · Detectors · ModulePath · Output · Show-Menu
     │       └── Menu/        ← menu-main/startup/git/terminal/dotfiles/pwsh/vscode (dual-purpose)
     ├── bin/                 ← in PATH: menu.ps1 (→ Start-MainMenu), check.ps1 (→ Invoke-SystemCheck)
     ├── ops/                 ← Add-WTProfiles · Generate-Icons · deps · windows · modernize · precheck · configure · Get-PowerShellStartupHealth
-    ├── config/              ← settings.json + wt-schemes.json
+    ├── config/              ← settings.example.json (committed template) + wt-schemes.json
+    │                           settings.json is LOCAL + gitignored (Save-ToolkitConfig writes it)
     ├── build/               ← Build.ps1 (manifest parity) · Test.ps1 (verification gate) · Generate-Docs.ps1
-    ├── tests/Toolkit.Tests.ps1 ← 69 Pester cases
+    ├── tests/Toolkit.Tests.ps1 ← 73 Pester cases (70 module/behaviour + 3 repo invariants)
     ├── docs/                ← 00-bootstrap … 90-prompt + 20-reference (generated)
     ├── PowerShell-Startup-Map.html ← interactive startup health map
     └── githooks/            ← post-checkout/post-merge reminders, install.sh
+
+└── tools/                   ← repo-maintenance + developer tooling (NOT part of the profile)
+    ├── devmenu/             ← portable launcher menu for pi/pwsh/wt/cmd (devmenu.ps1,
+    │                           devmenu.d/*.json fragments, docs/ARCHITECTURE.md);
+    │                           `pwsh -File tools/devmenu/devmenu.ps1 -SelfTest` = 31 checks
+    ├── gist-sources.ps1     ← canonical gist bodies shared by the two scripts below
+    ├── Verify-Sync.ps1      ← read-only check: gists + repos match the canonical sources
+    ├── Update-Gists.ps1     ← push gist-sources.ps1 content to the canonical gists
+    └── Validate-Links.ps1   ← link/definition scan
 ```
 
 ---
@@ -159,8 +182,11 @@ instead (switches aren't reachable through `iex`).
 2. **PS7-only** → `profile/ps7/profile.ps1`; **PS5-only** → `profile/ps5/profile.ps1`
 3. **Host-specific** → `profile/hosts/ConsoleHost.ps1` or `VSCode.ps1`
 4. **New profile core file** → drop a `.ps1` into `profile/core/` — it auto-loads
-5. **New toolkit utility** → `toolkit/Toolkit/Public/common.ps1`; **new diagnostic** → `toolkit/Toolkit/Public/checkers.ps1`
-6. **New menu item** → add to `toolkit/menu/menu-main.ps1`; **new submenu** → new `toolkit/menu/menu-whatever.ps1`
+5. **New toolkit utility** → `toolkit/Toolkit/Public/Console.ps1` (generic helpers) or
+   `Configuration.ps1`; **new diagnostic** → `toolkit/Toolkit/Public/Diagnostics.ps1`
+6. **New menu item** → `toolkit/Toolkit/Public/Menu/menu-main.ps1`; **new submenu** → new
+   `toolkit/Toolkit/Public/Menu/menu-<name>.ps1` (the whole `Public/` tree is dot-sourced
+   recursively, so a new file needs no registration — but a new *exported* function does, see 7)
 7. **After adding a toolkit function**: add to `FunctionsToExport` in `Toolkit.psm1`, add to
    `FunctionsToExport` in `Toolkit.psd1`, add a test case in `toolkit/tests/Toolkit.Tests.ps1`
 8. **User overrides** → copy `profile/core/extra.ps1.example` to `profile/core/extra.ps1` (gitignored)
@@ -168,6 +194,16 @@ instead (switches aren't reachable through `iex`).
 ---
 
 ## How to run tests
+
+One command runs the whole gate (manifest parity → Pester → analyzer), and exits non-zero on
+any failure — use this before committing:
+
+```powershell
+pwsh -File ~/.config/powershell/toolkit/build/Test.ps1
+# add -Detailed for per-test output
+```
+
+Individually:
 
 ```powershell
 Install-Module Pester -Force
@@ -183,6 +219,16 @@ Invoke-ScriptAnalyzer -Path ~/.config/powershell -Recurse -Settings ~/.config/po
 
 CI fails only on Error-severity findings — Warnings are reported, not blocking (the settings
 file's trailing comments explain which warning categories are deliberately left visible and why).
+
+**Toolchain notes (verified, not assumed):** the `Toolkit` module declares
+`PowerShellVersion = 7.0` (it uses `??` and `ConvertFrom-Json -AsHashtable`), so the *module*
+tests need `pwsh` 7+, Pester 5+ (`BeforeAll`/`-ForEach`/`Should -Exist` are 5.x syntax; the
+Pester 3.4.0 that ships with Windows will not run this suite) and, for the 3-arg-`Join-Path`
+and style-table invariants, nothing more. `profile/`, `install.ps1`, `update.ps1` and
+`Setup-Windows.ps1` must keep working on **Windows PowerShell 5.1** as well — the repo
+invariant test in the Pester suite enforces the `Join-Path` half of that automatically.
+Two tests deliberately write nothing to the host: calls under test get `6>$null` because
+`Write-Host` ignores `$InformationPreference`.
 
 ---
 
@@ -206,7 +252,7 @@ file's trailing comments explain which warning categories are deliberately left 
   field-reported and must degrade to `$HOME\Documents`, not crash
 - **Self-referential lookups inside `toolkit/`**: never assume `$env:DOTFILES_TOOLS` is set when
   locating a file that lives inside `toolkit/` itself (`scripts/*.ps1`, `.vscode/`) — fall back to
-  `Split-Path $PSScriptRoot -Parent` (see `toolkit/Toolkit/Public/config.ps1`'s `$toolsRoot` pattern). A
+  `Split-Path $PSScriptRoot -Parent` (see `toolkit/Toolkit/Public/Configuration.ps1`'s `$toolsRoot` pattern). A
   field-reported crash (`Join-Path $env:DOTFILES_TOOLS ...` with a `$null` env var) happened when
   the menu launched without the profile loaded (e.g. a WT custom profile running `menu-main.ps1` directly)
 - **Alias/function naming**: check `Get-Command -CommandType Alias <name>` before adding a short
@@ -214,12 +260,15 @@ file's trailing comments explain which warning categories are deliberately left 
   (bit `gcm`/`gps` once; fix: `Remove-Item Alias:<name> -Force` before the function definition)
 - **Menu items calling `profile/` functions from `toolkit/`** (`Show-Status`, `Measure-Profile`, …)
   go through `Invoke-IfAvailable` — `toolkit/` can in principle be loaded standalone
-- **`#Requires -Version 5.1`** on every real entry point (`install.ps1`, `update.ps1`,
-  `toolkit/bin/*.ps1`, and `remote-install.ps1` for its direct-invocation path — it's a silent
+- **`#Requires -Version 5.1`** on every real root entry point (`install.ps1`, `update.ps1`,
+  `Setup-Windows.ps1`, and `remote-install.ps1` for its direct-invocation path — it's a silent
   no-op under `irm | iex`, since `#Requires` only enforces on file/call-operator invocation, not
   `Invoke-Expression`, verified empirically) — gives a clean native error instead of a cryptic
-  mid-parse failure on an unsupported PowerShell. Not worth adding to `bootstrap.ps1`: that file
-  is a reference copy, never itself executed as a script (see its own `.NOTES`)
+  mid-parse failure on an unsupported PowerShell. `toolkit/bin/*.ps1` deliberately carries none:
+  those shims only `Import-Module` the Toolkit module, which itself declares
+  `PowerShellVersion = 7.0`, so claiming 5.1 there would be wrong. Not worth adding to
+  `bootstrap.ps1` either: that file is a reference copy, never itself executed as a script
+  (see its own `.NOTES`)
 - **State-changing functions get `SupportsShouldProcess`** (`-WhatIf`/`-Confirm`) — e.g.
   `Reset-PSModulePath`/`Remove-PSModulePath`. Skip it for functions PSScriptAnalyzer flags on verb
   alone but where confirm-before-running doesn't make sense (an interactive menu launcher, an ETW

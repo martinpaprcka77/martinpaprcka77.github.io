@@ -53,8 +53,21 @@ if ($psOK) {
 
 # ── Windows Terminal ───────────────────────────────────────────
 Section "Windows Terminal"
-$wtPkg = Get-AppxPackage -Name Microsoft.WindowsTerminal -ErrorAction SilentlyContinue
-if ($wtPkg) {
+# Get-AppxPackage comes from the Appx module, which is Windows PowerShell only —
+# pwsh has no such cmdlet. An unguarded call printed a red "not recognized"
+# error straight into this user-facing report on PS7 *and* then fell through to
+# a false "WT not installed" WARN on machines where WT is plainly installed (the
+# next check proves it, via WT's own settings.json). Probe Appx where it exists;
+# otherwise fall back to the MSIX package directory / the wt.exe shim.
+$wtInstalled = $false
+if (Get-Command Get-AppxPackage -ErrorAction SilentlyContinue) {
+    $wtInstalled = [bool](Get-AppxPackage -Name Microsoft.WindowsTerminal -ErrorAction SilentlyContinue)
+}
+if (-not $wtInstalled) {
+    $wtInstalled = (Test-Path "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe") -or
+                   [bool](Get-Command wt.exe -ErrorAction SilentlyContinue)
+}
+if ($wtInstalled) {
     Check 'Windows Terminal installed' 'OK'
 } else {
     Check 'Windows Terminal installed' 'WARN' 'Run deps.ps1 to install'
@@ -92,11 +105,16 @@ if ($codeCmd) {
     Check 'VS Code installed' 'WARN' 'Run deps.ps1 to install'
 }
 
-$vscSettings = Join-Path $HOME 'Projects\tools\.vscode\settings.json'
+# Was $HOME\Projects\tools\.vscode\settings.json — the *pre-merge* dotfiles-tools clone path.
+# That directory no longer exists anywhere, so this check reported WARN (and told the user to
+# "Clone dotfiles-tools first", a repo that is now archived) on every correct install.
+# Resolve it against this repo instead, using the script's own location.
+$repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+$vscSettings = Join-Path (Join-Path $repoRoot '.vscode') 'settings.json'
 if (Test-Path $vscSettings) {
     Check 'Committed VS Code settings' 'OK'
 } else {
-    Check 'Committed VS Code settings' 'WARN' 'Clone dotfiles-tools first'
+    Check 'Committed VS Code settings' 'WARN' "Not found: $vscSettings"
 }
 
 # ── Dotfiles Profile State ────────────────────────────────────
@@ -120,11 +138,16 @@ foreach ($p in $profilePaths) {
     }
 }
 
-$mainProfile = Join-Path $HOME '.config\powershell\profile.ps1'
+# The main orchestrator lives at <repo>/profile/profile.ps1 (the monorepo root
+# has no profile.ps1 of its own); the injected bootstrap dot-sources exactly
+# that path under ~/.config/powershell. The old check looked one level too high
+# (…/powershell/profile.ps1, which never exists) and so reported a permanent
+# FAIL, with a hint pointing at the long-deleted dotfiles-powershell repo.
+$mainProfile = Join-Path (Join-Path (Join-Path $HOME '.config') 'powershell') 'profile\profile.ps1'
 if (Test-Path $mainProfile) {
     Check 'Main profile.ps1 exists' 'OK' $mainProfile
 } else {
-    Check 'Main profile.ps1 missing' 'FAIL' 'Clone dotfiles-powershell first'
+    Check 'Main profile.ps1 missing' 'FAIL' 'Install dotfiles to ~/.config/powershell — see install.ps1'
 }
 
 # ── Environment ────────────────────────────────────────────────

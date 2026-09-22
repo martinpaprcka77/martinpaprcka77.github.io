@@ -1,7 +1,7 @@
-@{
+﻿@{
     # Module manifest for Toolkit
     RootModule        = 'Toolkit.psm1'
-    ModuleVersion     = '1.5.0'
+    ModuleVersion     = '1.5.1'
     GUID              = 'd5e3f8a1-9b2c-4d7e-8f3a-1c5b9e2d4f6a'
     Author            = 'USER'
     CompanyName       = ''

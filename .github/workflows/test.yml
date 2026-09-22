@@ -53,9 +53,17 @@ jobs:
       - name: Validate JSON (config)
         shell: pwsh
         run: |
-          # settings.json is repo config; validate the shipped config files.
-          $files = @('toolkit/config/settings.json', 'toolkit/config/wt-schemes.json')
+          # Validate the *committed* config files. toolkit/config/settings.json is now the
+          # LOCAL, gitignored config (written by Save-ToolkitConfig), so a fresh checkout does
+          # not have it — validating it here failed CI. The committed template is
+          # settings.example.json. A missing expected file is itself an error, so this step
+          # cannot silently pass by finding nothing to check.
+          $files = @('toolkit/config/settings.example.json', 'toolkit/config/wt-schemes.json')
           foreach ($f in $files) {
+            if (-not (Test-Path -LiteralPath $f)) {
+              Write-Error "❌ $f — expected committed config file is missing"
+              exit 1
+            }
             try {
               Get-Content $f -Raw | ConvertFrom-Json | Out-Null
               Write-Host "✅ $f — valid JSON"

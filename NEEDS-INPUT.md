@@ -21,12 +21,20 @@
 **Dependencies**: None (works on all platforms with PowerShell 5.1+)  
 **Status**: ✅ Done (commit: 35c80ab — `Test-NetworkHealth` tests DNS, GitHub, Google)
 
-### [x] Transient prompt
-**What**: Collapse prompt after command execution (Starship feature)  
-**Scope**: Small  
-**Notes**: Starship config (`starship.toml`): add `[line_break].disabled = false` and transient line prefix  
-**Dependencies**: Starship 1.8+  
-**Status**: ✅ Done (commit: 32c22e3 — [line_break] enabled, [transient_prompt] configured)
+### [ ] Transient prompt — NOT AVAILABLE in Starship
+**What**: Collapse prompt after command execution
+**Scope**: N/A
+**Notes**: This is an **oh-my-posh** feature, not a Starship one. The `[transient_prompt]` table is
+not a valid Starship key: Starship rejects it and printed
+`[WARN] (starship::config): Error in 'StarshipRoot' at 'transient_prompt': Unknown key` on every
+prompt init (verified against starship 1.26.0 — the key is absent from `starship print-config
+--default` and dropped by `starship print-config`; an A/B run of a copied `profile/` with and
+without the block confirmed it is the cause). The block has been removed from
+`profile/starship.toml`; `[line_break]` stays. The feature remains available only on the
+oh-my-posh fallback path in `profile/ps7/profile.ps1`.
+**Dependencies**: Starship has no equivalent; would need oh-my-posh as the active prompt
+**Status**: ❌ Closed as not-supported-upstream (previous "✅ Done (commit: 32c22e3)" was wrong —
+the config it added was invalid and noisily warned)
 
 ---
 

@@ -3,6 +3,16 @@ config/secrets.*
 *.secret
 .env
 
+# Toolkit config — LOCAL, never committed.
+# Save-ToolkitConfig (called by ops/configure.ps1 and the `configure` menu item) writes
+# config/settings.json. While that path was git-tracked, running the wizard dirtied the
+# working tree and the next update.ps1 (`git pull --ff-only`) failed — or remote-install.ps1
+# (`git reset --hard`) silently threw the user's settings away. config/settings.example.json
+# is the committed template; Get-ToolkitConfig falls back to hardcoded defaults when no
+# settings.json exists, so a fresh clone behaves identically.
+config/settings.json
+config/settings.json.backup
+
 # Node
 node_modules/
 

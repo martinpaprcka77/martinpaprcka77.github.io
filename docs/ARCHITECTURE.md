@@ -137,14 +137,14 @@ graph TB
     end
 
     subgraph "Toolkit Module"
-        PSM1["Toolkit.psm1<br/>(dot-sources lib/)"]
+        PSM1["Toolkit.psm1<br/>(dot-sources Private/ + Public/)"]
         PSD1["Toolkit.psd1<br/>(manifest, 36 funkcí)"]
     end
 
     subgraph "toolkit/Toolkit/Public/ (source functions)"
-        COMMON["common.ps1<br/>Test-Admin, Write-*, …"]
-        MENU["menu.ps1<br/>Show-Menu engine"]
-        CHECKERS["checkers.ps1<br/>Get-DiskStatus, …"]
+        COMMON["Console.ps1<br/>Write-Info/Success/Warn/Err, Confirm-Action"]
+        MENU["Show-Menu.ps1<br/>Show-Menu engine"]
+        CHECKERS["Diagnostics.ps1<br/>Get-DiskStatus, …"]
         DETECT["Detectors.ps1<br/>module stack / PSModulePath"]
     end
 

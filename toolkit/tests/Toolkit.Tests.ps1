@@ -7,6 +7,13 @@
 .NOTES
     Cesta: ~/Projects/tools/tests/Toolkit.Tests.ps1
     Spuštění: Invoke-Pester ~/Projects/tools/tests/Toolkit.Tests.ps1
+
+    Host output: every call under test that writes through Write-Host is redirected with
+    `6>$null` (the information stream). Write-Host ignores $InformationPreference — it is
+    hardwired to InformationAction Continue — so the preference cannot quiet these tests,
+    while 6>$null can. Without it a green run is buried under the module's own diagnostics
+    dump, which is exactly when a real failure gets missed. Do not "fix" this by mocking
+    Write-Host: that would also mask a regression in the logging path itself.
 #>
 
 Describe 'Toolkit Module' {
@@ -61,19 +68,19 @@ Describe 'Toolkit Module' {
     # ── Utility functions ────────────────────────────────────
     Context 'Utility functions' {
         It 'Write-Info does not throw' {
-            { Write-Info 'test message' } | Should -Not -Throw
+            { Write-Info 'test message' 6>$null } | Should -Not -Throw
         }
 
         It 'Write-Success does not throw' {
-            { Write-Success 'test message' } | Should -Not -Throw
+            { Write-Success 'test message' 6>$null } | Should -Not -Throw
         }
 
         It 'Write-Warn does not throw' {
-            { Write-Warn 'test message' } | Should -Not -Throw
+            { Write-Warn 'test message' 6>$null } | Should -Not -Throw
         }
 
         It 'Write-Err does not throw' {
-            { Write-Err 'test message' } | Should -Not -Throw
+            { Write-Err 'test message' 6>$null } | Should -Not -Throw
         }
 
         It 'Confirm-Action returns false for default (no input)' {
@@ -151,23 +158,23 @@ Describe 'Toolkit Module' {
             Mock Get-ServiceStatus { 'mock-services' } -ModuleName Toolkit
             Mock Get-NetworkInfo { 'mock-network' } -ModuleName Toolkit
             Mock Get-TopProcesses { 'mock-processes' } -ModuleName Toolkit
-            { Invoke-SystemCheck } | Should -Not -Throw
+            { Invoke-SystemCheck 6>$null } | Should -Not -Throw
         }
 
         It 'Get-DiskStatus does not throw' {
-            { Get-DiskStatus -ErrorAction SilentlyContinue } | Should -Not -Throw
+            { Get-DiskStatus -ErrorAction SilentlyContinue 6>$null } | Should -Not -Throw
         }
 
         It 'Get-ServiceStatus does not throw' {
-            { Get-ServiceStatus -ErrorAction SilentlyContinue } | Should -Not -Throw
+            { Get-ServiceStatus -ErrorAction SilentlyContinue 6>$null } | Should -Not -Throw
         }
 
         It 'Get-TopProcesses does not throw' {
-            { Get-TopProcesses -ErrorAction SilentlyContinue } | Should -Not -Throw
+            { Get-TopProcesses -ErrorAction SilentlyContinue 6>$null } | Should -Not -Throw
         }
 
         It 'Get-SystemSummary returns a snapshot' {
-            $s = Get-SystemSummary
+            $s = Get-SystemSummary 6>$null
             $s.ComputerName | Should -Not -BeNullOrEmpty
             $s.PSVersion | Should -Not -BeNullOrEmpty
         }
@@ -176,7 +183,7 @@ Describe 'Toolkit Module' {
     # ── Shell info ────────────────────────────────────────────
     Context 'Shell info' {
         It 'Get-ShellInfo exposes shell, user, env, profiles, path' {
-            $i = Get-ShellInfo
+            $i = Get-ShellInfo 6>$null
             $i.Shell.Host | Should -Not -BeNullOrEmpty
             $i.User.Name | Should -Not -BeNullOrEmpty
             $i.Profiles.CurrentUserCurrentHost.Path | Should -Be $PROFILE.CurrentUserCurrentHost
@@ -188,7 +195,7 @@ Describe 'Toolkit Module' {
     # ── Connectivity ──────────────────────────────────────────
     Context 'Connectivity' {
         It 'Test-NetworkEndpoint reports unreachable hosts without throwing' {
-            $r = Test-NetworkEndpoint -Target 'invalid.invalid' -TimeoutMs 200
+            $r = Test-NetworkEndpoint -Target 'invalid.invalid' -TimeoutMs 200 6>$null
             $r.Target | Should -Be 'invalid.invalid'
             $r.Reachable | Should -BeFalse
         }
@@ -206,38 +213,38 @@ Describe 'Toolkit Module' {
 
         It 'Get-PSModulePath returns the split entries' {
             $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
-            $result = Get-PSModulePath
+            $result = Get-PSModulePath 6>$null
             $result | Should -Be @('C:\Mods\A', 'C:\Mods\B')
         }
 
         It 'Add-PSModulePath adds a new path' {
             $env:PSModulePath = 'C:\Mods\A'
-            Add-PSModulePath -Path 'C:\Mods\New'
+            Add-PSModulePath -Path 'C:\Mods\New' 6>$null
             ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Contain 'C:\Mods\New'
         }
 
         It 'Add-PSModulePath is a no-op when the path already exists' {
             $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
-            Add-PSModulePath -Path 'C:\Mods\A'
+            Add-PSModulePath -Path 'C:\Mods\A' 6>$null
             ($env:PSModulePath -split [IO.Path]::PathSeparator | Where-Object { $_ -eq 'C:\Mods\A' }).Count | Should -Be 1
         }
 
         It 'Remove-PSModulePath removes by index' {
             $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
-            Remove-PSModulePath -Index 0
+            Remove-PSModulePath -Index 0 6>$null
             ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Be @('C:\Mods\B')
         }
 
         It 'Remove-PSModulePath removes by path' {
             $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
-            Remove-PSModulePath -Path 'C:\Mods\A'
+            Remove-PSModulePath -Path 'C:\Mods\A' 6>$null
             ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Be @('C:\Mods\B')
         }
 
         It 'Reset-PSModulePath sets the modern baseline entries in order' {
             Mock Test-Path { $true } -ModuleName Toolkit
             Mock New-Item { } -ModuleName Toolkit
-            Reset-PSModulePath
+            Reset-PSModulePath 6>$null
             $entries = $env:PSModulePath -split [IO.Path]::PathSeparator
             $entries[0] | Should -Be "$env:ProgramFiles\PowerShell\7\Modules"
             # LOCALAPPDATA, never Documents — Documents can be OneDrive-redirected
@@ -247,7 +254,7 @@ Describe 'Toolkit Module' {
         It 'Export-PSModulePath writes JSON with the correct entry count' {
             $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
             $outPath = Join-Path $TestDrive 'psmodulepath.json'
-            Export-PSModulePath -OutputPath $outPath
+            Export-PSModulePath -OutputPath $outPath 6>$null
             $exported = Get-Content $outPath -Raw | ConvertFrom-Json
             $exported.EntryCount | Should -Be 2
             $exported.Entries | Should -Be @('C:\Mods\A', 'C:\Mods\B')
@@ -256,9 +263,9 @@ Describe 'Toolkit Module' {
         It 'Import-PSModulePath restores entries from an exported file' {
             $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
             $outPath = Join-Path $TestDrive 'psmodulepath-import.json'
-            Export-PSModulePath -OutputPath $outPath
+            Export-PSModulePath -OutputPath $outPath 6>$null
             $env:PSModulePath = 'C:\Mods\Other'
-            Import-PSModulePath -InputPath $outPath
+            Import-PSModulePath -InputPath $outPath 6>$null
             ($env:PSModulePath -split [IO.Path]::PathSeparator) | Should -Be @('C:\Mods\A', 'C:\Mods\B')
         }
 
@@ -270,7 +277,7 @@ Describe 'Toolkit Module' {
 
         It 'Test-PSModulePath runs without throwing' {
             $env:PSModulePath = @('C:\Mods\A', 'C:\Mods\B') -join [IO.Path]::PathSeparator
-            { Test-PSModulePath } | Should -Not -Throw
+            { Test-PSModulePath 6>$null } | Should -Not -Throw
         }
     }
 
@@ -291,6 +298,112 @@ Describe 'Toolkit Module' {
             }
             else {
                 Set-ItResult -Skipped -Because 'profile/core/status.ps1 not present'
+            }
+        }
+    }
+
+    # ── Repository invariants ─────────────────────────────────
+    # Whole-repo static checks. They live in the Pester suite rather than build/ so the CI
+    # "Pester Tests" step (the gate that actually blocks a push) covers them.
+    Context 'Repository invariants' {
+        BeforeAll {
+            $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+            $repoScripts = @(Get-ChildItem -LiteralPath $repoRoot -Recurse -File -ErrorAction SilentlyContinue |
+                Where-Object {
+                    $_.Extension -in '.ps1', '.psm1', '.psd1' -and
+                    $_.FullName -notmatch '\\\.github\\agents\\'
+                })
+        }
+
+        It 'no 3-argument Join-Path (PS 6/7-only -AdditionalChildPath) exists in the repo' {
+            # Join-Path only takes a third positional path on PowerShell 6+. On Windows
+            # PowerShell 5.1 the 3-arg form binds as an extra positional argument and dies:
+            #   A positional parameter cannot be found that accepts argument 'Toolkit.psd1'
+            # That really broke build/Build.ps1 and Setup-Windows.ps1 (both reachable from a
+            # 5.1 session) until they were rewritten to the nested 2-arg form used elsewhere.
+            $offenders = @(
+                foreach ($file in $repoScripts) {
+                    $ast = [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$null)
+                    $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true) |
+                        Where-Object { $_.GetCommandName() -eq 'Join-Path' } |
+                        Where-Object {
+                            $positional = @($_.CommandElements |
+                                Select-Object -Skip 1 |
+                                Where-Object { $_ -isnot [System.Management.Automation.Language.CommandParameterAst] })
+                            $positional.Count -ge 3
+                        } |
+                        ForEach-Object {
+                            '{0}:{1}' -f $file.FullName.Substring($repoRoot.Length).TrimStart('\'), $_.Extent.StartLineNumber
+                        }
+                }
+            )
+            $offenders | Should -BeNullOrEmpty -Because ('these use the PS 7-only 3-arg Join-Path and break on Windows PowerShell 5.1: ' + ($offenders -join ', '))
+        }
+
+        It 'profile and toolkit logging style tables do not drift' {
+            # See profile/lib/output.ps1 and toolkit/Toolkit/Public/Output.ps1: the two writers
+            # cannot share a file by design (install.ps1/update.ps1 run before any profile or
+            # module exists; the toolkit must stay usable standalone), so the prefix/colour
+            # table is duplicated on purpose. This assertion is what stops the copy drifting —
+            # it was the only thing keeping the pair honest, and it had already drifted
+            # (toolkit Write-Info was "[*] "/Cyan vs the profile's "  [*] "/DarkGray).
+            $profileText = Get-Content -LiteralPath (Join-Path $repoRoot 'profile\lib\output.ps1') -Raw
+            $toolkitText = Get-Content -LiteralPath (Join-Path $repoRoot 'toolkit\Toolkit\Public\Output.ps1') -Raw
+
+            $levelOf = @{
+                'Write-Step' = 'Step'; 'Write-Ok' = 'Ok'; 'Write-Skip' = 'Skip'
+                'Write-Fail' = 'Fail'; 'Write-Warn' = 'Warn'; 'Write-Info' = 'Info'
+            }
+
+            # Match the literal string only, then strip the trailing variable reference. Doing it
+            # this way keeps `$` out of the patterns entirely: a `\$M` inside a double-quoted
+            # pattern backtick-escapes the backslash and then interpolates $M (empty), so the
+            # pattern silently matches the wrong span instead of failing loudly.
+            $profileMap = @{}
+            foreach ($m in [regex]::Matches($profileText, "function\s+(Write-\w+)\s*\{[^}]*?Write-Host\s+`"([^`"]+)`"\s*-ForegroundColor\s+(\w+)")) {
+                if ($levelOf.ContainsKey($m.Groups[1].Value)) {
+                    $prefix = $m.Groups[2].Value -replace '\$[A-Za-z]+$', ''
+                    $profileMap[$levelOf[$m.Groups[1].Value]] = '{0}|{1}' -f $prefix, $m.Groups[3].Value
+                }
+            }
+
+            $toolkitMap = @{}
+            foreach ($m in [regex]::Matches($toolkitText, "'(Step|Ok|Skip|Warn|Fail)'\s*\{\s*Write-Host\s+`"([^`"]+)`"\s*-ForegroundColor\s+(\w+)")) {
+                $prefix = $m.Groups[2].Value -replace '\$[A-Za-z]+$', ''
+                $toolkitMap[$m.Groups[1].Value] = '{0}|{1}' -f $prefix, $m.Groups[3].Value
+            }
+            $defaultBranch = [regex]::Match($toolkitText, "default\s*\{\s*Write-Host\s+`"([^`"]+)`"\s*-ForegroundColor\s+(\w+)")
+            if ($defaultBranch.Success) {
+                $prefix = $defaultBranch.Groups[1].Value -replace '\$[A-Za-z]+$', ''
+                $toolkitMap['Info'] = '{0}|{1}' -f $prefix, $defaultBranch.Groups[2].Value
+            }
+
+            # Guard the guards: if either regex silently stops matching, the loop below would
+            # compare nothing and quietly pass.
+            $profileMap.Keys.Count | Should -Be 6 -Because 'profile/lib/output.ps1 writer table must parse'
+            $toolkitMap.Keys.Count | Should -Be 6 -Because 'toolkit Write-TkMessage table must parse'
+
+            foreach ($level in @('Step', 'Ok', 'Skip', 'Warn', 'Fail', 'Info')) {
+                "{0} {1}" -f $level, $toolkitMap[$level] | Should -Be ("{0} {1}" -f $level, $profileMap[$level]) -Because "level $level must render identically in profile/lib/output.ps1 and toolkit/Toolkit/Public/Output.ps1"
+            }
+        }
+
+        It 'toolkit config/settings.json is local-only and ships an example instead' {
+            # Save-ToolkitConfig writes config/settings.json (ops/configure.ps1 calls it), so if
+            # that path is tracked, running the wizard dirties the tree and the next update.ps1
+            # (`git pull --ff-only`) fails — or remote-install.ps1 (`git reset --hard`) discards
+            # the user's settings. Docs claimed this was fixed long before the fix existed; this
+            # test is what makes the claim true and keeps it true.
+            $example = Join-Path $repoRoot 'toolkit\config\settings.example.json'
+            $example | Should -Exist -Because 'the committed template must exist for users to copy'
+
+            $ignoreText = Get-Content -LiteralPath (Join-Path $repoRoot 'toolkit\.gitignore') -Raw
+            $ignoreText | Should -Match '(?m)^config/settings\.json\s*$' -Because 'the local config must be ignored'
+
+            $git = Get-Command git -ErrorAction SilentlyContinue
+            if ($git) {
+                $null = & git -C $repoRoot ls-files --error-unmatch toolkit/config/settings.json 2>$null
+                $LASTEXITCODE | Should -Not -Be 0 -Because 'toolkit/config/settings.json must not be tracked by git'
             }
         }
     }

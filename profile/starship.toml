@@ -153,17 +153,18 @@ success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
 vicmd_symbol = "[❮](bold green)"
 
-# Transient prompt — collapses after command execution (Starship 1.8+)
-# Requires: starship.rs 1.8 or later
-# Older versions: safely ignored (no error, just standard prompt shown)
+# Two-line prompt (Starship's default; stated explicitly here to document intent).
 [line_break]
 disabled = false
 
-[transient_prompt]
-command_timeout = 500
-success_symbol = "[❯](bold green) "
-error_symbol = "[❯](bold red) "
-format = "$symbol "
+# NOTE: Starship has no transient-prompt feature. A top-level [transient_prompt] table is an
+# oh-my-posh key, not a Starship one: Starship rejects it as an unknown root key and prints
+#   [WARN] - (starship::config): Error in 'StarshipRoot' at 'transient_prompt': Unknown key
+# on every prompt init — not "silently ignored". Verified against starship 1.26.0 (the key is
+# absent from `starship print-config --default` and dropped by `starship print-config`), and
+# proven causal by A/B: a profile load with the block warns, an identical tree without it does
+# not. The transient/collapsing prompt therefore stays on the oh-my-posh fallback path
+# (profile/ps7/profile.ps1) — do not re-add this block to starship.toml.
 
 [nodejs]
 format = "via [🐍 $version](bold green) "
