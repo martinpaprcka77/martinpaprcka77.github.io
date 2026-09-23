@@ -10,7 +10,7 @@
 [![repo](https://img.shields.io/badge/repo-martinpaprcka77.github.io-blue)](#)
 [![files](https://img.shields.io/badge/files-44-green)](#)
 [![module](https://img.shields.io/badge/module-Toolkit-orange)](#)
-[![tests](https://img.shields.io/badge/tests-75_cases-brightgreen)](#)
+[![tests](https://img.shields.io/badge/tests-76_cases-brightgreen)](#)
 [![license](https://img.shields.io/badge/license-MIT-lightgrey)](#)
 
 ---
@@ -39,7 +39,7 @@ Merged into one repo — the split below is historical (see the note at the top 
 | **2 bin scripts** | `menu.ps1`, `check.ps1` |
 | **7 menus** | Main, Startup, Git, Terminal, Dotfiles, Pwsh, VSCode (numbered, extensible, live per-item status) |
 | **8 helper scripts** | Add-WTProfiles, Generate-Icons, configure, deps, windows, modernize, precheck, Get-PowerShellStartupHealth |
-| **75 Pester tests** | Module structure, function exports, Mock coverage, config, error paths, PSModulePath |
+| **76 Pester tests** | Module structure, function exports, Mock coverage, config, error paths, PSModulePath |
 
 ---
 
@@ -213,7 +213,7 @@ Invoke-SystemCheck
 │   │                            (settings.json itself is LOCAL + gitignored; Save-ToolkitConfig
 │   │                            and ops/configure.ps1 write it, so the wizard cannot dirty the tree)
 │   └── wt-schemes.json       ← WT color schemes (single source of truth, read by Add-WTProfiles.ps1)
-├── tests/Toolkit.Tests.ps1   ← 75 Pester test cases (70 module/behaviour + 5 repo invariants)
+├── tests/Toolkit.Tests.ps1   ← 76 Pester test cases (70 module/behaviour + 6 repo invariants)
 ├── docs/                     ← ordered by the bootstrap lifecycle (00 → 90)
 └── .gitignore
 ```
@@ -244,7 +244,7 @@ Invoke-Pester ~/Projects/tools/tests/Toolkit.Tests.ps1
 pwsh -File build/Test.ps1
 ```
 
-**75 test cases**: module structure, function exports, utility behavior with Mocks, config env-var overrides, menu error paths, system check mocks, PSModulePath management. The suite targets Windows + PowerShell 7.
+**76 test cases**: module structure, function exports, utility behavior with Mocks, config env-var overrides, menu error paths, system check mocks, PSModulePath management. The suite targets Windows + PowerShell 7.
 
 ---
 

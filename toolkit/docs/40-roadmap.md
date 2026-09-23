@@ -30,7 +30,7 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 - ✅ Starship prompt (Rust) s `starship.toml` konfigurací (30+ modulů)
 - ✅ oh-my-posh jako fallback
 - ✅ Generování ikon (`Generate-Icons.ps1`)
-- ✅ 75 Pester testů (Mock pokrytí, config, PSModulePath, menu chybové cesty)
+- ✅ 76 Pester testů (Mock pokrytí, config, PSModulePath, menu chybové cesty)
 - ✅ Bezpečné ukládání klíčů (`Get-SecretKey` — SecretManagement + env fallback)
 - ✅ `extra.ps1` pattern — uživatelské přizpůsobení mimo Git
 - ✅ AGENTS.md + CLAUDE.md v obou repozitářích

@@ -99,7 +99,7 @@ toolkit/ — interactive toolbox
 - Toolkit/Toolkit.psd1 (36 FunctionsToExport), Toolkit/Toolkit.psm1
 - Toolkit/Public/Menu/menu-main.ps1, menu-startup.ps1, menu-git.ps1, menu-terminal.ps1, menu-dotfiles.ps1, menu-pwsh.ps1, menu-vscode.ps1
 - ops/configure.ps1
-- tests/Toolkit.Tests.ps1 (75 Pester cases, Mock coverage)
+- tests/Toolkit.Tests.ps1 (76 Pester cases, Mock coverage)
 
 Repo root
 - install.ps1 (idempotent: WhatIf, Force, backups, try/catch, summary — single self git-pull, no dual-repo clone)
@@ -131,7 +131,7 @@ Full spec at: https://github.com/martinpaprcka77/martinpaprcka77.github.io/blob/
    - TUI menu: live status Detector per item (module stack, PSModulePath, sibling profile/ dir), box width clamped to console width
    - deps.ps1 (winget installer), windows.ps1 (system defaults)
    - .vscode/ (repo root) with settings + 5 tasks committed
-   - 75 Pester tests in tests/Toolkit.Tests.ps1
+   - 76 Pester tests in tests/Toolkit.Tests.ps1
 
 $env:DOTFILES_PWSH points at profile/; $env:DOTFILES_TOOLS is derived from it as the sibling
 toolkit/ dir — always in sync (previously two independent repos/env-vars that could drift).

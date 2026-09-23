@@ -7,7 +7,7 @@
 | Module | `Toolkit` |
 | Version | 1.5.1 |
 | Exported functions | 36 |
-| Pester tests | 75 (75 pass / 0 fail) |
+| Pester tests | 76 (76 pass / 0 fail) |
 
 **Invariants**
 

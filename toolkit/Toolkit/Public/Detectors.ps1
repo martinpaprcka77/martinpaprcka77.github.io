@@ -53,7 +53,19 @@ function Test-LegacyPowerShellGetPresent {
 function Test-PSResourceGetReady {
     [CmdletBinding()]
     param()
-    return [bool](Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet -ErrorAction SilentlyContinue)
+    # Get-Command, not Get-Module -ListAvailable: the latter rescans every
+    # PSModulePath directory on each call — measured ~86 ms on a machine with
+    # many modules installed (4.5 s for the unfiltered form). This predicate runs
+    # inside Get-ModuleStackStatus, which three menus attach as a live Detector
+    # that Show-Menu re-evaluates on *every redraw* (i.e. every keypress), so
+    # that was ~87 ms of input lag per keystroke and directly contradicted this
+    # file's own "cheap detectors" contract. Get-Command answers the same
+    # question in ~2 ms, and answers it better: it resolves only if the module's
+    # cmdlet is actually usable (a module that is installed but incompatible
+    # still fails), where Get-Module only proves the manifest exists. It does
+    # autoload the module on the first probe, which is a fair definition of
+    # "ready" — after that the call is free.
+    return [bool](Get-Command -Name Get-InstalledPSResource -ErrorAction SilentlyContinue)
 }
 
 <#

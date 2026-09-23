@@ -451,6 +451,20 @@ Describe 'Toolkit Module' {
 
             ($modernize -join ',') | Should -Be ($detectors -join ',') -Because 'the two copies of the legacy-module list must stay identical'
         }
+
+        It 'Show-Menu detectors stay cheap (no Get-Module -ListAvailable per redraw)' {
+            # Detectors.ps1's own header promises "Get-Command/Test-Path/cached
+            # config reads only", because Show-Menu re-evaluates each item's
+            # Detector on every redraw (every keypress) with only a per-redraw
+            # cache. Get-Module -ListAvailable rescans PSModulePath rather than
+            # asking the engine: measured ~86 ms per call here (4.5 s for the
+            # unfiltered form), i.e. ~87 ms of input lag per keystroke through
+            # Get-ModuleStackStatus. This test is what keeps that regression from
+            # coming back.
+            $detectors = Get-Content -LiteralPath (Join-Path $repoRoot 'toolkit\Toolkit\Public\Detectors.ps1') -Raw
+            $code = ($detectors -split "`n" | Where-Object { $_ -notmatch '^\s*#' }) -join "`n"
+            $code | Should -Not -Match 'Get-Module\s+\S*\s*-ListAvailable' -Because 'Get-Command resolves a module cmdlet in ~2 ms without rescanning; Test-Path on the module dirs is also fine'
+        }
     }
 
     # ── Cleanup ───────────────────────────────────────────────

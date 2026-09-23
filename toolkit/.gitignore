@@ -22,10 +22,13 @@ Thumbs.db
 desktop.ini
 
 # IDE
-.vscode/
+# '.vscode/*', not '.vscode/' — see the note in the root .gitignore: excluding
+# the directory itself makes the !negations below dead.
+.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/agent-instructions.md
+!.vscode/extensions.json
 .idea/
 *.sublime-*
 

@@ -2,17 +2,20 @@
 profile/core/extra.ps1
 
 # Secrets and environment
-toolkit/configs/secrets.*
+toolkit/config/secrets.*
 *.secret
 .env
 
 # Local toolkit config — user's saved settings + Save-ToolkitConfig backup.
-# The shipped default lives in configs/settings.example.json; Get-ToolkitConfig
+# The shipped default lives in config/settings.example.json; Get-ToolkitConfig
 # falls back to its hardcoded defaults when this file is absent. Tracking it
 # would make `configure`/Save-ToolkitConfig dirty the tree and break the next
 # `update.ps1` (git pull --ff-only) / remote-install `git reset --hard`.
-toolkit/configs/settings.json
-toolkit/configs/settings.json.backup
+# NOTE: the directory is toolkit/config/ (singular). These entries used to say
+# toolkit/configs/, which does not exist — so the explicit secret glob above
+# protected nothing and only toolkit/.gitignore's own config/secrets.* did.
+toolkit/config/settings.json
+toolkit/config/settings.json.backup
 
 # Node
 node_modules/
@@ -23,10 +26,15 @@ Thumbs.db
 desktop.ini
 
 # IDE
-.vscode/
+# '.vscode/*', not '.vscode/': excluding the directory itself makes git skip its
+# contents entirely, which left the !negations below dead — four tracked .vscode
+# files showed up in `git ls-files -i -c --exclude-standard`, and a new file
+# added under .vscode/ would have been silently ignored.
+.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/agent-instructions.md
+!.vscode/extensions.json
 .idea/
 *.sublime-*
 

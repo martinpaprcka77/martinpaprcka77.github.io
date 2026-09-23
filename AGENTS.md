@@ -16,7 +16,7 @@ interactive toolbox, in one repo, plus the GitHub Pages portal at the repo root.
 | **Portal** | [martinpaprcka77.github.io](https://martinpaprcka77.github.io) (this repo's Pages, root URL) |
 | **Language** | PowerShell 5.1 / 7+ |
 | **Module** | `toolkit/Toolkit` — 36 exported functions, v1.5.1 |
-| **Tests** | 75 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` (70 module/behaviour + 5 repo invariants) |
+| **Tests** | 76 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` (70 module/behaviour + 6 repo invariants) |
 | **Dependencies** | Git; PowerShell 7+ (Windows) |
 | **Lint** | `PSScriptAnalyzerSettings.psd1` at repo root; CI fails only on Error severity |
 
@@ -116,7 +116,7 @@ toolkit and the portal are maintained. Status of the leftovers:
     ├── config/              ← settings.example.json (committed template) + wt-schemes.json
     │                           settings.json is LOCAL + gitignored (Save-ToolkitConfig writes it)
     ├── build/               ← Build.ps1 (manifest parity) · Test.ps1 (verification gate) · Generate-Docs.ps1
-    ├── tests/Toolkit.Tests.ps1 ← 75 Pester cases (70 module/behaviour + 5 repo invariants)
+    ├── tests/Toolkit.Tests.ps1 ← 76 Pester cases (70 module/behaviour + 6 repo invariants)
     ├── docs/                ← 00-bootstrap … 90-prompt + 20-reference (generated)
     ├── PowerShell-Startup-Map.html ← interactive startup health map
     └── githooks/            ← post-checkout/post-merge reminders, install.sh

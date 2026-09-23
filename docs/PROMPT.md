@@ -221,7 +221,7 @@ Jeden repozitář, umístění: `~/.config/powershell/`, se dvěma podadresáři
   (`Save-ToolkitConfig` ho zapisuje — verzovaný by zašpinil strom a rozbil `git pull --ff-only`)
 
 #### toolkit/tests/Toolkit.Tests.ps1
-- 75 testů (70 modul/chování + 5 repo invariant), Mock pokrytí (config, PSModulePath, menu chybové
+- 76 testů (70 modul/chování + 6 repo invariant), Mock pokrytí (config, PSModulePath, menu chybové
   cesty). PSModulePath fixtures musí být platform-neutrální — `C:\Mods\...` na Windows, `/Mods/...`
   jinde (dvojtečka v drive-letter koliduje s `[IO.Path]::PathSeparator`, což je `:` na Linuxu/macOS)
 
