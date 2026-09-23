@@ -14,7 +14,7 @@
     this module: it imports Toolkit at its line 31. A repo-invariant Pester test
     guards the duplicated list against drifting apart.)
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Detectors.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Detectors.ps1
 #>
 
 <#

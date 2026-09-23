@@ -16,7 +16,7 @@
 .NOTES
     Fragment location: %LOCALAPPDATA%\Microsoft\Windows Terminal\Fragments\dotfiles\dotfiles.json
     Uses "updates" key to modify built-in PowerShell profiles.
-    Cesta: ~/Projects/tools/ops/Add-WTProfiles.ps1
+    Cesta: ~/.config/powershell/toolkit/ops/Add-WTProfiles.ps1
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(

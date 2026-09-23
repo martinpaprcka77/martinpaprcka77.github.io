@@ -5,7 +5,7 @@
     Manages $env:PSModulePath programmatically. Prevents OneDrive pollution,
     ensures modern module priority, and provides export/import for reproducibility.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/ModulePath.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/ModulePath.ps1
 #>
 
 # ── Get-PSModulePath — list all entries ────────────────────────

@@ -7,7 +7,7 @@
     no Export-ModuleMember list, because keeping two export lists in sync was the
     main drift risk. Run build/Build.ps1 to verify the manifest matches the code.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Toolkit.psm1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Toolkit.psm1
 #>
 
 # Private helpers first, then the public sources, then the menus (app layer).

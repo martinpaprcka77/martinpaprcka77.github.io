@@ -10,7 +10,7 @@
     .\Generate-Icons.ps1
     .\Generate-Icons.ps1 -OutputDir "C:\my-icons"
 .NOTES
-    Cesta: ~/Projects/tools/ops/Generate-Icons.ps1
+    Cesta: ~/.config/powershell/toolkit/ops/Generate-Icons.ps1
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(

@@ -15,7 +15,7 @@
     .\windows.ps1 -WhatIf
     .\windows.ps1 -RemoveBloatware
 .NOTES
-    Cesta: ~/Projects/tools/ops/windows.ps1
+    Cesta: ~/.config/powershell/toolkit/ops/windows.ps1
     Některé operace vyžadují administrátorská práva.
 #>
 [CmdletBinding(SupportsShouldProcess)]

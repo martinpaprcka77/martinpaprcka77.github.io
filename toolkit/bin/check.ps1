@@ -4,7 +4,7 @@
 .DESCRIPTION
     Wrapper skript v PATH pro rychlou diagnostiku systému.
 .NOTES
-    Cesta: ~/Projects/tools/bin/check.ps1
+    Cesta: ~/.config/powershell/toolkit/bin/check.ps1
 #>
 
 param(

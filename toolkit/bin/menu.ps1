@@ -4,7 +4,7 @@
 .DESCRIPTION
     Wrapper skript v PATH, který importuje Toolkit modul a spustí interaktivní menu.
 .NOTES
-    Cesta: ~/Projects/tools/bin/menu.ps1
+    Cesta: ~/.config/powershell/toolkit/bin/menu.ps1
 #>
 
 param(

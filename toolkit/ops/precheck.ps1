@@ -8,7 +8,7 @@
 .EXAMPLE
     .\precheck.ps1
 .NOTES
-    Cesta: ~/Projects/tools/ops/precheck.ps1
+    Cesta: ~/.config/powershell/toolkit/ops/precheck.ps1
 #>
 [CmdletBinding()]
 param()

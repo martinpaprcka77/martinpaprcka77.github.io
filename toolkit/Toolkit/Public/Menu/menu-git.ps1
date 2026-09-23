@@ -2,7 +2,7 @@
 .SYNOPSIS
     Git management menu.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Menu/menu-git.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Menu/menu-git.ps1
 #>
 
 function Show-GitMenu {

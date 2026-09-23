@@ -8,7 +8,7 @@
     startup tooling (ops/Get-PowerShellStartupHealth.ps1, Get-ModuleStackStatus,
     Get-ModulePathStatus, Test-PSModulePath) and the interactive map.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Menu/menu-startup.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Menu/menu-startup.ps1
 #>
 
 function Show-StartupMenu {

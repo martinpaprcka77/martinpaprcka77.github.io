@@ -14,7 +14,7 @@
     .\configure.ps1
     .\configure.ps1 -Reset
 .NOTES
-    Cesta: ~/Projects/tools/ops/configure.ps1
+    Cesta: ~/.config/powershell/toolkit/ops/configure.ps1
 #>
 [CmdletBinding()]
 param(

@@ -14,7 +14,7 @@
     .\deps.ps1 -Minimal
     .\deps.ps1 -WhatIf
 .NOTES
-    Cesta: ~/Projects/tools/ops/deps.ps1
+    Cesta: ~/.config/powershell/toolkit/ops/deps.ps1
     Vyžaduje winget (součást Windows 10 1809+ / Windows 11).
 #>
 [CmdletBinding(SupportsShouldProcess)]

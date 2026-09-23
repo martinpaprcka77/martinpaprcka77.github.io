@@ -34,7 +34,7 @@
         "1. Git" = @{ Action = { Show-GitMenu }; Desc = "Repository helpers" }
     })
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Show-Menu.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Show-Menu.ps1
     Requires console host that supports [Console]::ReadKey (ConsoleHost, WT).
 #>
 

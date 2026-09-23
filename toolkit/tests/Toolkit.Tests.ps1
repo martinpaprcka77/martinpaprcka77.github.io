@@ -5,8 +5,8 @@
     Testuje existenci, chování a chybové stavy všech exportovaných funkcí.
     Připraveno pro CI (GitHub Actions).
 .NOTES
-    Cesta: ~/Projects/tools/tests/Toolkit.Tests.ps1
-    Spuštění: Invoke-Pester ~/Projects/tools/tests/Toolkit.Tests.ps1
+    Cesta: ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
+    Spuštění: Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
 
     Host output: every call under test that writes through Write-Host is redirected with
     `6>$null` (the information stream). Write-Host ignores $InformationPreference — it is

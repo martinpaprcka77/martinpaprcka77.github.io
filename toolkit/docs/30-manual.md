@@ -1,4 +1,4 @@
-# Manuál dotfiles-tools
+# Manuál toolkit
 
 > Kontext: [00-bootstrap.md](00-bootstrap.md) — fáze 1–7 spouštění PowerShellu a jejich časté chyby.
 
@@ -40,11 +40,11 @@ podrobně popsaná v [§14](#14-aktuální-menu-struktura); zde jen stručný p�
 menu
 
 # Přes modul
-Import-Module ~/Projects/tools/Toolkit/Toolkit.psd1
+Import-Module ~/.config/powershell/toolkit/Toolkit/Toolkit.psd1
 Start-MainMenu
 
 # Přímé spuštění skriptu
-~/Projects/tools/Toolkit/Public/Menu/menu-main.ps1
+~/.config/powershell/toolkit/Toolkit/Public/Menu/menu-main.ps1
 ```
 
 ---
@@ -92,7 +92,7 @@ check
 ### Samostatné kontroly
 
 ```powershell
-Import-Module ~/Projects/tools/Toolkit/Toolkit.psd1
+Import-Module ~/.config/powershell/toolkit/Toolkit/Toolkit.psd1
 
 Get-DiskStatus       # jen disky
 Get-ServiceStatus    # jen služby
@@ -123,20 +123,20 @@ zpět do existujícího souboru. Žádné GUID — profily se párují podle `na
 
 ```powershell
 # Normální spuštění
-~/Projects/tools/ops/Add-WTProfiles.ps1
+~/.config/powershell/toolkit/ops/Add-WTProfiles.ps1
 
 # Suchý běh (WhatIf) — zobrazí, co by udělal, nic nemění
-~/Projects/tools/ops/Add-WTProfiles.ps1 -WhatIf
+~/.config/powershell/toolkit/ops/Add-WTProfiles.ps1 -WhatIf
 
 # Přepsat existující fragment
-~/Projects/tools/ops/Add-WTProfiles.ps1 -Force
+~/.config/powershell/toolkit/ops/Add-WTProfiles.ps1 -Force
 ```
 
 ### Přidané/aktualizované profily
 
 | Název | Typ | Spouští | Výchozí adresář |
 |-------|-----|---------|------------------|
-| Menu | nový, vlastní | `pwsh.exe` | `~/Projects/tools` |
+| Menu | nový, vlastní | `pwsh.exe` | `~/.config/powershell/toolkit` |
 | Projekty | nový, vlastní | `pwsh.exe` | `~/Projects/work` |
 | PowerShell 7 | update vestavěného | `pwsh.exe` | `~` |
 
@@ -157,10 +157,10 @@ Copy-Item "$env:LOCALAPPDATA\Microsoft\Windows Terminal\Fragments\dotfiles\dotfi
 Vygeneruje 3 placeholder PNG ikony (32×32 px) pomocí `System.Drawing`.
 
 ```powershell
-~/Projects/tools/ops/Generate-Icons.ps1
+~/.config/powershell/toolkit/ops/Generate-Icons.ps1
 
 # Vlastní výstupní adresář
-~/Projects/tools/ops/Generate-Icons.ps1 -OutputDir "D:\my-icons"
+~/.config/powershell/toolkit/ops/Generate-Icons.ps1 -OutputDir "D:\my-icons"
 ```
 
 ### Vygenerované ikony
@@ -218,7 +218,7 @@ Write-Err "Připojení selhalo"
 ```powershell
 # Spuštění testů (vyžaduje Pester)
 Install-Module Pester -Force
-Invoke-Pester ~/Projects/tools/tests/Toolkit.Tests.ps1
+Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
 ```
 
 ---
@@ -235,7 +235,7 @@ $items = [ordered]@{
 }
 
 # Vytvoř bin/muj-nastroj.ps1:
-# Import-Module ~/Projects/tools/Toolkit/Toolkit.psd1 -Force
+# Import-Module ~/.config/powershell/toolkit/Toolkit/Toolkit.psd1 -Force
 # ... tvůj kód ...
 ```
 
@@ -296,11 +296,13 @@ menu → 6. PowerShell → 5. Performance → 4. Clear Cache
 
 ## 12. Performance nástroje
 
-> Tyto funkce žijí v companion repu **dotfiles-powershell** (`core/perf.ps1`), ne v tomto repu.
+> Tyto funkce žijí v `profile/core/perf.ps1` — v **tomto** repu (monorepo `martinpaprcka77.github.io`),
+> v adresáři `profile/`. Historie: dřív to byl samostatný repo `dotfiles-powershell`, proto se mu
+> místy ještě říká „companion“.
 
 ### Measure-Profile
 ```powershell
-# Měření doby načtení profilu (vyžaduje načtený companion profil)
+# Měření doby načtení profilu (vyžaduje načtený profil)
 Measure-Profile
 # Výstup: breakdown podle sekcí, loaded moduly, doporučení
 # Barevné hodnocení: 🟢 <500ms, 🟡 <1000ms, 🔴 >1000ms
@@ -329,7 +331,8 @@ Get-ProfileSize
 
 ## 13. Status Dashboard
 
-> `Show-Status` žije v companion repu **dotfiles-powershell** (`core/status.ps1`), ne v tomto repu.
+> `Show-Status` žije v `profile/core/status.ps1` — v **tomto** repu, v adresáři `profile/`
+> (dřív samostatný repo `dotfiles-powershell`).
 
 ```powershell
 # Globální health check (vyžaduje načtený companion profil)

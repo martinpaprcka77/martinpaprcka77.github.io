@@ -18,7 +18,7 @@
 .EXAMPLE
     pwsh -File ops/Get-PowerShellStartupHealth.ps1 -Path ./pwsh-health.json
 .NOTES
-    Cesta: ~/Projects/tools/ops/Get-PowerShellStartupHealth.ps1
+    Cesta: ~/.config/powershell/toolkit/ops/Get-PowerShellStartupHealth.ps1
 #>
 [CmdletBinding()]
 param(

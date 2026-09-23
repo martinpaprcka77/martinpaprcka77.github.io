@@ -20,7 +20,7 @@
       ModulePath/Show-Menu/Diagnostics module files do too. Those are formatting
       inconsistencies, not covered by this file's guarantee.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Output.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Output.ps1
 #>
 function Write-TkMessage {
     [CmdletBinding()]

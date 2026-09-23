@@ -13,7 +13,7 @@
 .EXAMPLE
     Test-NetworkEndpoint -Target 'github.com' -Port 443 -TimeoutMs 1500
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Connectivity.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Connectivity.ps1
 #>
 function Test-NetworkEndpoint {
     [CmdletBinding()]

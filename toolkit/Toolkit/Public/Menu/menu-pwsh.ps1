@@ -2,7 +2,7 @@
 .SYNOPSIS
     PowerShell profile and environment management.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Menu/menu-pwsh.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Menu/menu-pwsh.ps1
 #>
 
 function Show-PwshMenu {

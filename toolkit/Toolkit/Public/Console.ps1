@@ -4,7 +4,7 @@
 .DESCRIPTION
     Kolekce utilitních funkcí používaných napříč Toolkit modulem.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Console.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Console.ps1
 #>
 
 <#

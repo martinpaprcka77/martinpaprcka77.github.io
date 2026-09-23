@@ -2,7 +2,7 @@
 .SYNOPSIS
     Dotfiles ecosystem management — install, update, backup, restore, clean.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Menu/menu-dotfiles.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Menu/menu-dotfiles.ps1
 #>
 
 function Show-DotfilesMenu {

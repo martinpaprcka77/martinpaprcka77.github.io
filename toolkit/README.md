@@ -21,7 +21,7 @@ Merged into one repo — the split below is historical (see the note at the top 
 
 | Was (`dotfiles-tools`) | Is now |
 |------------------------|--------|
-| `~/Projects/tools/` | `toolkit/`, a subfolder of [martinpaprcka77.github.io](https://github.com/martinpaprcka77/martinpaprcka77.github.io) |
+| `~/.config/powershell/toolkit/` | `toolkit/`, a subfolder of [martinpaprcka77.github.io](https://github.com/martinpaprcka77/martinpaprcka77.github.io) |
 | Menu & diagnostics | `toolkit/Toolkit/` + `toolkit/ops/` |
 | Bootstrapper / installer / `$PROFILE` injection | `profile/` + root `install.ps1`, `update.ps1`, `remote-install.ps1` |
 | Pester suite | `toolkit/tests/Toolkit.Tests.ps1` (75 cases) |
@@ -34,7 +34,7 @@ Merged into one repo — the split below is historical (see the note at the top 
 
 | What | Details |
 |------|---------|
-| **Location** | `~/Projects/tools/` |
+| **Location** | `~/.config/powershell/toolkit/` |
 | **36 functions** | Toolkit module — menu engine, live-status detectors, diagnostics, utilities, logging, config, modulepath |
 | **2 bin scripts** | `menu.ps1`, `check.ps1` |
 | **7 menus** | Main, Startup, Git, Terminal, Dotfiles, Pwsh, VSCode (numbered, extensible, live per-item status) |
@@ -119,14 +119,14 @@ graph LR
 # Clone the monorepo; the toolkit is the toolkit/ folder inside it.
 git clone https://github.com/martinpaprcka77/martinpaprcka77.github.io.git
 cd martinpaprcka77.github.io/toolkit
-# Requires dotfiles-powershell installed first!
+# profile/ and toolkit/ come from that one repo (no separate companion repo)
 
 # After install (bin/ is in PATH):
 menu          # interactive main menu
 check         # system diagnostics
 
 # Or directly:
-Import-Module ~/Projects/tools/Toolkit/Toolkit.psd1
+Import-Module ~/.config/powershell/toolkit/Toolkit/Toolkit.psd1
 Start-MainMenu
 Invoke-SystemCheck
 ```
@@ -174,7 +174,7 @@ Invoke-SystemCheck
 ## 📂 Files
 
 ```
-~/Projects/tools/
+~/.config/powershell/toolkit/
 ├── build/                    ← Generate-Docs.ps1 (regenerates docs/20-reference.md)
 ├── bin/
 │   ├── menu.ps1              ← launch main menu
@@ -238,7 +238,7 @@ Invoke-SystemCheck
 
 ```powershell
 Install-Module Pester -Force
-Invoke-Pester ~/Projects/tools/tests/Toolkit.Tests.ps1
+Invoke-Pester ~/.config/powershell/toolkit/tests/Toolkit.Tests.ps1
 
 # full gate: manifest parity + Pester + PSScriptAnalyzer
 pwsh -File build/Test.ps1
@@ -248,7 +248,9 @@ pwsh -File build/Test.ps1
 
 ---
 
-## 🏷️ Companion Repo
+## 🏷️ Profile Orchestration
 
-The **dotfiles-powershell** repo provides the profile orchestration, install/bootstrap, and secret management:  
-👉 **[github.com/martinpaprcka77/dotfiles-powershell](https://github.com/martinpaprcka77/dotfiles-powershell)**
+The profile orchestration, install/bootstrap and secret management used to live in a separate
+**dotfiles-powershell** repo. It is now part of this monorepo, in
+[`profile/`](https://github.com/martinpaprcka77/martinpaprcka77.github.io/tree/main/profile) —
+the standalone `dotfiles-powershell` repo no longer exists.

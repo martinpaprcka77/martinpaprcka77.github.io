@@ -8,7 +8,7 @@
     redirect Documents away from a naive $HOME\Documents assumption; the 4
     native $PROFILE paths install.ps1 injects a bootstrap snippet into all
     live under Documents, so getting this right matters there specifically.
-    (~/.config/powershell and ~/Projects/tools are NOT Known-Folder
+    (~/.config/powershell and ~/.config/powershell/toolkit are NOT Known-Folder
     redirection targets — OneDrive only redirects
     Desktop/Documents/Pictures/Music/Videos — so nothing else in this
     ecosystem needs this.)

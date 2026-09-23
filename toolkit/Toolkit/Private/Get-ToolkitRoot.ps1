@@ -12,7 +12,7 @@
     That works whether the caller sits at the repo root, in Toolkit/, or in a
     nested folder such as Toolkit/Public/Menu/.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Private/Get-ToolkitRoot.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Private/Get-ToolkitRoot.ps1
 #>
 function Get-ToolkitRoot {
     [CmdletBinding()]

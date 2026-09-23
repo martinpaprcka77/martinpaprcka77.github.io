@@ -6,7 +6,7 @@
     a nakonec z $env:TOOLKIT_* proměnných.
     Výsledek cachuje v $script:Config pro jedno načtení za session.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Configuration.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Configuration.ps1
 #>
 
 $script:Config = $null

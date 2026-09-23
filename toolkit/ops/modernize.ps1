@@ -17,7 +17,7 @@
     .\modernize.ps1 -WhatIf
     .\modernize.ps1 -SecurityOnly
 .NOTES
-    Cesta: ~/Projects/tools/ops/modernize.ps1
+    Cesta: ~/.config/powershell/toolkit/ops/modernize.ps1
     Vyžaduje PowerShell 7.2+. Některé operace vyžadují admin práva.
 #>
 [CmdletBinding(SupportsShouldProcess)]

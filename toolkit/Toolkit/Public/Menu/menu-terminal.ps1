@@ -2,7 +2,7 @@
 .SYNOPSIS
     Windows Terminal management — profiles, schemes, fonts, shell integration, backup, restore.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Menu/menu-terminal.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Menu/menu-terminal.ps1
 #>
 
 function Show-TerminalMenu {

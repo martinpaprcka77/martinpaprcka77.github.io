@@ -18,7 +18,7 @@
 .EXAMPLE
     (Get-ShellInfo).Path.Duplicates
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/ShellInfo.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/ShellInfo.ps1
 #>
 function Get-ShellInfo {
     [CmdletBinding()]

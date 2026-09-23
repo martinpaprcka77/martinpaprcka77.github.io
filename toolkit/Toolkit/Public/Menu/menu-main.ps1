@@ -2,7 +2,7 @@
 .SYNOPSIS
     Hlavní interaktivní menu — kořen celého systému.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Menu/menu-main.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Menu/menu-main.ps1
 #>
 
 function Start-MainMenu {

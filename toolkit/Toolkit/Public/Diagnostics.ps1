@@ -4,7 +4,7 @@
 .DESCRIPTION
     Diagnostické funkce – disky, služby, síť, procesy.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Diagnostics.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Diagnostics.ps1
 #>
 
 <#

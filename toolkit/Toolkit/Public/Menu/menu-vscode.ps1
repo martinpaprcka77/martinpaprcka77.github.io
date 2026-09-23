@@ -2,7 +2,7 @@
 .SYNOPSIS
     VS Code management menu.
 .NOTES
-    Cesta: ~/Projects/tools/Toolkit/Public/Menu/menu-vscode.ps1
+    Cesta: ~/.config/powershell/toolkit/Toolkit/Public/Menu/menu-vscode.ps1
 #>
 
 function Show-VSCodeMenu {
@@ -72,7 +72,7 @@ function Show-VSCodeMenu {
             Write-Host "`n  Recommended: ms-vscode.powershell, GitHub.copilot, GitHub.copilot-chat" -ForegroundColor Yellow
             Read-Host "`nStiskni Enter..."
         }; Desc = 'PowerShell-related extensions' }
-        '8. 🖥️  Open Folder'   = @{ Action = { code $toolsRoot }; Desc = 'Open ~/Projects/tools in VS Code' }
+        '8. 🖥️  Open Folder'   = @{ Action = { code $toolsRoot }; Desc = 'Open ~/.config/powershell/toolkit in VS Code' }
         '9. ↩️  Back'          = @{ Action = { return }; Desc = 'Return to main menu' }
     }
     Show-Menu -Title 'VS CODE' -Items $items
