@@ -47,8 +47,13 @@ if (-not $SkipCleanup -and -not $SecurityOnly) {
     # Keep in sync with Toolkit/Public/Detectors.ps1's Test-LegacyPowerShellGetPresent —
     # that function checks the SAME path/modules to decide the menu's live
     # status icon; a mismatch here would mean the menu and this script could
-    # disagree about whether legacy modules are present.
-    $modulePath = "$env:ProgramFiles\PowerShell\7\Modules"
+    # disagree about whether legacy modules are present. A repo-invariant Pester
+    # test now guards the duplicated list against drifting apart.
+    # $PSHOME\Modules, not the literal "$env:ProgramFiles\PowerShell\7\Modules":
+    # an MSIX (Microsoft Store) PowerShell 7 keeps its own modules under
+    # $PSHOME\Modules and the literal path does not exist there at all, so the
+    # hardcoded form silently found nothing to clean.
+    $modulePath = Join-Path $PSHOME 'Modules'
 
     $legacyModules = @(
         'PowerShellGet\1.0.0.1',
@@ -104,8 +109,11 @@ if (-not $SecurityOnly) {
     # LOCALAPPDATA, not Documents — Documents is a Known-Folder redirection
     # target (OneDrive) and is exactly the pollution Reset-PSModulePath and
     # Test-PSModulePath warn about. Keep this in sync with Toolkit/Public/ModulePath.ps1.
+    # $PSHOME\Modules (see the note in step 1): the hardcoded
+    # "$env:ProgramFiles\PowerShell\7\Modules" does not exist on an MSIX install,
+    # so this baseline used to prepend a path that is not on disk.
     $modernPath = @(
-        "$env:ProgramFiles\PowerShell\7\Modules",
+        (Join-Path $PSHOME 'Modules'),
         "$env:LOCALAPPDATA\PowerShell\Modules"
     ) -join [IO.Path]::PathSeparator
 

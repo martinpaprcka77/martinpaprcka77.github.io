@@ -50,10 +50,18 @@ Jeden repozitář, umístění: `~/.config/powershell/`, se dvěma podadresáři
 - try/catch na git operace, preflight kontrola gitu na PATH
 - Jediný self `git pull` (repo obsahuje install.ps1 sám v sobě — žádné klonování druhého repa)
 - Zálohuje existující profily před změnou
-- Vloží bootstrap do 4 profilových cest (Known-Folder-korektní, viz `profile/lib/paths.ps1`) přes
-  sdílenou funkci `Invoke-BootstrapInjection` (viz `profile/lib/bootstrap.ps1`)
+- Volá jediný self-heal vstup `Invoke-DotfilesRepair` (viz `profile/lib/repair.ps1`), který skládá
+  injekci bootstrapu do 4 profilových cest (Known-Folder-korektní, viz `profile/lib/paths.ps1`) +
+  opravu UTF-8 BOM (`profile/lib/encoding.ps1`) + validaci/reset `PSModulePath` (Windows) do jednoho
+  průchodu; injekci samotnou dělá `Invoke-BootstrapInjection` (`profile/lib/bootstrap.ps1`)
 - Nastaví trvalou PATH (`toolkit/bin`)
 - Shrnutí na konci
+
+#### Setup-Windows.ps1 — nový stroj od nuly
+- `#Requires -Version 5.1` **a** `#Requires -RunAsAdministrator` (registry defaulty, winget, Appx) —
+  bez elevace skript odmítne běžet, což je správné chování, ne chyba
+- `-All` / `-ProfileOnly` / `-Dependencies` / `-Defaults` / `-VSCode`; každý stav-měnící krok za
+  `$PSCmdlet.ShouldProcess`, takže `-WhatIf` je úplný dry run
 
 #### remote-install.ps1 — jednopříkazový bootstrapper
 - Bezpečný přes `irm <url> | iex` — **bez** `SupportsShouldProcess` (`$PSCmdlet` je `$null`
@@ -70,9 +78,9 @@ Jeden repozitář, umístění: `~/.config/powershell/`, se dvěma podadresáři
 #### update.ps1
 - git fetch + rev-list kontrola nových commitů
 - ff-only pull
-- Volá `Invoke-BootstrapInjection` (bez -Force) po každém pullu — **self-heal**: pokud bootstrap
-  ukazuje na starou/neplatnou cestu, opraví se automaticky, uživatel nemusí vědět, že má znovu
-  spustit install.ps1
+- Volá `Invoke-DotfilesRepair` (bez -Force) po každém pullu — **self-heal**: bootstrap, BOM i
+  `PSModulePath` se zkontrolují/opraví při každém běhu, ne jen po skutečném pullu. Uživatel nemusí
+  vědět, že má znovu spustit install.ps1
 
 ### B) profile/ — profilová orchestrace
 
@@ -107,8 +115,18 @@ Jeden repozitář, umístění: `~/.config/powershell/`, se dvěma podadresáři
 - Navigace: ll (Get-ChildItem)
 
 #### profile/core/functions.ps1
-- Edit-Profile, Reload-Profile, Get-SecretKey (SecretManagement vault + $env:VAR fallback),
-  Test-Admin, mkcd
+- Edit-Profile, Import-Profile (s aliasem `Reload-Profile`, na který míří `rp`), Get-SecretKey
+  (SecretManagement vault + $env:VAR fallback), Test-Admin, mkcd
+- Show-Hint / Test-HintShown / Get-HintStateDir — jednorázové nápovědy (first-run hinty).
+  Značka „už zobrazeno“ žije MIMO repozitář (`%LOCALAPPDATA%\dotfiles-powershell\hints`, jinde
+  `$HOME/.local/state/...`) — zápis do klonu by zašpinil strom a rozbil `git pull --ff-only`
+
+#### profile/core/aliases.ps1 — pozor na vestavěné aliasy
+- `rp` je na Windows PowerShell 5.1 vestavěný alias s `Options=ReadOnly,AllScope`
+  (`Remove-ItemProperty`); `Set-Alias -Force` ho nedokáže přepsat a vyhodí „The AllScope option
+  cannot be removed from the alias 'rp'“ při každém načtení profilu. Řešení: `Remove-Item
+  Alias:rp -Force -ErrorAction SilentlyContinue` před definicí (na PS7 AllScope není, proto se
+  chyba projeví jen na 5.1)
 
 #### profile/core/env.ps1
 - $env:EDITOR (code > nvim > vim > notepad)
@@ -118,11 +136,22 @@ Jeden repozitář, umístění: `~/.config/powershell/`, se dvěma podadresáři
 - PSReadLine v2, UTF-8 kódování
 
 #### profile/ps7/profile.ps1
-- PSReadLine v3, Terminal-Icons, oh-my-posh, PSFzf (vše podmíněně, pokud nainstalováno)
+- PSReadLine v3, Terminal-Icons, PSFzf (vše podmíněně, pokud nainstalováno)
+- Prompt: **Starship** je primární (`starship init powershell`), oh-my-posh je jen fallback
+- Transient/collapsing prompt je funkce oh-my-posh, **ne** Starshipu — `[transient_prompt]` je
+  v Starshipu neplatný klíč (Starship ho odmítne a hlásí `Unknown key` při každé inicializaci),
+  takže ve `starship.toml` nesmí být
+- `$IsWindows` je PS6+ automatická proměnná → ve skriptech, které musí běžet i na PS5.1, guardovat
+  verzí: `$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }`
 
 #### profile/hosts/
-- ConsoleHost.ps1: titulek okna, uvítání s uptimem
+- ConsoleHost.ps1: titulek okna, uvítání s uptimem (box se počítá z nejdelší buňky, aby všechny
+  řádky měly stejnou šířku), sám dot-sourcuje `wtprofile.ps1`
 - VSCode.ps1: potlačení uvítání, UTF-8, TERM=vscode
+- wtprofile.ps1: Windows Terminal utility (zoxide, trash, Show-Help, vlastní PSReadLine historie) —
+  načte se jen když je `$env:WT_SESSION` nastavená
+- shell-integration.ps1: OSC 133 markery (prompt/command marks, exit code), dot-sourcovaný přímo
+  z `ps7/profile.ps1`
 
 ### C) toolkit/ — interaktivní toolbox
 
@@ -139,50 +168,105 @@ Jeden repozitář, umístění: `~/.config/powershell/`, se dvěma podadresáři
   navigace (šipky) nikdy neposunula seznam dolů; šířka ořezána na `[Console]::WindowWidth`,
   `Desc`/`Detector` text zkrácen s výpustkou (`…`), aby dlouhá zpráva nezalomila řádek
 
-#### toolkit/Toolkit/Public/detectors.ps1
-- `Get-ModuleStackStatus`, `Test-LegacyPowerShellGetPresent`, `Test-PSResourceGetReady`,
-  `Get-DotfilesCompanionStatus` (graceful "⚠️ nenačteno" místo pádu, když toolkit běží
-  samostatně bez profilu), `Get-ModulePathStatus`, `Invoke-IfAvailable`
+#### toolkit/Toolkit/Public/Detectors.ps1
+- `Get-ModuleStackStatus`, `Get-ModulePathStatus` — jediné dva, které menu skutečně připojuje jako
+  `Detector`; dále predikáty `Test-LegacyPowerShellGetPresent`, `Test-PSResourceGetReady`
+- Musí být levné: jen `Get-Command`/`Test-Path`/cached config, žádné síťové volání ani spouštění
+  procesů — detektor se vyhodnocuje při každém překreslení menu (tj. každý stisk klávesy)
+- `Test-LegacyPowerShellGetPresent` hledá legacy moduly pod `$PSHOME\Modules`, **ne** pod literálem
+  `"$env:ProgramFiles\PowerShell\7\Modules"`: PowerShell 7 z Microsoft Store (MSIX) drží vlastní
+  moduly jinde a ten literál tam vůbec neexistuje (na MSIX 7.6.6 je `$PSHOME`
+  `C:\Program Files\WindowsApps\Microsoft.PowerShell_7.6.6.0_x64__8wekyb3d8bbwe`), takže natvrdo
+  zapsaná cesta detekci tiše vypnula. Pro standalone instalaci je `$PSHOME\Modules` totožná cesta
 
-#### toolkit/Toolkit/Public/checkers.ps1
-- Get-DiskStatus, Get-ServiceStatus, Get-NetworkInfo, Get-TopProcesses, Invoke-SystemCheck
-- Všechny funkce mají `$isWindowsHost` guard (pád na Linuxu/macOS bez něj)
+#### toolkit/Toolkit/Public/Diagnostics.ps1
+- Get-DiskStatus, Get-ServiceStatus, Get-NetworkInfo, Get-TopProcesses, Invoke-SystemCheck,
+  Get-SystemSummary
+- Windows-only funkce guardují přes `$IsWindows` — bez verzového guardu je to zde bezpečné, protože
+  manifest modulu deklaruje `PowerShellVersion = '7.0'`, takže `$IsWindows` vždy existuje (na rozdíl
+  od samostatných skriptů mimo modul, kde platí `$isWindowsHost` idiom)
+- `Get-NetworkInfo` navíc guarduje `Get-Command Get-NetIPAddress`: NetTCPIP je modul jen pro Windows
+  PowerShell, v pwsh se nenačte ani na Windows
 
-#### toolkit/Toolkit/Public/config.ps1
+#### toolkit/Toolkit/Public/Configuration.ps1
 - Get-ToolkitConfig (defaults → JSON → $env:TOOLKIT_* merge), Save-ToolkitConfig, Merge-Hashtable
 - `$toolsRoot = if ($env:DOTFILES_TOOLS) { $env:DOTFILES_TOOLS } else { Split-Path $PSScriptRoot -Parent }`
   — self-referenční fallback, nikdy nepředpokládat, že env var je nastavená
 
 #### toolkit/Toolkit/ (PowerShell modul)
-- Toolkit.psd1: manifest s 36 FunctionsToExport
+- Toolkit.psd1: manifest s 36 FunctionsToExport a `PowerShellVersion = '7.0'`
 - Toolkit.psm1: dot-sourcuje Toolkit/Private/ a Toolkit/Public/, exports deklarované v manifestu
 
 #### toolkit/Toolkit/Public/Menu/
 - menu-main.ps1, menu-startup.ps1, menu-git.ps1, menu-dotfiles.ps1,
   menu-terminal.ps1, menu-pwsh.ps1, menu-vscode.ps1 — každý self-referenční lookup uvnitř použije stejný
-  `$toolsRoot` fallback jako lib/config.ps1 (field-reported crash: `Join-Path
+  `$toolsRoot` fallback jako Configuration.ps1 (field-reported crash: `Join-Path
   $env:DOTFILES_TOOLS ...` s `$null` env var, když menu běželo bez načteného profilu)
+- Volání funkcí z `profile/` (Show-Status, Measure-Profile, Get-NativeProfilePaths…) jde inline přes
+  `if (Get-Command <funkce> -ErrorAction SilentlyContinue) { … }` — `toolkit/` musí fungovat
+  i samostatně, bez načteného profilu
 
-#### toolkit/scripts/
-- configure.ps1: 5-step interaktivní wizard
-- modernize.ps1: PSResourceGet migrace, sdílí predikáty s lib/detectors.ps1
+#### toolkit/ops/
+- configure.ps1 (5-step wizard), precheck.ps1 (inventura před instalací), modernize.ps1 (PSResourceGet
+  migrace), deps.ps1, windows.ps1, Add-WTProfiles.ps1, Generate-Icons.ps1, Get-PowerShellStartupHealth.ps1
+- modernize.ps1 si drží vlastní kopii seznamu legacy modulů, která musí odpovídat
+  `Toolkit/Public/Detectors.ps1` — hlídá to repo-invariantní Pester test
+- Stav-měnící skripty přijímají `-WhatIf` přes `[CmdletBinding(SupportsShouldProcess)]`; bez atributu
+  `-WhatIf` tiše spadne do `$args` a skript přesto zapíše (ověřeno u `Generate-Icons.ps1`)
+
+#### toolkit/build/ + toolkit/config/
+- build/Build.ps1 (manifest ↔ source parity), build/Test.ps1 (jediná brána: parity → Pester →
+  PSScriptAnalyzer), build/Generate-Docs.ps1 (generuje docs/20-reference.md, čísla se neudržují ručně)
+- config/settings.example.json je verzovaná šablona; `config/settings.json` je lokální a gitignored
+  (`Save-ToolkitConfig` ho zapisuje — verzovaný by zašpinil strom a rozbil `git pull --ff-only`)
 
 #### toolkit/tests/Toolkit.Tests.ps1
-- 69 testů, Mock pokrytí (config, PSModulePath, menu chybové cesty). PSModulePath fixtures musí
-  být platform-neutrální — `C:\Mods\...` na Windows, `/Mods/...` jinde (dvojtečka v drive-letter
-  koliduje s `[IO.Path]::PathSeparator`, což je `:` na Linuxu/macOS)
+- 75 testů (70 modul/chování + 5 repo invariant), Mock pokrytí (config, PSModulePath, menu chybové
+  cesty). PSModulePath fixtures musí být platform-neutrální — `C:\Mods\...` na Windows, `/Mods/...`
+  jinde (dvojtečka v drive-letter koliduje s `[IO.Path]::PathSeparator`, což je `:` na Linuxu/macOS)
 
 ### D) AGENTS.md + CLAUDE.md
 - V kořeni repozitáře (ne v obou podadresářích) — dokumentace pro AI agenty popisuje CELÝ
   ekosystém (profile/ + toolkit/)
 
+### E) tools/ — údržba repa (NENÍ součást profilu)
+- `tools/devmenu/devmenu.ps1` — přenosné launcher menu (`pwsh -File tools/devmenu/devmenu.ps1
+  -SelfTest` = 31 kontrol); `#Requires -Version 7`
+- `tools/gist-sources.ps1` — kanonická těla gistů, ze kterých čtou oba skripty níže
+- `tools/Verify-Sync.ps1` (read-only kontrola), `tools/Update-Gists.ps1` (push gistů),
+  `tools/Validate-Links.ps1` (scan odkazů; `-Fix` experimentální)
+- `PSScriptAnalyzerSettings.psd1` v kořeni — CI padá jen na Error severity, Warningy se jen reportují
+- `.github/workflows/test.yml` — Pester + PSScriptAnalyzer + JSON validace; paths filtr pokrývá
+  `profile/**`, `toolkit/**`, `*.ps1` a tento settings soubor
+
 ## 4. Konvence
 - Comment-based help na všech funkcích
 - try/catch na síťové/externí volání
 - Idempotentní operace
-- Cross-platform guardy ($IsWindows, $IsLinux)
-- Join-Path pro cesty (nikdy string concatenation, nikdy 3+ pozičních argumentů — `-AdditionalChildPath`
+- **Cross-platform guardy**: `$IsWindows`/`$IsLinux`/`$IsMacOS` jsou PS6+ automatické proměnné a na
+  Windows PowerShell 5.1 **neexistují** (`-not $IsWindows` je tam `$true`, protože `$null` se
+  vyhodnotí jako nepravda → skript na Windowsu mylně odmítne běžet). Vždy nejdřív verze:
+  `$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }`
+- Nebezpečné `Set-Alias -Force` na jméno, které je vestavěný alias (viz `rp`) — nejdřív
+  `Remove-Item Alias:<jméno> -Force -ErrorAction SilentlyContinue`
+- Stav-měnící skripty/funkce deklarují `[CmdletBinding(SupportsShouldProcess)]` a obalují akci
+  `$PSCmdlet.ShouldProcess(...)`. Pozor: skript s pouhým `param()` žádný `-WhatIf` nepřijme —
+  spadne do `$args` a **tiše se ignoruje**, přestože skript normálně zapíše
+- Cesty: `Join-Path` (nikdy string concatenation, nikdy 3+ pozičních argumentů — `-AdditionalChildPath`
   je jen PS6+, na PS5.1 spadne)
+- Systémové cesty PowerShellu odvozovat (`$PSHOME\Modules`), nikdy nezapisovat natvrdo
+  `"$env:ProgramFiles\PowerShell\7\Modules"` — instalace z Microsoft Store (MSIX) má moduly jinde
+- **UTF-8 BOM povinný** na všech `.ps1`/`.psm1`/`.psd1` souborech s ne-ASCII znaky (pomlčky,
+  emoji, šipky) — Windows PowerShell 5.1 (`powershell.exe`, ne `pwsh`) bez BOM čte soubor
+  v systémové ANSI codepage, vícebajtový UTF-8 znak se rozpadne a shodí parser (field-reported
+  parse error „string is missing the terminator“)
+- `exit` uvnitř skriptu, který se má dát spouštět přes `irm <url> | iex`, **zabije hostitelskou
+  session** (ověřeno: `iex 'exit 7'` ukončí proces a následující příkaz se už nespustí) — použij
+  `return` a `exit` jen když byl soubor skutečně spuštěn jako soubor
+  (`$MyInvocation.MyCommand.Path` je pod `Invoke-Expression` `$null`)
+- Žádné síťové operace v profilu (výkon)
+- Self-referenční cesty (`toolkit/` hledající vlastní soubory) nikdy nepředpokládají, že
+  `$env:DOTFILES_TOOLS` je nastavená — fallback na `$PSScriptRoot`
 - **UTF-8 BOM povinný** na všech `.ps1`/`.psm1`/`.psd1` souborech s ne-ASCII znaky (pomlčky,
   emoji, šipky) — Windows PowerShell 5.1 (`powershell.exe`, ne `pwsh`) bez BOM čte soubor
   v systémové ANSI codepage, víceb­ajtový UTF-8 znak se rozpadne a shodí parser (field-reported

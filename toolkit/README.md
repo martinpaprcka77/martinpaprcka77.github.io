@@ -10,22 +10,23 @@
 [![repo](https://img.shields.io/badge/repo-martinpaprcka77.github.io-blue)](#)
 [![files](https://img.shields.io/badge/files-44-green)](#)
 [![module](https://img.shields.io/badge/module-Toolkit-orange)](#)
-[![tests](https://img.shields.io/badge/tests-69_cases-brightgreen)](#)
+[![tests](https://img.shields.io/badge/tests-75_cases-brightgreen)](#)
 [![license](https://img.shields.io/badge/license-MIT-lightgrey)](#)
 
 ---
 
 ## 🔗 Repo Boundary
 
-| Companion repo (`dotfiles-powershell`) | This repo (`dotfiles-tools`) |
-|----------------------------------------|-------------------------------|
-| `~/.config/powershell/` | `~/Projects/tools/` |
-| Profile orchestration | Menu & diagnostics |
-| Bootstrap & install | Toolkit PowerShell module |
-| Version/host profiles | Windows Terminal integration |
-| Secret management helpers | Pester tests (69 cases) |
-| 👉 **[github.com/martinpaprcka77/dotfiles-powershell](https://github.com/martinpaprcka77/dotfiles-powershell)** | 👉 **[github.com/martinpaprcka77/martinpaprcka77.github.io/tree/main/toolkit](https://github.com/martinpaprcka77/martinpaprcka77.github.io/tree/main/toolkit)** |
-| **🌐 Portal: [martinpaprcka77.github.io](https://martinpaprcka77.github.io)** | |
+Merged into one repo — the split below is historical (see the note at the top of this file):
+
+| Was (`dotfiles-tools`) | Is now |
+|------------------------|--------|
+| `~/Projects/tools/` | `toolkit/`, a subfolder of [martinpaprcka77.github.io](https://github.com/martinpaprcka77/martinpaprcka77.github.io) |
+| Menu & diagnostics | `toolkit/Toolkit/` + `toolkit/ops/` |
+| Bootstrapper / installer / `$PROFILE` injection | `profile/` + root `install.ps1`, `update.ps1`, `remote-install.ps1` |
+| Pester suite | `toolkit/tests/Toolkit.Tests.ps1` (75 cases) |
+
+**🌐 Portal: [martinpaprcka77.github.io](https://martinpaprcka77.github.io)**
 
 ---
 
@@ -38,7 +39,7 @@
 | **2 bin scripts** | `menu.ps1`, `check.ps1` |
 | **7 menus** | Main, Startup, Git, Terminal, Dotfiles, Pwsh, VSCode (numbered, extensible, live per-item status) |
 | **8 helper scripts** | Add-WTProfiles, Generate-Icons, configure, deps, windows, modernize, precheck, Get-PowerShellStartupHealth |
-| **69 Pester tests** | Module structure, function exports, Mock coverage, config, error paths, PSModulePath |
+| **75 Pester tests** | Module structure, function exports, Mock coverage, config, error paths, PSModulePath |
 
 ---
 
@@ -179,7 +180,7 @@ Invoke-SystemCheck
 │   ├── menu.ps1              ← launch main menu
 │   └── check.ps1             ← system diagnostics
 ├── Toolkit/                  ← PowerShell module (self-contained)
-│   ├── Toolkit.psd1          ← module manifest (33 exports — the only export list)
+│   ├── Toolkit.psd1          ← module manifest (36 exports — the only export list)
 │   ├── Toolkit.psm1          ← loader (dot-sources Private/ + Public/)
 │   ├── Private/
 │   │   └── Get-ToolkitRoot.ps1 ← repo-root resolver (never exported)
@@ -212,7 +213,7 @@ Invoke-SystemCheck
 │   │                            (settings.json itself is LOCAL + gitignored; Save-ToolkitConfig
 │   │                            and ops/configure.ps1 write it, so the wizard cannot dirty the tree)
 │   └── wt-schemes.json       ← WT color schemes (single source of truth, read by Add-WTProfiles.ps1)
-├── tests/Toolkit.Tests.ps1   ← 73 Pester test cases (70 module/behaviour + 3 repo invariants)
+├── tests/Toolkit.Tests.ps1   ← 75 Pester test cases (70 module/behaviour + 5 repo invariants)
 ├── docs/                     ← ordered by the bootstrap lifecycle (00 → 90)
 └── .gitignore
 ```
@@ -243,7 +244,7 @@ Invoke-Pester ~/Projects/tools/tests/Toolkit.Tests.ps1
 pwsh -File build/Test.ps1
 ```
 
-**69 test cases**: module structure, function exports, utility behavior with Mocks, config env-var overrides, menu error paths, system check mocks, PSModulePath management. The suite targets Windows + PowerShell 7.
+**75 test cases**: module structure, function exports, utility behavior with Mocks, config env-var overrides, menu error paths, system check mocks, PSModulePath management. The suite targets Windows + PowerShell 7.
 
 ---
 

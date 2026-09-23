@@ -16,7 +16,7 @@ interactive toolbox, in one repo, plus the GitHub Pages portal at the repo root.
 | **Portal** | [martinpaprcka77.github.io](https://martinpaprcka77.github.io) (this repo's Pages, root URL) |
 | **Language** | PowerShell 5.1 / 7+ |
 | **Module** | `toolkit/Toolkit` — 36 exported functions, v1.5.1 |
-| **Tests** | 73 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` (70 module/behaviour + 3 repo invariants) |
+| **Tests** | 75 Pester cases in `toolkit/tests/Toolkit.Tests.ps1` (70 module/behaviour + 5 repo invariants) |
 | **Dependencies** | Git; PowerShell 7+ (Windows) |
 | **Lint** | `PSScriptAnalyzerSettings.psd1` at repo root; CI fails only on Error severity |
 
@@ -116,7 +116,7 @@ toolkit and the portal are maintained. Status of the leftovers:
     ├── config/              ← settings.example.json (committed template) + wt-schemes.json
     │                           settings.json is LOCAL + gitignored (Save-ToolkitConfig writes it)
     ├── build/               ← Build.ps1 (manifest parity) · Test.ps1 (verification gate) · Generate-Docs.ps1
-    ├── tests/Toolkit.Tests.ps1 ← 73 Pester cases (70 module/behaviour + 3 repo invariants)
+    ├── tests/Toolkit.Tests.ps1 ← 75 Pester cases (70 module/behaviour + 5 repo invariants)
     ├── docs/                ← 00-bootstrap … 90-prompt + 20-reference (generated)
     ├── PowerShell-Startup-Map.html ← interactive startup health map
     └── githooks/            ← post-checkout/post-merge reminders, install.sh
@@ -255,11 +255,22 @@ Two tests deliberately write nothing to the host: calls under test get `6>$null`
   `Split-Path $PSScriptRoot -Parent` (see `toolkit/Toolkit/Public/Configuration.ps1`'s `$toolsRoot` pattern). A
   field-reported crash (`Join-Path $env:DOTFILES_TOOLS ...` with a `$null` env var) happened when
   the menu launched without the profile loaded (e.g. a WT custom profile running `menu-main.ps1` directly)
+- **System module paths**: derive them, never hardcode. `Join-Path $PSHOME 'Modules'` — a PowerShell 7
+  installed from the Microsoft Store (MSIX) keeps its own modules under `$PSHOME\Modules` and
+  `"$env:ProgramFiles\PowerShell\7\Modules"` does not exist there at all (verified on 7.6.6 MSIX). The
+  literal silently disabled legacy-module detection, its cleanup and the PSModulePath baseline on
+  exactly that install flavour; a repo-invariant test now fails on any non-comment occurrence
+- **`exit` in a script meant to run via `irm | iex`**: `exit` tears down the *host*, so a failed
+  bootstrap closed the user's console window instead of printing the error (verified: `iex 'exit 7'`
+  exits the process with 7 and the next statement never runs). Use `return`, and `exit` only when
+  `$MyInvocation.MyCommand.Path` is non-null (i.e. really invoked as a file, where an exit code means
+  something) — `remote-install.ps1` does this via an `$invokedAsFile` flag
 - **Alias/function naming**: check `Get-Command -CommandType Alias <name>` before adding a short
   function name — a built-in alias silently wins over a same-named function with no error
   (bit `gcm`/`gps` once; fix: `Remove-Item Alias:<name> -Force` before the function definition)
 - **Menu items calling `profile/` functions from `toolkit/`** (`Show-Status`, `Measure-Profile`, …)
-  go through `Invoke-IfAvailable` — `toolkit/` can in principle be loaded standalone
+  guard inline with `if (Get-Command <name> -ErrorAction SilentlyContinue) { … }` — `toolkit/` can in
+  principle be loaded standalone, so a bare call would throw
 - **`#Requires -Version 5.1`** on every real root entry point (`install.ps1`, `update.ps1`,
   `Setup-Windows.ps1`, and `remote-install.ps1` for its direct-invocation path — it's a silent
   no-op under `irm | iex`, since `#Requires` only enforces on file/call-operator invocation, not

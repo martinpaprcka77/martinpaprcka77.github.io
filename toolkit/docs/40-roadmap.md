@@ -1,15 +1,19 @@
-# Roadmap dotfiles-tools
+# Roadmap toolkit
 
 Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 🟢 nízká · ✅ hotovo
+
+> Historie: `toolkit/` byl dřív samostatný repozitář `dotfiles-tools`. Od Fáze 5 žije jako podadresář
+> monorepa `martinpaprcka77.github.io` vedle `profile/`; zmínky o „companion“ repu níže jsou
+> historické, aktuální strukturu popisuje `AGENTS.md` v kořeni.
 
 ---
 
 ## Fáze 1: Základ (✅ hotovo)
 
-- ✅ Modulární PowerShell profil (`dotfiles-powershell`)
+- ✅ Modulární PowerShell profil (`profile/`, dřív samostatný repo `dotfiles-powershell`)
 - ✅ Idempotentní instalátor (`install.ps1` — WhatIf, Force, backup, summary)
-- ✅ Update mechanism (`update.ps1` — git fetch + reload)
-- ✅ Toolkit modul — **33 exportovaných funkcí**
+- ✅ Update mechanism (`update.ps1` — git fetch + reload + self-heal)
+- ✅ Toolkit modul — **36 exportovaných funkcí**
 - ✅ Interaktivní menu — 7 submenu (Startup, Dotfiles, Git, Terminal, PowerShell, VS Code, Diagnostika)
 - ✅ Moderní menu engine — šipky ↑↓, zvýraznění, popisky, inline režim
 - ✅ Arrow-key menu s popisky u každé položky
@@ -26,13 +30,14 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 - ✅ Starship prompt (Rust) s `starship.toml` konfigurací (30+ modulů)
 - ✅ oh-my-posh jako fallback
 - ✅ Generování ikon (`Generate-Icons.ps1`)
-- ✅ 69 Pester testů (Mock pokrytí, config, PSModulePath, menu chybové cesty)
+- ✅ 75 Pester testů (Mock pokrytí, config, PSModulePath, menu chybové cesty)
 - ✅ Bezpečné ukládání klíčů (`Get-SecretKey` — SecretManagement + env fallback)
 - ✅ `extra.ps1` pattern — uživatelské přizpůsobení mimo Git
 - ✅ AGENTS.md + CLAUDE.md v obou repozitářích
 - ✅ GitHub Pages portal (`martinpaprcka77.github.io`)
 - ✅ AI Prompts stránka — 8 modelů, 5 typů úloh
-- ✅ 4 gisty (install, cheatsheet, prompt, master-prompt)
+- ✅ 4 gisty (install, cheatsheet, prompt, master-prompt) — jejich kanonická těla jsou v
+  `tools/gist-sources.ps1`, `tools/Update-Gists.ps1` je publikuje, `tools/Verify-Sync.ps1` kontroluje
 
 ---
 
@@ -62,9 +67,11 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 - [ ] **macOS podpora** — otestovat s PowerShell 7 na macOS
 - ✅ **Systémový přehled** — `Get-SystemSummary` (jednorázový snapshot OS/CPU/RAM/uptime); plný real-time dashboard nahrazen snapshottem
 - ✅ **Síťová diagnostika** — `Test-NetworkEndpoint` (TCP 443 + latence; jediná síťová funkce, mimo local-only Diagnostics)
-- [ ] **Transient prompt** — kolaps promptu po provedení příkazu (Starship)
-- [ ] **PSResourceGet migration** — plný přechod z PowerShellGet
-- [ ] **AddToHistoryHandler** — vlastní PSReadLine history filter
+- ❌ **Transient prompt** — **NEDOSTUPNÉ**: kolaps promptu je funkce oh-my-posh, **ne** Starshipu;
+  `[transient_prompt]` je v Starshipu neplatný klíč (Starship ho odmítá a hlásí `Unknown key` při
+  každé inicializaci). Zůstává jen na fallback větvi oh-my-posh (`profile/ps7/profile.ps1`)
+- ✅ **PSResourceGet migration** — `modernize.ps1` zvládá kompletní migraci
+- ✅ **AddToHistoryHandler** — vlastní PSReadLine history filter (`wtprofile.ps1`, blokuje API klíče, tokeny, hesla)
 
 ---
 
@@ -92,16 +99,18 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 
 | Problém | Stav | Plán |
 |---------|------|------|
-| `Add-WTProfiles.ps1` vyžaduje Windows Terminal | ✅ Vyřešeno | Guard na `-not $IsWindows` |
+| `Add-WTProfiles.ps1` vyžaduje Windows Terminal | ✅ Vyřešeno | Verzový `$isWindowsHost` guard (dřív `-not $IsWindows`, což na PS 5.1 mylně odmítlo běh na Windowsu) |
 | `Add-WTProfiles.ps1` — parse error, skript se vůbec nespustil | ✅ Vyřešeno | Loose statements uvnitř `@{ }` literálu přesunuty ven |
-| `Generate-Icons.ps1` vyžaduje .NET Framework | ✅ Vyřešeno | `$IsWindows` guard |
-| `deps.ps1` + `windows.ps1` — Windows-only | ✅ Vyřešeno | Platform guardy |
+| `Generate-Icons.ps1` — `-WhatIf` se tiše ignoroval (skript měl jen `param()`, takže spadl do `$args`) a přesto přepsal ikony; navíc `$IsWindows` bez verzového guardu → na PS 5.1 mylné „requires Windows“ | ✅ Vyřešeno (audit 3) | `[CmdletBinding(SupportsShouldProcess)]` + `ShouldProcess` u každé ikony, `$isWindowsHost` guard |
+| `deps.ps1` + `windows.ps1` — Windows-only | ✅ Vyřešeno | Verzové platform guardy |
 | `windows.ps1 -WhatIf` přesto restartoval Explorer | ✅ Vyřešeno | Prompt respektuje `$WhatIfPreference` |
-| `gcm`/`gps` git zkratky nikdy nefungovaly (tiché stínění vestavěnými PS aliasy) | ✅ Vyřešeno | `Remove-Item Alias:` před definicí funkce |
-| `Diagnostics.ps1`/`Console.ps1` bez platform guardu — pád na Linuxu/macOS | ✅ Vyřešeno | `-not $IsWindows` guard |
+| `windows.ps1 -RemoveBloatware` bez guardu na Appx: na pwsh 7 vypsal 27× červené „not recognized“ a všech 27 balíčků ohlásil jako „Not installed“ | ✅ Vyřešeno (audit 3) | `Get-Command Get-AppxPackage`/`Remove-AppxPackage` guard, bez Appx se sekce přeskočí |
+| `gcm`/`gps` git zkratky nikdy nefungovaly (tiché stínění vestavěnými PS aliasy) | ✅ Vyřešeno | `Remove-Item Alias:` před definicí funkce (stejný vzor řeší i `rp` na PS 5.1) |
+| `Diagnostics.ps1`/`Console.ps1` bez platform guardu — pád na Linuxu/macOS | ✅ Vyřešeno | `$IsWindows` guard — v souborech *uvnitř* modulu je to bezpečné, protože manifest deklaruje `PowerShellVersion = '7.0'`; samostatné skripty mimo modul musí použít verzový `$isWindowsHost` |
 | `Reset-PSModulePath` vracel `Documents\...` — přesně OneDrive-postiženou cestu | ✅ Vyřešeno | `$env:LOCALAPPDATA\PowerShell\Modules` místo Documents |
-| 7 PSModulePath Pester testů selhává na Linuxu/macOS | Známé, netýká se Windows | Testovací fixtures používají `C:\Mods\...` — dvojtečka koliduje s `[IO.Path]::PathSeparator` (`:` na Linuxu/macOS, `;` na Windows); na reálném Windows testy procházejí, jde jen o testovací data, ne o chybu v kódu |
-| Menu skripty (`menu-terminal.ps1`/`menu-dotfiles.ps1`/`menu-vscode.ps1`) padaly na `$null` `$env:DOTFILES_TOOLS`, pokud menu běželo bez načteného companion profilu | ✅ Vyřešeno (field-reported) | Fallback `$toolsRoot = if ($env:DOTFILES_TOOLS) {...} else { Split-Path $PSScriptRoot -Parent }` — stejný vzor jako už měl `Toolkit/Public/Configuration.ps1` |
+| Natvrdo zapsané `"$env:ProgramFiles\PowerShell\7\Modules"` (Detectors + modernize + ModulePath) — na MSIX instalaci PS7 ten adresář neexistuje, takže detekce legacy modulů tiše vracela `$false` | ✅ Vyřešeno (audit 3) | `Join-Path $PSHOME 'Modules'` všude + repo-invariantní test na zákaz literálu |
+| 7 PSModulePath Pester testů selhávalo na Linuxu/macOS | ✅ Vyřešeno | Fixtures teď volí `C:\Mods\...` na Windows a `/Mods/...` jinde — dvojtečka v drive-letter koliduje s `[IO.Path]::PathSeparator` (`:` na Linuxu/macOS, `;` na Windows) |
+| Menu skripty (`menu-terminal.ps1`/`menu-dotfiles.ps1`/`menu-vscode.ps1`) padaly na `$null` `$env:DOTFILES_TOOLS`, pokud menu běželo bez načteného profilu | ✅ Vyřešeno (field-reported) | Fallback `$toolsRoot = if ($env:DOTFILES_TOOLS) {...} else { Split-Path $PSScriptRoot -Parent }` — stejný vzor jako už měl `Toolkit/Public/Configuration.ps1` |
 | `Show-Menu` box se rozbil (přetekl přes hranici konzole), když `Detector` vrátil dlouhý text | ✅ Vyřešeno (field-reported) | `$boxWidth` ořezán na `[Console]::WindowWidth`, `Desc`/`Detector` text zkrácen s výpustkou (`…`) |
 | Cesty s diakritikou nejsou testovány | Netestováno | Přidat testy |
 
@@ -111,12 +120,14 @@ Plánované funkce a směr vývoje. Priority: 🔴 vysoká · 🟡 střední · 
 
 1. Fork repozitáře
 2. Vytvoř branch (`feature/muj-nastroj`)
-3. Přidej testy do `tests/`
-4. Aktualizuj `docs/30-manual.md` a `README.md`
+3. Přidej testy do `toolkit/tests/`
+4. Aktualizuj `toolkit/docs/30-manual.md` a `README.md`
 5. Otevři Pull Request
 
 Pravidla:
 - Všechny skripty musí mít comment-based help
 - Idempotentní operace kde to dává smysl
 - Respektovat výkon profilu (žádné pomalé importy)
-- Cross-platform guardy (`-not $IsWindows`)
+- Cross-platform guardy: `$IsWindows` je PS6+ proměnná — vždy nejdřív verze
+  (`$isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else { $true }`),
+  nikdy holé `-not $IsWindows`

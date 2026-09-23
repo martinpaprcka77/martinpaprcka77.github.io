@@ -17,19 +17,26 @@
     dot-source of lib/output.ps1 — it would break the one supported
     invocation this script exists for (irm | iex, no local clone yet).
 
-    -WhatIf/-Force/-NoUpdates aren't reachable through `iex`
+    -Force/-NoUpdates/-WhatIf aren't reachable through `iex`
     (it executes script text, no CLI param binding) — use the
     $env:DOTFILES_* toggles below, or download this file first for full
     parameter parity via a normal invocation.
-    No SupportsShouldProcess here deliberately: $PSCmdlet is $null when this
-    script runs via `Invoke-Expression` (the whole point of this file) —
-    calling $PSCmdlet.ShouldProcess() in that context throws, it doesn't just
-    silently skip. install.ps1 (which this hands off to) has full
-    ShouldProcess/-WhatIf support for direct, non-iex invocation.
+    SupportsShouldProcess is declared for PARAMETER BINDING ONLY (so -WhatIf is
+    actually accepted instead of being silently swallowed into $args by a
+    param()-only script). This script deliberately never calls
+    $PSCmdlet.ShouldProcess: $PSCmdlet is $null when it runs via
+    `Invoke-Expression` (the whole point of this file), where calling
+    ShouldProcess throws rather than silently skipping. -WhatIf therefore aborts
+    before the first state-changing step (see below) rather than gating each one.
+    install.ps1 (which this hands off to) has full ShouldProcess/-WhatIf support
+    for per-step dry runs.
 .PARAMETER Force
     Forwarded to install.ps1 -Force.
 .PARAMETER NoUpdates
     Forwarded to install.ps1 -NoUpdates.
+.PARAMETER WhatIf
+    Common parameter (from SupportsShouldProcess). Aborts before cloning or
+    updating anything and reports what would have happened.
 .EXAMPLE
     # Already in PowerShell (5.1 or 7+):
     irm https://raw.githubusercontent.com/martinpaprcka77/martinpaprcka77.github.io/main/remote-install.ps1 | iex
@@ -54,6 +61,7 @@
 # alternative invocation ("download this file first for full parameter
 # parity"), so it's kept here for that path — harmless either way.
 #Requires -Version 5.1
+[CmdletBinding(SupportsShouldProcess)]
 param(
     [switch]$Force,
     [switch]$NoUpdates
@@ -74,6 +82,15 @@ function Write-Warn { param([string]$M) Write-Host "  [!] $M" -ForegroundColor Y
 if ($env:DOTFILES_FORCE)      { $Force = $true }
 if ($env:DOTFILES_NO_UPDATES) { $NoUpdates = $true }
 
+# `exit` under `irm | iex` does not merely end this script — it tears down the
+# HOST, so a failed bootstrap closed the user's console window instead of
+# showing them the message (verified: `iex 'exit 7'` exits the process with code
+# 7 and the statement after it never runs). A top-level `return` ends only this
+# script and leaves the session alive, so `exit` is used solely when this file
+# was really invoked as a file, where a non-zero exit code means something to
+# the caller ($MyInvocation.MyCommand.Path is $null under `Invoke-Expression`).
+$invokedAsFile = [bool]$MyInvocation.MyCommand.Path
+
 # $IsWindows is PS6+ only; on PS5.1 it doesn't exist and $PSVersionTable has no
 # .OS key. Guard on version: PS5.1 is always Windows, PS7+ uses real $IsWindows.
 # (No Set-StrictMode here, so a "$PSVersionTable.OS -match 'Windows'" form would
@@ -82,18 +99,30 @@ $isWindowsHost = if ($PSVersionTable.PSVersion.Major -ge 6) { $IsWindows } else 
 
 Write-Step "PowerShell Dotfiles Ecosystem — remote bootstrap"
 
-if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    Write-Fail "git is required but not found on PATH. Install it first: https://git-scm.com/downloads"
-    exit 1
-}
-
 $dotfilesUrl = 'https://github.com/martinpaprcka77/martinpaprcka77.github.io.git'
 $homeRoot = if ($HOME) { $HOME } else { $env:USERPROFILE }
 if (-not $homeRoot) {
     Write-Fail 'Could not determine the user home directory ($HOME or USERPROFILE).'
-    exit 1
+    if ($invokedAsFile) { exit 1 } else { return }
 }
 $dotfilesPath = Join-Path (Join-Path $homeRoot '.config') 'powershell'
+
+# Bail out before even requiring git: -WhatIf must be a genuine no-op. Deliberately
+# after $dotfilesPath exists so the message can name the target, and before the
+# clone/update. (Under `irm | iex` there is no -WhatIf to bind — see .NOTES — so
+# this branch is reachable only on the direct-invocation path.)
+if ($WhatIfPreference) {
+    Write-Warn "-WhatIf: nothing was changed. This bootstrap would have:"
+    Write-Warn "  - cloned or fast-forward updated $dotfilesPath"
+    Write-Warn "  - handed off to its install.ps1"
+    Write-Warn "For a per-step dry run, clone it first and run 'install.ps1 -WhatIf'."
+    if ($invokedAsFile) { exit 0 } else { return }
+}
+
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    Write-Fail "git is required but not found on PATH. Install it first: https://git-scm.com/downloads"
+    if ($invokedAsFile) { exit 1 } else { return }
+}
 
 $isRepo = Test-Path (Join-Path $dotfilesPath '.git')
 if ($isRepo) {
@@ -135,7 +164,7 @@ if ($isRepo) {
     if (Test-Path $dotfilesPath) {
         Write-Fail "Directory exists but is not a git repo: $dotfilesPath"
         Write-Fail "Move or remove it, then re-run this bootstrap."
-        exit 1
+        if ($invokedAsFile) { exit 1 } else { return }
     }
     Write-Step "Cloning $dotfilesUrl to $dotfilesPath..."
     $parent = Split-Path $dotfilesPath -Parent
@@ -143,7 +172,7 @@ if ($isRepo) {
     git clone $dotfilesUrl $dotfilesPath 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) {
         Write-Fail "Clone failed for $dotfilesUrl"
-        exit 1
+        if ($invokedAsFile) { exit 1 } else { return }
     }
     Write-Ok "Cloned: $dotfilesPath"
 }
@@ -158,13 +187,14 @@ if (-not $isWindowsHost) {
 $installScript = Join-Path $dotfilesPath 'install.ps1'
 if (-not (Test-Path $installScript)) {
     Write-Fail "install.ps1 not found at $installScript — clone may have failed."
-    exit 1
+    if ($invokedAsFile) { exit 1 } else { return }
 }
 
 Write-Step "Handing off to install.ps1..."
 $forwardedArgs = @{}
 if ($Force) { $forwardedArgs.Force = $true }
 if ($NoUpdates) { $forwardedArgs.NoUpdates = $true }
-if ($WhatIfPreference) { $forwardedArgs.WhatIf = $true }
+# No -WhatIf forwarding: the script already returned above when
+# $WhatIfPreference is set, so it can never reach this line with -WhatIf on.
 
 & $installScript @forwardedArgs

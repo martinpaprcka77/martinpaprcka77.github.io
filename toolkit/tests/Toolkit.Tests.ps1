@@ -246,7 +246,7 @@ Describe 'Toolkit Module' {
             Mock New-Item { } -ModuleName Toolkit
             Reset-PSModulePath 6>$null
             $entries = $env:PSModulePath -split [IO.Path]::PathSeparator
-            $entries[0] | Should -Be "$env:ProgramFiles\PowerShell\7\Modules"
+            $entries[0] | Should -Be (Join-Path $PSHOME 'Modules')
             # LOCALAPPDATA, never Documents — Documents can be OneDrive-redirected
             $entries[1] | Should -Be "$env:LOCALAPPDATA\PowerShell\Modules"
         }
@@ -405,6 +405,51 @@ Describe 'Toolkit Module' {
                 $null = & git -C $repoRoot ls-files --error-unmatch toolkit/config/settings.json 2>$null
                 $LASTEXITCODE | Should -Not -Be 0 -Because 'toolkit/config/settings.json must not be tracked by git'
             }
+        }
+
+        It 'no source file hardcodes the machine PS7 module dir' {
+            # A PowerShell 7 installed from the Microsoft Store (MSIX) keeps its
+            # own modules under $PSHOME\Modules; the literal path used to be
+            # assumed instead and does not exist at all on that install flavour,
+            # which silently disabled legacy-module detection (Detectors.ps1),
+            # its cleanup (ops/modernize.ps1) and the PSModulePath baseline
+            # (ModulePath.ps1) — all three reported "modern/clean" no matter what
+            # was installed. Comments are exempt: they name the wrong path on
+            # purpose, to explain why it is wrong.
+            $offenders = @(
+                foreach ($file in $repoScripts) {
+                    $lineNo = 0
+                    foreach ($line in (Get-Content -LiteralPath $file.FullName)) {
+                        $lineNo++
+                        if ($line -notmatch '^\s*#' -and $line -match 'ProgramFiles\\PowerShell\\7') {
+                            '{0}:{1}' -f $file.FullName.Substring($repoRoot.Length).TrimStart('\'), $lineNo
+                        }
+                    }
+                }
+            )
+            $offenders | Should -BeNullOrEmpty -Because ('resolve it from $PSHOME instead (Join-Path $PSHOME ''Modules''): ' + ($offenders -join ', '))
+        }
+
+        It 'the duplicated legacy-module list agrees between Detectors.ps1 and modernize.ps1' {
+            # ops/modernize.ps1 needs the same list+path as the module's
+            # Test-LegacyPowerShellGetPresent so the menu's live status icon and
+            # the script can never disagree about whether legacy modules are
+            # present. The pair is duplicated by design — this is what stops the
+            # copy drifting, same idea as the logging-style-table test above.
+            $pattern = "'((?:PowerShellGet|PackageManagement)\\[\d.]+)'"
+            $detectors = [regex]::Matches(
+                (Get-Content -LiteralPath (Join-Path $repoRoot 'toolkit\Toolkit\Public\Detectors.ps1') -Raw), $pattern) |
+                ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+            $modernize = [regex]::Matches(
+                (Get-Content -LiteralPath (Join-Path $repoRoot 'toolkit\ops\modernize.ps1') -Raw), $pattern) |
+                ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+
+            # Guard the guard: if the pattern stops matching, both lists are
+            # empty and the comparison below would pass vacuously.
+            $detectors.Count | Should -BeGreaterThan 0 -Because 'the legacy-module list must parse out of Detectors.ps1'
+            $modernize.Count | Should -BeGreaterThan 0 -Because 'the legacy-module list must parse out of modernize.ps1'
+
+            ($modernize -join ',') | Should -Be ($detectors -join ',') -Because 'the two copies of the legacy-module list must stay identical'
         }
     }
 

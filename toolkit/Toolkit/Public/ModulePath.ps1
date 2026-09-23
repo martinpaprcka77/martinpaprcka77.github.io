@@ -107,7 +107,7 @@ function Remove-PSModulePath {
     Resets PSModulePath to the modern recommended baseline.
 .DESCRIPTION
     Resets PSModulePath to the PowerShell 7 baseline.
-    Sets: ProgramFiles\PowerShell\7\Modules first, then LOCALAPPDATA\PowerShell\Modules.
+    Sets: $PSHOME\Modules first, then LOCALAPPDATA\PowerShell\Modules.
 .EXAMPLE
     Reset-PSModulePath
 #>
@@ -116,8 +116,14 @@ function Reset-PSModulePath {
     # OneDrive-affected path this function's own OneDrive-pollution check
     # (Test-PSModulePath) warns about. LOCALAPPDATA is never a Known-Folder
     # redirection target, so it's the actually-safe "modern baseline" entry.
+    # $PSHOME\Modules, not the literal "$env:ProgramFiles\PowerShell\7\Modules" —
+    # an MSIX (Microsoft Store) PowerShell 7 keeps its own modules under
+    # $PSHOME\Modules and the literal path does not exist there, so the baseline
+    # used to prepend (and even *create*) a directory nothing else reads.
+    # Identical to the old literal for a standalone install. Kept in sync with
+    # ops/modernize.ps1 and Detectors.ps1.
     $modern = @(
-        "$env:ProgramFiles\PowerShell\7\Modules",
+        (Join-Path $PSHOME 'Modules'),
         "$env:LOCALAPPDATA\PowerShell\Modules"
     )
     Write-Host "`n🔄 Resetting PSModulePath to modern baseline..." -ForegroundColor Magenta
@@ -253,7 +259,7 @@ function Test-PSModulePath {
     }
 
     # Check priority
-    $ps7Path = "$env:ProgramFiles\PowerShell\7\Modules"
+    $ps7Path = Join-Path $PSHOME 'Modules'
     if ($entries[0] -eq $ps7Path) {
         Write-Host "  ✅ PS7 modules have priority" -ForegroundColor Green
     } else {
